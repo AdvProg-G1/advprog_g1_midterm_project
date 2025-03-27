@@ -1,0 +1,27 @@
+<!-- src/main/resources/templates/serviceOrderList.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Service Order List</title>
+</head>
+<body>
+<h1>Service Order List</h1>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Item Name</th>
+        <th>Repair Description</th>
+        <th>Service Date</th>
+        <th>Status</th>
+    </tr>
+    <tr th:each="order : ${orders}">
+        <td th:text="${order.id}"></td>
+        <td th:text="${order.itemName}"></td>
+        <td th:text="${order.repairDescription}"></td>
+        <td th:text="${order.serviceDate}"></td>
+        <td th:text="${order.status}">Pending</td>
+    </tr>
+</table>
+<a th:href="@{/serviceOrder/create}">Create New Service Order</a>
+</body>
+</html>
