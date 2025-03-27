@@ -1,0 +1,31 @@
+<!-- src/main/resources/templates/createServiceOrder.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Service Order</title>
+</head>
+<body>
+<h1>Create Service Order</h1>
+<form th:action="@{/serviceOrder/create}" th:object="${order}" method="post">
+    <label for="itemName">Item Name:</label>
+    <input type="text" id="itemName" th:field="*{itemName}" required/><br/>
+
+    <label for="itemCondition">Item Condition:</label>
+    <input type="text" id="itemCondition" th:field="*{itemCondition}" required/><br/>
+
+    <label for="repairDescription">Repair Description:</label>
+    <textarea id="repairDescription" th:field="*{repairDescription}" required></textarea><br/>
+
+    <label for="serviceDate">Service Date:</label>
+    <input type="date" id="serviceDate" th:field="*{serviceDate}" required/><br/>
+
+    <label for="paymentMethod">Payment Method:</label>
+    <input type="text" id="paymentMethod" th:field="*{paymentMethod}" required/><br/>
+
+    <label for="couponCode">Coupon Code (Optional):</label>
+    <input type="text" id="couponCode" th:field="*{couponCode}"/><br/>
+
+    <button type="submit">Submit</button>
+</form>
+</body>
+</html>
