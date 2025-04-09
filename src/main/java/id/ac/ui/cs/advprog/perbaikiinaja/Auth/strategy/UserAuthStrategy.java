@@ -13,21 +13,21 @@ public class UserAuthStrategy implements AuthStrategy {
     @Override
     public Object login(String email, String password) {
         return userRepository.findByEmail(email)
-                .filter(u -> u.getPassword().equals(password)) // replace with BCrypt in prod
+                .filter(user -> user.getPassword().equals(password)) // Replace with BCrypt in production!
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
     }
 
     @Override
     public Object register(Object request) {
         RegisterUserRequest req = (RegisterUserRequest) request;
-        User user = new User(
-                null,
-                req.getFullName(),
-                req.getEmail(),
-                req.getPhone(),
-                req.getPassword(),
-                req.getAddress()
-        );
+
+        User user = new User();
+        user.setFullName(req.getFullName());
+        user.setEmail(req.getEmail());
+        user.setPassword(req.getPassword()); // Hash in production
+        user.setPhone(req.getPhone());
+        user.setAddress(req.getAddress());
+
         return userRepository.save(user);
     }
 }
