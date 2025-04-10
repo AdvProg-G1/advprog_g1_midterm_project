@@ -1,4 +1,4 @@
-//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/dto/RegisterUserRequest.java
+//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/PerbaikiinAjaApplication.java
 package id.ac.ui.cs.advprog.perbaikiinaja;
 
 import org.springframework.boot.SpringApplication;
