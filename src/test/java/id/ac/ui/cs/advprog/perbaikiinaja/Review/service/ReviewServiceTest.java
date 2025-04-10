@@ -1,4 +1,3 @@
-//src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/ReviewServiceTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Review.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.dto.ReviewRequest;
@@ -58,10 +57,10 @@ public class ReviewServiceTest {
     void testUpdateReviewSuccess() {
         Review existing = new Review();
         existing.setId("review-1");
-        existing.setTechnicianId("tech-1");
-        existing.setUserId("user-1");
         existing.setRating(4);
         existing.setComment("Good service");
+        existing.setTechnicianId("tech-1");
+        existing.setUserId("user-1");
         existing.setCreatedAt(LocalDateTime.now());
         existing.setUpdatedAt(LocalDateTime.now());
 
@@ -94,8 +93,9 @@ public class ReviewServiceTest {
 
     @Test
     void testGetReviewsForTechnician() {
-        Review review1 = new Review("review-1", "tech-1", "user-1", 5, "Great!", LocalDateTime.now(), LocalDateTime.now());
-        Review review2 = new Review("review-2", "tech-1", "user-2", 4, "Good", LocalDateTime.now(), LocalDateTime.now());
+        // Correct parameter order: id, rating, comment, technicianId, userId, createdAt, updatedAt.
+        Review review1 = new Review("review-1", 5, "Great!", "tech-1", "user-1", LocalDateTime.now(), LocalDateTime.now());
+        Review review2 = new Review("review-2", 4, "Good", "tech-1", "user-2", LocalDateTime.now(), LocalDateTime.now());
         List<Review> reviews = new ArrayList<>();
         reviews.add(review1);
         reviews.add(review2);
