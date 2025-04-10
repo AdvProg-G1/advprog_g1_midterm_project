@@ -35,7 +35,11 @@ public class ServiceOrderServiceImpl implements ServiceOrderService {
 
     @Override
     public Optional<ServiceOrder> update(UUID id, ServiceOrder updatedOrder) {
-        if (serviceOrderMap.containsKey(id)) {
+        ServiceOrder existing = serviceOrderMap.get(id);
+        if (existing != null) {
+            if (!"pending".equalsIgnoreCase(existing.getStatus())) {
+                throw new IllegalStateException("Only orders with status 'pending' can be updated");
+            }
             updatedOrder.setId(id);
             serviceOrderMap.put(id, updatedOrder);
             return Optional.of(updatedOrder);
@@ -45,7 +49,15 @@ public class ServiceOrderServiceImpl implements ServiceOrderService {
 
     @Override
     public boolean delete(UUID id) {
-        return serviceOrderMap.remove(id) != null;
+        ServiceOrder existing = serviceOrderMap.get(id);
+        if (existing != null) {
+            if (!"pending".equalsIgnoreCase(existing.getStatus())) {
+                throw new IllegalStateException("Only orders with status 'pending' can be deleted");
+            }
+            serviceOrderMap.remove(id);
+            return true;
+        }
+        return false;
     }
 
     @Override

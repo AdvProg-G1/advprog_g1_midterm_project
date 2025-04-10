@@ -19,4 +19,6 @@ public interface ServiceOrderService {
     ServiceOrder createOrder(ServiceOrder order);
     List<ServiceOrder> getAllOrders();
     ServiceOrder getOrderById(UUID id);
+
+    List<ServiceOrder> findOrdersByTechnicianId(String technicianId);
 }
