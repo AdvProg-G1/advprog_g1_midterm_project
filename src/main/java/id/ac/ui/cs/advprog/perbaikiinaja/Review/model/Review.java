@@ -1,3 +1,4 @@
+//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/model/Review.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Review.model;
 
 import jakarta.persistence.*;
