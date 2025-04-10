@@ -18,24 +18,27 @@ public class ReviewController {
 
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(@RequestBody ReviewRequest reviewRequest) {
-        // Skeleton: to be implemented
-        return ResponseEntity.ok(null);
+        ReviewResponse response = reviewService.createReview(reviewRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ReviewResponse> updateReview(@PathVariable("id") String reviewId,
                                                        @RequestBody ReviewRequest reviewRequest) {
-        return ResponseEntity.ok(null);
+        ReviewResponse response = reviewService.updateReview(reviewId, reviewRequest);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable("id") String reviewId,
                                              @RequestParam("userId") String userId) {
+        reviewService.deleteReview(reviewId, userId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/technician/{technicianId}")
     public ResponseEntity<List<ReviewResponse>> getReviews(@PathVariable("technicianId") String technicianId) {
-        return ResponseEntity.ok(null);
+        List<ReviewResponse> responses = reviewService.getReviewsForTechnician(technicianId);
+        return ResponseEntity.ok(responses);
     }
 }
