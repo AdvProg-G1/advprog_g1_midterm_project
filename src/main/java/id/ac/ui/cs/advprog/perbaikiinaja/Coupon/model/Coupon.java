@@ -2,46 +2,57 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model;
 
 public abstract class Coupon {
 
-	public boolean isAvailable() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    private String code;
+    private double discountValue;
+    private int maxUsage;
+    private int usageCount = 0;
 
-	private void use() {
-		// TODO Auto-generated method stub	
-	}
+    // Returns true if the coupon can still be used
+    public boolean isAvailable() {
+        return usageCount < maxUsage;
+    }
 
-	public int getUsageCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    // Increments usage count when the coupon is used
+    protected void use() {
+        if (!isAvailable()) {
+            throw new IllegalStateException("Coupon usage limit exceeded");
+        }
+        usageCount++;
+    }
 
-	public String getCode() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	public void setCode(String string) {
-		// TODO Auto-generated method stub
-	}
 
-	public int getMaxUsage() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    // Get the number of times the coupon has been used
+    public int getUsageCount() {
+        return usageCount;
+    }
 
-	public void setMaxUsage(int i) {
-		// TODO Auto-generated method stub
-	}
-	
-	public double getDiscountValue() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    // Getters and setters for code
+    public String getCode() {
+        return code;
+    }
 
-	public void setDiscountValue(double d) {
-		// TODO Auto-generated method stub
-	}
-	
-	public abstract double applyDiscount(double originalPrice);
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    // Getters and setters for maxUsage
+    public int getMaxUsage() {
+        return maxUsage;
+    }
+
+    public void setMaxUsage(int maxUsage) {
+        this.maxUsage = maxUsage;
+    }
+
+    // Getters and setters for discountValue
+    public double getDiscountValue() {
+        return discountValue;
+    }
+
+    public void setDiscountValue(double discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    // Abstract method to apply discount
+    public abstract double applyDiscount(double originalPrice);
 }
