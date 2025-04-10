@@ -95,4 +95,49 @@ class ServiceOrderServiceImplTest {
 
         assertFalse(deleted);
     }
+
+    // [RED] Test getAllOrders returns all service orders
+    @Test
+    void testGetAllOrders_ShouldReturnAllOrders() {
+        ServiceOrder order1 = ServiceOrder.builder()
+                .itemName("AC")
+                .condition("Rusak Berat")
+                .build();
+        ServiceOrder order2 = ServiceOrder.builder()
+                .itemName("Laptop")
+                .condition("Mati Total")
+                .build();
+
+        serviceOrderService.create(order1);
+        serviceOrderService.create(order2);
+
+        List<ServiceOrder> orders = serviceOrderService.getAllOrders();
+        assertEquals(2, orders.size());
+        assertTrue(orders.stream().anyMatch(o -> o.getItemName().equals("AC")));
+        assertTrue(orders.stream().anyMatch(o -> o.getItemName().equals("Laptop")));
+    }
+
+    // [RED] Test getOrderById returns correct service order by ID
+    @Test
+    void testGetOrderById_ShouldReturnCorrectOrder() {
+        ServiceOrder order = ServiceOrder.builder()
+                .itemName("Printer")
+                .condition("Tinta Bocor")
+                .build();
+
+        ServiceOrder createdOrder = serviceOrderService.create(order);
+        ServiceOrder foundOrder = serviceOrderService.getOrderById(createdOrder.getId());
+
+        assertNotNull(foundOrder);
+        assertEquals("Printer", foundOrder.getItemName());
+    }
+
+    // [RED] Test getOrderById returns null if not found
+    @Test
+    void testGetOrderById_WhenNotFound_ShouldReturnNull() {
+        UUID randomId = UUID.randomUUID();
+        ServiceOrder result = serviceOrderService.getOrderById(randomId);
+
+        assertNull(result);
+    }
 }
