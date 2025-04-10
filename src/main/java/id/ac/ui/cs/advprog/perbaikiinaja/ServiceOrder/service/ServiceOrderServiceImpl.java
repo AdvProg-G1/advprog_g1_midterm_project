@@ -50,16 +50,16 @@ public class ServiceOrderServiceImpl implements ServiceOrderService {
 
     @Override
     public ServiceOrder createOrder(ServiceOrder order) {
-        return null;
+        return create(order); // just reuse create method
     }
 
     @Override
     public List<ServiceOrder> getAllOrders() {
-        return List.of();
+        return findAll(); // reuse findAll
     }
 
     @Override
     public ServiceOrder getOrderById(UUID id) {
-        return null;
+        return findById(id).orElse(null); // return null if not found
     }
 }

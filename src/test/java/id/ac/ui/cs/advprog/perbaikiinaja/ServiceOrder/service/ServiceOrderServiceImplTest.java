@@ -96,7 +96,6 @@ class ServiceOrderServiceImplTest {
         assertFalse(deleted);
     }
 
-    // [RED] Test getAllOrders returns all service orders
     @Test
     void testGetAllOrders_ShouldReturnAllOrders() {
         ServiceOrder order1 = ServiceOrder.builder()
@@ -117,7 +116,6 @@ class ServiceOrderServiceImplTest {
         assertTrue(orders.stream().anyMatch(o -> o.getItemName().equals("Laptop")));
     }
 
-    // [RED] Test getOrderById returns correct service order by ID
     @Test
     void testGetOrderById_ShouldReturnCorrectOrder() {
         ServiceOrder order = ServiceOrder.builder()
@@ -132,7 +130,6 @@ class ServiceOrderServiceImplTest {
         assertEquals("Printer", foundOrder.getItemName());
     }
 
-    // [RED] Test getOrderById returns null if not found
     @Test
     void testGetOrderById_WhenNotFound_ShouldReturnNull() {
         UUID randomId = UUID.randomUUID();
