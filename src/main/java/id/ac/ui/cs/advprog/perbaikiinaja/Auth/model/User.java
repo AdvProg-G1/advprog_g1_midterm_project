@@ -1,3 +1,4 @@
+//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/model/User.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.model;
 
 import jakarta.persistence.*;
