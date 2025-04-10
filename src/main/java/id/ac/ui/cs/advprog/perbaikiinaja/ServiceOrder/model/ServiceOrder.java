@@ -20,13 +20,11 @@ public class ServiceOrder {
     private String itemName;
     private String condition;
     private String problemDescription;
-    private String technicianId; // null if assigned randomly
+    private String technicianId;
     private String userId;
-
     private LocalDate serviceDate;
     private String paymentMethod;
     private boolean couponApplied;
-
     private String status; // pending, accepted, rejected, completed
     private Integer estimatedPrice;
     private String estimatedCompletionTime;

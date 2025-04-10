@@ -1,22 +1,32 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.controller;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.dto.CreateServiceOrderRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.service.ServiceOrderService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/orders")
-@RequiredArgsConstructor
+@RequestMapping("/service-orders")
 public class ServiceOrderController {
 
-    private final ServiceOrderService serviceOrderService;
+    @Autowired
+    private ServiceOrderService serviceOrderService;
 
-    @PostMapping
-    public ResponseEntity<ServiceOrder> createOrder(@RequestBody CreateServiceOrderRequest request) {
-        ServiceOrder order = serviceOrderService.createOrder(request);
-        return ResponseEntity.ok(order);
+    @PostMapping("/create")
+    public ServiceOrder createServiceOrder(@RequestBody ServiceOrder order) {
+        return serviceOrderService.createOrder(order);
+    }
+
+    @GetMapping("/")
+    public List<ServiceOrder> getAllOrders() {
+        return serviceOrderService.getAllOrders();
+    }
+
+    @GetMapping("/{id}")
+    public ServiceOrder getOrderById(@PathVariable UUID id) {
+        return serviceOrderService.getOrderById(id);
     }
 }
