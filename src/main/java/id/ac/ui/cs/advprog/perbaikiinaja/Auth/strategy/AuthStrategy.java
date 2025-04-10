@@ -1,7 +1,10 @@
-//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/strategy/AuthStrategy.java
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/strategy/AuthStrategy.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.strategy;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.RegisterUserRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
+
 public interface AuthStrategy {
-    Object login(String email, String password);
-    Object register(Object request);
+    User login(String email, String password);
+    User register(RegisterUserRequest request);
 }
