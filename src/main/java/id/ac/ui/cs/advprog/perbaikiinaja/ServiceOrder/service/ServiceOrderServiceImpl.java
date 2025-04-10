@@ -50,16 +50,27 @@ public class ServiceOrderServiceImpl implements ServiceOrderService {
 
     @Override
     public ServiceOrder createOrder(ServiceOrder order) {
-        return create(order); // just reuse create method
+        return create(order);
     }
 
     @Override
     public List<ServiceOrder> getAllOrders() {
-        return findAll(); // reuse findAll
+        return findAll();
     }
 
     @Override
     public ServiceOrder getOrderById(UUID id) {
-        return findById(id).orElse(null); // return null if not found
+        return serviceOrderMap.get(id);
+    }
+
+    @Override
+    public List<ServiceOrder> findOrdersByTechnicianId(String technicianId) {
+        List<ServiceOrder> result = new ArrayList<>();
+        for (ServiceOrder order : serviceOrderMap.values()) {
+            if (order.getTechnicianId() != null && order.getTechnicianId().equals(technicianId)) {
+                result.add(order);
+            }
+        }
+        return result;
     }
 }

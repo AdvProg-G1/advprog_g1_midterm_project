@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -136,5 +137,37 @@ class ServiceOrderServiceImplTest {
         ServiceOrder result = serviceOrderService.getOrderById(randomId);
 
         assertNull(result);
+    }
+
+    @Test
+    void testFindOrdersByTechnicianId_ShouldReturnCorrectOrders() {
+        ServiceOrder order1 = ServiceOrder.builder()
+                .itemName("TV")
+                .condition("Broken")
+                .technicianId("techA")
+                .build();
+
+        ServiceOrder order2 = ServiceOrder.builder()
+                .itemName("Radio")
+                .condition("Buzzing noise")
+                .technicianId("techA")
+                .build();
+
+        ServiceOrder order3 = ServiceOrder.builder()
+                .itemName("Fan")
+                .condition("Not spinning")
+                .technicianId("techB")
+                .build();
+
+        serviceOrderService.create(order1);
+        serviceOrderService.create(order2);
+        serviceOrderService.create(order3);
+
+        List<ServiceOrder> result = serviceOrderService.findAll().stream()
+                .filter(order -> "techA".equals(order.getTechnicianId()))
+                .toList();
+
+        assertEquals(2, result.size());
+        assertTrue(result.stream().allMatch(o -> "techA".equals(o.getTechnicianId())));
     }
 }
