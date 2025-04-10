@@ -12,12 +12,8 @@ class CouponTest {
     // Set up a default coupon instance before each test
     @BeforeEach
     void setUp() {
-        coupon = new FixedDiscountCoupon();
-        coupon.setCode("TESTCODE");
-        coupon.setDiscountValue(10);
-        coupon.setMaxUsage(2);
+        coupon = new FixedDiscountCoupon("TESTCODE",10.0,2) ;
     }
-
     // Test that the coupon is indeed initially available
     @Test
     void testIsAvailableInitiallyTrue() {

@@ -1,9 +1,12 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model;
 
 public class FixedDiscountCoupon extends Coupon {
-	@Override
-	public double applyDiscount(double originalPrice) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+
+    public FixedDiscountCoupon(String code, double discountValue, int maxUsage) {
+    }
+
+    @Override
+    public double applyDiscount(double originalPrice) {
+    	return 0;
+    }
 }
