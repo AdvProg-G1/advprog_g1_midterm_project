@@ -170,4 +170,25 @@ class ServiceOrderServiceImplTest {
         assertEquals(2, result.size());
         assertTrue(result.stream().allMatch(o -> "techA".equals(o.getTechnicianId())));
     }
+
+    @Test
+    void testUpdateShouldFailIfStatusNotPending() {
+        ServiceOrder created = serviceOrderService.create(sampleOrder);
+        created.setStatus("accepted"); // simulate that it was already accepted
+
+        assertThrows(IllegalStateException.class, () -> {
+            serviceOrderService.update(created.getId(), created);
+        });
+    }
+
+    @Test
+    void testDeleteShouldFailIfStatusNotPending() {
+        ServiceOrder created = serviceOrderService.create(sampleOrder);
+        created.setStatus("accepted"); // simulate that it was already accepted
+
+        assertThrows(IllegalStateException.class, () -> {
+            serviceOrderService.delete(created.getId());
+        });
+    }
+
 }
