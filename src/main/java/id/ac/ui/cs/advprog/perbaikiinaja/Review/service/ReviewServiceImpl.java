@@ -33,33 +33,21 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUpdatedAt(LocalDateTime.now());
 
         review = reviewRepository.save(review);
-        return new ReviewResponse(
-                review.getId(),
-                review.getTechnicianId(),
-                review.getUserId(),
-                review.getRating(),
-                review.getComment()
-        );
+        return mapToResponse(review);
     }
 
     @Override
     public ReviewResponse updateReview(String reviewId, ReviewRequest reviewRequest) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
+                .orElseThrow(() -> new RuntimeException("Review not found for id: " + reviewId));
         if (!review.getUserId().equals(reviewRequest.getUserId())) {
-            throw new RuntimeException("Unauthorized to update review");
+            throw new RuntimeException("Unauthorized to update review for review id: " + reviewId);
         }
         review.setRating(reviewRequest.getRating());
         review.setComment(reviewRequest.getComment());
         review.setUpdatedAt(LocalDateTime.now());
         review = reviewRepository.save(review);
-        return new ReviewResponse(
-                review.getId(),
-                review.getTechnicianId(),
-                review.getUserId(),
-                review.getRating(),
-                review.getComment()
-        );
+        return mapToResponse(review);
     }
 
     @Override
@@ -76,13 +64,17 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewResponse> getReviewsForTechnician(String technicianId) {
         List<Review> reviews = reviewRepository.findByTechnicianId(technicianId);
         return reviews.stream()
-                .map(review -> new ReviewResponse(
-                        review.getId(),
-                        review.getTechnicianId(),
-                        review.getUserId(),
-                        review.getRating(),
-                        review.getComment()
-                ))
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    private ReviewResponse mapToResponse(Review review) {
+        return new ReviewResponse(
+                review.getId(),
+                review.getTechnicianId(),
+                review.getUserId(),
+                review.getRating(),
+                review.getComment()
+        );
     }
 }
