@@ -2,57 +2,74 @@ package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
-import org.junit.BeforeEach;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RepairOrderServiceTest {
 
-    private ConfirmService confirmService;
+    private RepairOrderService repairOrderService;
     private RepairOrderRepository repository;
+    private RepairOrder order; // We'll reuse the same RepairOrder in each test
 
     @BeforeEach
     void setUp() {
-        repository = new RepairOrderRepository();
-        confirmService = new ConfirmServiceImpl(repository);
+        // Mock the repository so there's no real DB access
+        repository = Mockito.mock(RepairOrderRepository.class);
 
-        // Setup sample order with PENDING status.
-        RepairOrder order = new RepairOrder();
+        // Use your actual service implementation
+        repairOrderService = new RepairOrderServiceImpl(repository);
+
+        // Prepare a sample order with PENDING status
+        order = new RepairOrder();
         order.setId(1L);
         order.setStatus("PENDING");
-        repository.save(order);
+
+        // Whenever save(...) is called, just return the same object that was passed in
+        when(repository.save(any(RepairOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Whenever findById(1L) is called, return our 'order'
+        when(repository.findById(1L)).thenReturn(order);
     }
 
     @Test
     public void testConfirmOrderInvalidStatus() {
-        RepairOrder order = repository.findById(1L);
-        // Change status so it fails validation.
+        // Make the order's status not "PENDING" so confirmation fails
         order.setStatus("ACCEPTED");
-        repository.save(order);
-        confirmService.confirmRepairOrder(1L, 5, 100.0);
+        when(repository.findById(1L)).thenReturn(order);
+
+        // We expect an exception because the order isn't in PENDING status
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> repairOrderService.confirmRepairOrder(1L, 5, 100.0)
+        );
+        // Check if the exception message matches what your service throws
+        assertEquals("Cannot confirm an order that is not in PENDING state.", exception.getMessage());
     }
 
     @Test
     public void testConfirmOrderAccepted() {
-        RepairOrder order = repository.findById(1L);
+        // Reset the order to PENDING
         order.setStatus("PENDING");
-        repository.save(order);
-        RepairOrder confirmedOrder = confirmService.confirmRepairOrder(1L, 5, 100.0);
-        assertEquals("ACCEPTED", confirmedOrder.getStatus());
-        assertEquals(5, confirmedOrder.getEstimatedDuration());
-        assertEquals(100.0, confirmedOrder.getEstimatedCost(), 0.001);
+        when(repository.findById(1L)).thenReturn(order);
+
+        RepairOrder confirmed = repairOrderService.confirmRepairOrder(1L, 5, 100.0);
+        assertEquals("ACCEPTED", confirmed.getStatus());
+        assertEquals(5, confirmed.getEstimatedDuration());
+        assertEquals(100.0, confirmed.getEstimatedCost(), 0.001);
     }
 
     @Test
     public void testRejectOrder() {
-        RepairOrder order = repository.findById(1L);
+        // Ensure the order is PENDING
         order.setStatus("PENDING");
-        repository.save(order);
-        RepairOrder rejectedOrder = confirmService.rejectRepairOrder(1L);
-        assertEquals("REJECTED", rejectedOrder.getStatus());
+        when(repository.findById(1L)).thenReturn(order);
+
+        RepairOrder rejected = repairOrderService.rejectRepairOrder(1L);
+        assertEquals("REJECTED", rejected.getStatus());
     }
 }
