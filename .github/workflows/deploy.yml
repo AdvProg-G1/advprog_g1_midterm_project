@@ -1,49 +1,16 @@
-name: Deploy Spring Boot App to EC2
-
-on:
-  push:
-    branches:
-      - develop  # Adjust as needed
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📥 Checkout source code
-        uses: actions/checkout@v3
-
-      - name: ☕ Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: 🛠️ Build with Gradle (skip tests)
-        run: ./gradlew build -x test
-
-      - name: 📤 Copy JAR file to EC2
-        uses: appleboy/scp-action@v0.1.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/PerbaikiinAja-0.0.1-SNAPSHOT.jar"
-          target: "/home/ubuntu/"
-
-      - name: 🚀 SSH into EC2 and run Spring Boot app
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "🔻 Stopping existing Spring Boot app (if any)..."
-            pkill -f 'PerbaikiinAja-0.0.1-SNAPSHOT.jar' || echo "No process to kill"
-
-            echo "🚀 Starting Spring Boot app..."
-            nohup java -jar /home/ubuntu/PerbaikiinAja-0.0.1-SNAPSHOT.jar > /home/ubuntu/output.log 2>&1 &
-
-            echo "✅ Deployment complete. Checking if app is running..."
-            sleep 3
-            pgrep -f 'PerbaikiinAja-0.0.1-SNAPSHOT.jar' && echo "App is running!" || echo "⚠️ App may have failed to start."
+- name: SSH into EC2 and run app
+  uses: appleboy/ssh-action@v0.1.6
+  with:
+    host: ${{ secrets.EC2_HOST }}
+    username: ${{ secrets.EC2_USER }}
+    key: ${{ secrets.EC2_SSH_KEY }}
+    script: |
+      echo "🔻 Killing existing app screen session if exists..."
+      screen -S springboot -X quit || echo "No existing screen session"
+      
+      echo "🚀 Starting new screen session for Spring Boot app..."
+      screen -dmS springboot java -jar /home/ubuntu/PerbaikiinAja-0.0.1-SNAPSHOT.jar
+      
+      sleep 3
+      echo "✅ Checking if Spring Boot app is running inside screen..."
+      screen -ls | grep springboot && echo "App is running in screen!" || echo "⚠️ Failed to start app"
