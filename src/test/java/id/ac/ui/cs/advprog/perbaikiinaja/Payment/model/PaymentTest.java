@@ -29,6 +29,21 @@ public class PaymentTest {
         this.payments.add(payment2);
     }
 
+    @Test
+    void testGetPaymentId() {
+        assertEquals("id-01", this.payments.get(0).getPaymentId());
+    }
+
+    @Test
+    void testGetPaymentName() {
+        assertEquals("Gopay", this.payments.get(0).getPaymentName());
+    }
+
+    @Test
+    void testGetPaymentAccountNumber() {
+        assertEquals("124567890", this.payments.get(0).getAccountNumber());
+    }
+
     // unhappy
     @Test
     void testCreatePaymentWithoutNameAndAccountNumber() {
@@ -133,12 +148,13 @@ public class PaymentTest {
     @Test
     void testUpdatePaymentMethodNameAndAccountNumber() {
         Payment payment = this.payments.get(0);
-        payment.setPaymentName("LinkAja");
+        payment.setPaymentName("BCA");
         payment.setAccountNumber("1122334455");
 
-        assertEquals("LinkAja", payment.getPaymentName());
+        assertEquals("BCA", payment.getPaymentName());
         assertEquals("1122334455", payment.getAccountNumber());
     }
+
 
     // validation
     private void validatePayment(Payment payment) {
