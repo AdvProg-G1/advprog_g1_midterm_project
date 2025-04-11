@@ -11,12 +11,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ServiceOrderController.class)
 public class ServiceOrderControllerTest {
@@ -43,14 +45,16 @@ public class ServiceOrderControllerTest {
                 .build();
 
         ServiceOrder mockOrder = ServiceOrder.builder()
+                .id(UUID.randomUUID())
                 .itemName("Laptop")
                 .condition("Damaged")
                 .problemDescription("Screen cracked")
                 .technicianId("tech123")
                 .userId("user1")
-                .serviceDate(LocalDate.now())
+                .serviceDate(request.getServiceDate())
                 .paymentMethod("BANK")
                 .couponApplied(false)
+                .status("pending")
                 .build();
 
         Mockito.when(serviceOrderService.createOrder(Mockito.any())).thenReturn(mockOrder);
@@ -58,7 +62,11 @@ public class ServiceOrderControllerTest {
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.itemName").value("Laptop"));
+                .andExpect(jsonPath("$.itemName").value("Laptop"))
+                .andExpect(jsonPath("$.condition").value("Damaged"))
+                .andExpect(jsonPath("$.problemDescription").value("Screen cracked"))
+                .andExpect(jsonPath("$.technicianId").value("tech123"));
     }
 }
