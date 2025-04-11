@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.perbaikiinaja.payment.model;
+package id.ac.ui.cs.advprog.perbaikiinaja.Payment.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ public class PaymentTest {
 
     @Test
     void testGetPaymentName() {
-        assertEquals("Gopay", this.payments.get(0).getPaymentName());
+        assertEquals("GoPay", this.payments.get(0).getPaymentName());
     }
 
     @Test
@@ -51,7 +51,11 @@ public class PaymentTest {
         payment.setPaymentId("id-03");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            validatePayment(payment);
+            payment.setPaymentName(null);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            payment.setAccountNumber(null);
         });
     }
 
@@ -60,10 +64,10 @@ public class PaymentTest {
     void testCreatePaymentWithoutName() {
         Payment payment = new Payment();
         payment.setPaymentId("id-04");
-        payment.setAccountNumber("1234567890");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            validatePayment(payment);
+            payment.setAccountNumber("1234567890");
+            payment.setPaymentName(null);
         });
     }
 
@@ -72,10 +76,10 @@ public class PaymentTest {
     void testCreatePaymentWithoutAccountNumber() {
         Payment payment = new Payment();
         payment.setPaymentId("id-05");
-        payment.setPaymentName("MasterCard");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            validatePayment(payment);
+            payment.setPaymentName("MasterCard");
+            payment.setAccountNumber("");
         });
     }
 
@@ -84,11 +88,10 @@ public class PaymentTest {
     void testCreateValidPaymentMethod() {
         Payment payment = new Payment();
         payment.setPaymentId("id-06");
-        payment.setPaymentName("MasterCard");
-        payment.setAccountNumber("222333444");
 
         assertDoesNotThrow(() -> {
-            validatePayment(payment);
+            payment.setPaymentName("MasterCard");
+            payment.setAccountNumber("222333444");
         });
     }
 
@@ -117,7 +120,6 @@ public class PaymentTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             payment.setPaymentName("");
-            validatePayment(payment);
         });
     }
 
@@ -128,7 +130,6 @@ public class PaymentTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             payment.setAccountNumber("");
-            validatePayment(payment);
         });
     }
 
@@ -139,8 +140,10 @@ public class PaymentTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             payment.setPaymentName("");
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
             payment.setAccountNumber("");
-            validatePayment(payment);
         });
     }
 
