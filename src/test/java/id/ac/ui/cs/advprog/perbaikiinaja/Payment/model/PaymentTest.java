@@ -154,14 +154,4 @@ public class PaymentTest {
         assertEquals("BCA", payment.getPaymentName());
         assertEquals("1122334455", payment.getAccountNumber());
     }
-
-
-    // validation
-    private void validatePayment(Payment payment) {
-        if (payment.getPaymentName() == null || payment.getPaymentName().isEmpty())
-            throw new IllegalArgumentException("Payment method name cannot be empty.");
-
-        if (payment.getAccountNumber() == null || payment.getAccountNumber().isEmpty())
-            throw new IllegalArgumentException("Account number cannot be empty.");
-    }
 }
