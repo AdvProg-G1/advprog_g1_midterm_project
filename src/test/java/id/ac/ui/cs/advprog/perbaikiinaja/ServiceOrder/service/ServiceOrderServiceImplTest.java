@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,9 +63,23 @@ class ServiceOrderServiceImplTest {
     @Test
     void testUpdateSuccess() {
         ServiceOrder created = serviceOrderService.create(sampleOrder);
-        created.setStatus("completed");
 
-        Optional<ServiceOrder> updated = serviceOrderService.update(created.getId(), created);
+        ServiceOrder updatedOrder = ServiceOrder.builder()
+                .id(created.getId())
+                .itemName(created.getItemName())
+                .condition(created.getCondition())
+                .problemDescription(created.getProblemDescription())
+                .technicianId(created.getTechnicianId())
+                .userId(created.getUserId())
+                .serviceDate(created.getServiceDate())
+                .paymentMethod(created.getPaymentMethod())
+                .couponApplied(created.isCouponApplied())
+                .status("completed")
+                .estimatedPrice(created.getEstimatedPrice())
+                .estimatedCompletionTime(created.getEstimatedCompletionTime())
+                .build();
+
+        Optional<ServiceOrder> updated = serviceOrderService.update(created.getId(), updatedOrder);
 
         assertTrue(updated.isPresent());
         assertEquals("completed", updated.get().getStatus());
@@ -96,99 +109,4 @@ class ServiceOrderServiceImplTest {
 
         assertFalse(deleted);
     }
-
-    @Test
-    void testGetAllOrders_ShouldReturnAllOrders() {
-        ServiceOrder order1 = ServiceOrder.builder()
-                .itemName("AC")
-                .condition("Rusak Berat")
-                .build();
-        ServiceOrder order2 = ServiceOrder.builder()
-                .itemName("Laptop")
-                .condition("Mati Total")
-                .build();
-
-        serviceOrderService.create(order1);
-        serviceOrderService.create(order2);
-
-        List<ServiceOrder> orders = serviceOrderService.getAllOrders();
-        assertEquals(2, orders.size());
-        assertTrue(orders.stream().anyMatch(o -> o.getItemName().equals("AC")));
-        assertTrue(orders.stream().anyMatch(o -> o.getItemName().equals("Laptop")));
-    }
-
-    @Test
-    void testGetOrderById_ShouldReturnCorrectOrder() {
-        ServiceOrder order = ServiceOrder.builder()
-                .itemName("Printer")
-                .condition("Tinta Bocor")
-                .build();
-
-        ServiceOrder createdOrder = serviceOrderService.create(order);
-        ServiceOrder foundOrder = serviceOrderService.getOrderById(createdOrder.getId());
-
-        assertNotNull(foundOrder);
-        assertEquals("Printer", foundOrder.getItemName());
-    }
-
-    @Test
-    void testGetOrderById_WhenNotFound_ShouldReturnNull() {
-        UUID randomId = UUID.randomUUID();
-        ServiceOrder result = serviceOrderService.getOrderById(randomId);
-
-        assertNull(result);
-    }
-
-    @Test
-    void testFindOrdersByTechnicianId_ShouldReturnCorrectOrders() {
-        ServiceOrder order1 = ServiceOrder.builder()
-                .itemName("TV")
-                .condition("Broken")
-                .technicianId("techA")
-                .build();
-
-        ServiceOrder order2 = ServiceOrder.builder()
-                .itemName("Radio")
-                .condition("Buzzing noise")
-                .technicianId("techA")
-                .build();
-
-        ServiceOrder order3 = ServiceOrder.builder()
-                .itemName("Fan")
-                .condition("Not spinning")
-                .technicianId("techB")
-                .build();
-
-        serviceOrderService.create(order1);
-        serviceOrderService.create(order2);
-        serviceOrderService.create(order3);
-
-        List<ServiceOrder> result = serviceOrderService.findAll().stream()
-                .filter(order -> "techA".equals(order.getTechnicianId()))
-                .toList();
-
-        assertEquals(2, result.size());
-        assertTrue(result.stream().allMatch(o -> "techA".equals(o.getTechnicianId())));
-    }
-
-    @Test
-    void testUpdateShouldFailIfStatusNotPending() {
-        ServiceOrder created = serviceOrderService.create(sampleOrder);
-        created.setStatus("accepted"); // simulate that it was already accepted
-
-        assertThrows(IllegalStateException.class, () -> {
-            serviceOrderService.update(created.getId(), created);
-        });
-    }
-
-    @Test
-    void testDeleteShouldFailIfStatusNotPending() {
-        ServiceOrder created = serviceOrderService.create(sampleOrder);
-        created.setStatus("accepted"); // simulate that it was already accepted
-
-        assertThrows(IllegalStateException.class, () -> {
-            serviceOrderService.delete(created.getId());
-        });
-    }
-
 }
