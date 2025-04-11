@@ -1,4 +1,10 @@
 - name: SSH into EC2 and run app
+
+  on:
+    push:
+      branches:
+        - develop
+        -
   uses: appleboy/ssh-action@v0.1.6
   with:
     host: ${{ secrets.EC2_HOST }}
