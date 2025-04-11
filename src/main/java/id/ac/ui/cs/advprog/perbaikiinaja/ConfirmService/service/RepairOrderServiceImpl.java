@@ -13,6 +13,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         this.repairOrderRepository = repairOrderRepository;
     }
 
+    // Follows Template Method Pattern
     @Override
     public RepairOrder confirmRepairOrder(Long orderId, int estimatedDuration, double estimatedCost) {
         RepairOrder order = repairOrderRepository.findById(orderId);
