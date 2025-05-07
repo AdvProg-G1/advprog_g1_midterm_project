@@ -1,0 +1,114 @@
+<!-- src/main/resources/static/reviews.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reviews & Ratings</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 2rem; }
+        .container { max-width: 900px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .header h2 { font-size: 2rem; font-weight: 700; }
+        .header button { background: #000; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; }
+
+        .card { background: #e8edf3; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; position: relative; cursor: pointer; transition: box-shadow 0.3s ease; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card.best { background: #fffae6; border: 2px solid #fbbf24; }
+
+        .badge { position: absolute; top: -10px; left: -10px; background: orange; color: white; font-size: 0.75rem; font-weight: bold; padding: 0.2rem 0.6rem; border-radius: 50px; z-index: 1; }
+        .best-label { position: absolute; top: -12px; right: -12px; background: #fbbf24; color: #000; font-weight: bold; padding: 0.3rem 0.5rem; border-radius: 5px; font-size: 0.7rem; }
+
+        .avatar { font-size: 2.5rem; }
+        .info { flex: 1; margin-left: 1rem; }
+        .name { font-weight: 600; font-size: 1.1rem; }
+        .stars { color: gold; font-size: 1.2rem; }
+        .meta { font-size: 0.9rem; color: #555; }
+        .comment { font-style: italic; font-size: 0.9rem; color: #333; margin-top: 0.5rem; }
+        .actions { text-align: right; }
+        .bookmark { font-size: 1.2rem; color: #ccc; }
+        .profile-link { color: #fbbf24; font-weight: bold; margin-top: 0.4rem; display: inline-block; }
+
+        .pagination { display: flex; justify-content: space-between; margin-top: 2rem; }
+        .pagination button { padding: 0.5rem 1rem; border-radius: 5px; border: none; background-color: #ccc; cursor: pointer; }
+        .pagination button:disabled { background: #eee; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>REVIEWS &amp; <span style="font-weight: 900">RATINGS</span></h2>
+        <button onclick="sortByRating()">SORT BY RATING</button>
+    </div>
+
+    <div id="reviews"></div>
+
+    <div class="pagination">
+        <button id="prevPage" onclick="prevPage()">Previous</button>
+        <button id="nextPage" onclick="nextPage()">Next</button>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/reviews/best?limit=10';
+    let technicians = [];
+    let currentPage = 1;
+    const itemsPerPage = 3;
+    let commentIndex = 0;
+
+    async function fetchTechnicians() {
+        const res = await fetch(API_URL);
+        technicians = await res.json();
+        currentPage = 1;
+        commentIndex = 0;
+        renderTechnicians();
+    }
+
+    function renderTechnicians() {
+        const container = document.getElementById('reviews');
+        container.innerHTML = '';
+        technicians.sort((a, b) => b.averageRating - a.averageRating);
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const pageTechs = technicians.slice(start, start + itemsPerPage);
+
+        pageTechs.forEach((tech, idx) => {
+            const isBest = (currentPage === 1 && idx === 0);
+            const rounded = Math.round(tech.averageRating);
+            const stars = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+            const comment = tech.latestComment || 'No reviews yet.';
+            const reviewer = tech.latestReviewerName ? ` — ${tech.latestReviewerName}` : '';
+
+            const card = document.createElement('div');
+            card.className = `card${isBest ? ' best' : ''}`;
+            card.onclick = () => window.location.href = `/profile/${tech.technicianId}`;
+            card.innerHTML = `
+          ${isBest ? '<div class="badge">1</div><div class="best-label">BEST TECHNICIAN</div>' : ''}
+          <div class="avatar">👤</div>
+          <div class="info">
+            <div class="name">${tech.fullName}</div>
+            <div class="stars">${stars} <span class="meta">(${tech.reviewCount} ratings)</span></div>
+            <div class="meta">Orders completed: ${tech.reviewCount}</div>
+            <div class="comment">“${comment}${reviewer}”</div>
+          </div>
+          <div class="actions">
+            <div class="bookmark">🔖</div>
+            <div class="profile-link">View Profile</div>
+          </div>
+        `;
+            container.appendChild(card);
+        });
+
+        document.getElementById('prevPage').disabled = (currentPage === 1);
+        document.getElementById('nextPage').disabled = ((currentPage * itemsPerPage) >= technicians.length);
+    }
+
+    function nextPage() { if ((currentPage * itemsPerPage) < technicians.length) { currentPage++; renderTechnicians(); } }
+    function prevPage() { if (currentPage > 1) { currentPage--; renderTechnicians(); } }
+    function sortByRating() { renderTechnicians(); }
+
+    setInterval(() => { commentIndex++; renderTechnicians(); }, 10000);
+    document.addEventListener('DOMContentLoaded', fetchTechnicians);
+</script>
+</body>
+</html>
