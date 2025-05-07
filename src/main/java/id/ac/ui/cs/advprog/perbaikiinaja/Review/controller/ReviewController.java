@@ -42,4 +42,9 @@ public class ReviewController {
         List<ReviewResponse> responses = reviewService.getReviewsForTechnician(technicianId);
         return ResponseEntity.ok(responses);
     }
+    @GetMapping("/best")
+    public ResponseEntity<List<BestTechnicianResponse>> getBest(
+            @RequestParam(value = "limit", defaultValue = "3") int limit) {
+        return ResponseEntity.ok(overallRatingService.getTopTechnicians(limit));
+    }
 }
