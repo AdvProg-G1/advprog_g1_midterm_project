@@ -1,25 +1,25 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairOrder;
+import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
+import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.repository.ServiceOrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RepairOrderServiceImpl implements RepairOrderService {
 
-    private final RepairOrderRepository repairOrderRepository;
+    private final ServiceOrderRepository serviceOrderRepository;
 
-    public RepairOrderServiceImpl(RepairOrderRepository repairOrderRepository) {
-        this.repairOrderRepository = repairOrderRepository;
+    public RepairOrderServiceImpl(ServiceOrderRepository serviceOrderRepository) {
+        this.serviceOrderRepository = serviceOrderRepository;
     }
 
-    // Follows Template Method Pattern
     @Override
-    public RepairOrder confirmRepairOrder(Long orderId, int estimatedDuration, double estimatedCost) {
-        RepairOrder order = repairOrderRepository.findById(orderId);
+    public ServiceOrder confirmRepairOrder(Long orderId, int estimatedDuration, double estimatedCost) {
+        ServiceOrder order = serviceOrderRepository.findById(orderId);
         if (order == null) {
             throw new IllegalArgumentException("RepairOrder not found with ID: " + orderId);
         }
@@ -28,15 +28,15 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         }
 
         order.setStatus("ACCEPTED");
-        order.setEstimatedDuration(estimatedDuration);
-        order.setEstimatedCost(estimatedCost);
-        order.setConfirmationDate(new Date());
-        return repairOrderRepository.createRepairOrder(order);
+        order.setEstimatedCompletionTime(estimatedDuration);
+        order.setEstimatedPrice(estimatedCost);
+        order.setServiceDate(new Date());
+        return serviceOrderRepository.create(order);
     }
 
     @Override
-    public RepairOrder rejectRepairOrder(Long orderId) {
-        RepairOrder order = repairOrderRepository.findById(orderId);
+    public ServiceOrder rejectRepairOrder(UUID orderId) {
+        ServiceOrder order = serviceOrderRepository.findById(orderId);
         if (order == null) {
             throw new IllegalArgumentException("RepairOrder not found with ID: " + orderId);
         }
@@ -44,19 +44,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
             throw new IllegalStateException("Cannot reject an order that is not in PENDING state.");
         }
 
-        repairOrderRepository.deleteById(orderId);
-        return repairOrderRepository.createRepairOrder(order);
-    }
-
-    @Override
-    public List<RepairOrder> getAllRepairOrders() {
-        return repairOrderRepository.getAllRepairOrders();
-    }
-
-    @Override
-    public RepairOrder createRepairOrder(RepairOrder repairOrder) {
-        repairOrder.setStatus("PENDING");
-        repairOrder.setConfirmationDate(null);
-        return repairOrderRepository.createRepairOrder(repairOrder);
+        serviceOrderRepository.deleteById(orderId);
+        return serviceOrderRepository.create(order);
     }
 }

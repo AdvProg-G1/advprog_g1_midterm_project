@@ -1,14 +1,10 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairOrder;
+import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface RepairOrderRepository {
-    RepairOrder findById (Long id);
-    List<RepairOrder> getAllRepairOrders();
-    RepairOrder createRepairOrder(RepairOrder repairOrder);
+    ServiceOrder findById (Long id);
     void deleteById(Long id);
 }

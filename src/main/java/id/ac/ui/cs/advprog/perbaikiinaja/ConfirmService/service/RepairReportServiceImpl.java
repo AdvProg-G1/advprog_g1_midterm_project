@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairOrder;
+import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairReportRepository;
@@ -23,7 +23,7 @@ public class RepairReportServiceImpl implements RepairReportService {
 
     @Override
     public RepairReport createRepairReport(Long orderId, Long technicianId, String details) {
-        RepairOrder order = orderRepo.findById(orderId);
+        ServiceOrder order = orderRepo.findById(orderId);
         if (order == null) {
             throw new IllegalArgumentException("RepairOrder not found with ID: " + orderId);
         }

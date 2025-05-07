@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairOrder;
+import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairReportRepository;
@@ -47,7 +47,7 @@ public class RepairReportServiceTest {
 
     @Test
     void testCreateRepairReportNotCompleted() {
-        RepairOrder order = new RepairOrder();
+        ServiceOrder order = new ServiceOrder();
         order.setId(1L);
         order.setStatus("PENDING");
         when(orderRepo.findById(1L)).thenReturn(order);
@@ -64,7 +64,7 @@ public class RepairReportServiceTest {
 
     @Test
     void testCreateRepairReportSuccess() {
-        RepairOrder order = new RepairOrder();
+        ServiceOrder order = new ServiceOrder();
         order.setId(100L);
         order.setStatus("COMPLETED");
         when(orderRepo.findById(100L)).thenReturn(order);
