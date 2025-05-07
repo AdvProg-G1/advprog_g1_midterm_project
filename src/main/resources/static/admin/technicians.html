@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Add Technician</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/admin/technicians.css" />
+</head>
+<body>
+
+  
+  <div id="navbar"></div>
+  <script src="../assets/js/navbar_admin.js"></script>
+
+  <section class="technician-form">
+    <h1>CREATE <span class="highlight-black">TECHNICIAN</span></h1>
+
+    <form>
+      <div class="form-group">
+        <label for="full-name">Full Name</label>
+        <input type="text" id="full-name" name="full-name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+
+      <div class="form-group">
+        <label for="experience">Experience (optional)</label>
+        <input type="text" id="experience" name="experience" />
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address (optional)</label>
+        <input type="text" id="address" name="address" />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit">Create Technician</button>
+      </div>
+    </form>
+  </section>
+
+</body>
+</html>

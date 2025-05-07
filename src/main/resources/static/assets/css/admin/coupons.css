@@ -1,0 +1,73 @@
+.container {
+    width: 70%;
+    padding: 0 40px;
+    margin: auto;
+  }
+  
+  h1 {
+    font-size: 70px;
+    font-weight: bold;
+    margin-top: 120px;
+  }
+  
+  .highlight {
+    background: black;
+    padding: 4px 10px;
+    color: white;
+    border-radius: 5px;
+  }
+  
+  .coupon-actions {
+    text-align: right;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+  }
+  
+  th, td {
+    padding: 16px;
+    text-align: left;
+  }
+  
+  thead {
+    background: linear-gradient(to right, #fbbc04, #f57c00);
+    color: black;
+  }
+  
+  tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  tbody tr:hover {
+    background-color: #e6e6e6;
+  }
+  
+  .btn.add {
+    background-color: #4CAF50;
+    color: white;
+  }
+  .btn.add:hover {
+    background-color: #45a049;
+  }
+  
+  .btn.edit {
+    background-color: #ffc107;
+    color: black;
+  }
+  .btn.edit:hover {
+    background-color: #e0a800;
+  }
+  
+  .btn.delete {
+    background-color: #dc3545;
+    color: white;
+  }
+  .btn.delete:hover {
+    background-color: #c82333;
+  }
+  

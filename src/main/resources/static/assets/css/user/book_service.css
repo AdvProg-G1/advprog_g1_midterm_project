@@ -1,0 +1,93 @@
+.book-service {
+    max-width: 1700px;
+    margin: 60px auto;
+    padding: 0 40px;
+    margin-top: 120px;
+  }
+  
+  .book-service h1 {
+    font-size: 80px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  
+  .highlight-black {
+    background-color: black;
+    color: white;
+    padding: 0 12px;
+  }
+  
+  .form-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    margin-top: 40px;
+  }
+  
+  .form-grid {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .form-half {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .form-columns {
+    display: flex;
+    gap: 40px;
+  }
+  
+  .form-left,
+  .form-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  
+  label {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  input,
+  select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .form-button {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 300px;
+    margin-left: 70px;
+  }
+  
+  .form-button button {
+    padding: 22px 75px;
+    font-size: 27px;
+    font-weight: bold;
+    background: linear-gradient(to right, #fbbc04, #f57c00);
+    color: black;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  

@@ -1,0 +1,163 @@
+<!-- src/main/resources/static/reviews-tech.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Technician Reviews</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 2rem; }
+        .container { max-width: 900px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .header h2 { font-size: 2rem; font-weight: 700; margin: 0; }
+        .controls { display: flex; gap: 0.5rem; }
+        select, button { padding: 0.5rem; border: none; border-radius: 5px; cursor: pointer; }
+        button { background: #000; color: #fff; }
+
+        .card { background: #e8edf3; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 1rem;
+            display: flex; align-items: center; justify-content: space-between; position: relative;
+            cursor: pointer; transition: box-shadow 0.3s; }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card.best { background: #fffae6; border: 2px solid #fbbf24; }
+
+        .badge { position: absolute; top: -10px; left: -10px; background: orange; color: white;
+            font-size: 0.75rem; font-weight: bold; padding: 0.2rem 0.6rem; border-radius: 50px; }
+        .best-label { position: absolute; top: -12px; right: -12px; background: #fbbf24; color: #000;
+            font-weight: bold; padding: 0.3rem 0.5rem; border-radius: 5px; font-size: 0.7rem; }
+
+        .avatar { font-size: 2.5rem; }
+        .info { flex: 1; margin-left: 1rem; }
+        .name { font-weight: 600; font-size: 1.1rem; }
+        .stars { color: gold; font-size: 1.2rem; }
+        .meta { font-size: 0.9rem; color: #555; }
+        .comment { font-style: italic; font-size: 0.9rem; color: #333; margin-top: 0.5rem; }
+
+        .actions { text-align: right; }
+        .profile-link { color: #fbbf24; font-weight: bold; margin-top: 0.4rem; }
+
+        .pagination { display: flex; justify-content: space-between; margin-top: 2rem; }
+        .pagination button { background: #ccc; color: #000; }
+        .pagination button:disabled { background: #eee; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2 id="headerName">LOADING…</h2>
+        <div class="controls">
+            <select id="starFilter">
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+            </select>
+            <button id="sortBtn">Sort Desc</button>
+        </div>
+    </div>
+
+    <div id="reviews"></div>
+
+    <div class="pagination">
+        <button id="prevPage">Previous</button>
+        <button id="nextPage">Next</button>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const techId = params.get('technicianId');
+    const REVIEWS_API = `/api/reviews/technician/${techId}`;
+    const USER_API    = `/api/users/${techId}`;
+
+    let reviews = [], techName = 'Technician', currentPage = 1, itemsPerPage = 3;
+    let sortAsc = false, ratingFilter = null;
+
+    async function fetchData() {
+        // fetch technician profile
+        const u = await fetch(USER_API).then(r=>r.ok? r.json() : {});
+        techName = u.fullName||techName;
+        document.getElementById('headerName')
+            .textContent = `REVIEWS FOR ${techName.toUpperCase()}`;
+
+        // fetch reviews
+        reviews = await fetch(REVIEWS_API).then(r=>r.json());
+        // prepare comment rotation array
+        reviews.forEach(r=> r.allComments = [ r.comment || '' ]);
+        render();
+    }
+
+    function render() {
+        let data = [...reviews];
+        // apply star filter
+        if (ratingFilter) {
+            data = data.filter(r=>Math.round(r.rating) === ratingFilter);
+        }
+        // sort by rating ascending/descending
+        data.sort((a,b)=> sortAsc ? a.rating - b.rating : b.rating - a.rating);
+
+        const start = (currentPage-1)*itemsPerPage;
+        const page = data.slice(start, start + itemsPerPage);
+
+        const container = document.getElementById('reviews');
+        container.innerHTML = '';
+        page.forEach((r, idx)=>{
+            const isBest = (currentPage===1 && idx===0 && !ratingFilter && !sortAsc);
+            const rounded = Math.round(r.rating);
+            const stars = '★'.repeat(rounded) + '☆'.repeat(5-rounded);
+            // rotate comment every render (randomly pick one)
+            const comment = r.allComments.length
+                ? r.allComments[Math.floor(Math.random()*r.allComments.length)]
+                : 'No comment.';
+            const date = new Date(r.createdAt).toLocaleDateString();
+
+            const card = document.createElement('div');
+            card.className = `card${isBest? ' best':''}`;
+            card.onclick = ()=> window.location.href = `/profile/${techId}`;
+            card.innerHTML = `
+          ${isBest
+                ? '<div class="badge">1</div><div class="best-label">TOP REVIEW</div>'
+                : ''}
+          <div class="avatar">👤</div>
+          <div class="info">
+            <div class="name">${techName}</div>
+            <div class="stars">${stars} <span class="meta">(${r.rating})</span></div>
+            <div class="meta">${date}</div>
+            <div class="comment">“${comment}”</div>
+          </div>
+          <div class="actions">
+            <div class="profile-link">View Profile</div>
+          </div>
+        `;
+            container.appendChild(card);
+        });
+
+        document.getElementById('prevPage').disabled = (currentPage===1);
+        document.getElementById('nextPage').disabled = (start + itemsPerPage >= data.length);
+    }
+
+    // controls
+    document.getElementById('sortBtn').addEventListener('click', ()=>{
+        sortAsc = !sortAsc;
+        document.getElementById('sortBtn').textContent = sortAsc? 'Sort Asc':'Sort Desc';
+        currentPage = 1; render();
+    });
+    document.getElementById('starFilter').addEventListener('change', e=>{
+        ratingFilter = e.target.value? +e.target.value : null;
+        currentPage = 1; render();
+    });
+    document.getElementById('nextPage').addEventListener('click', ()=>{
+        currentPage++; render();
+    });
+    document.getElementById('prevPage').addEventListener('click', ()=>{
+        currentPage--; render();
+    });
+
+    // rotate comments every 5s
+    setInterval(render, 5000);
+
+    window.addEventListener('DOMContentLoaded', fetchData);
+</script>
+</body>
+</html>
