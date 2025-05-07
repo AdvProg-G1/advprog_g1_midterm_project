@@ -33,8 +33,8 @@ public class OverallRatingService {
                 .collect(Collectors.toSet());
 
         return techIds.stream()
-                .map(id -> {
-                    List<Review> reviews = reviewRepository.findByTechnicianId(id);
+                .map(techId -> {
+                    List<Review> reviews = reviewRepository.findByTechnicianId(techId);
                     double avg = ratingStrategy.calculateRating(reviews);
                     Review latest = reviews.stream()
                             .max(Comparator.comparing(Review::getCreatedAt))
@@ -43,17 +43,17 @@ public class OverallRatingService {
                     String comment = latest != null
                             ? latest.getComment()
                             : "No reviews yet.";
-                    String reviewer = latest != null
+                    String reviewer = (latest != null)
                             ? userRepository.findById(latest.getUserId())
                             .map(u -> u.getFullName())
-                            .orElse(latest.getUserId())
+                            .orElse("")
                             : "";
-                    String fullName = userRepository.findById(id)
+                    String fullName = userRepository.findById(techId)
                             .map(u -> u.getFullName())
                             .orElse("Unknown Technician");
 
                     return new BestTechnicianResponse(
-                            id,
+                            techId,
                             fullName,
                             avg,
                             reviews.size(),
@@ -61,7 +61,11 @@ public class OverallRatingService {
                             reviewer
                     );
                 })
-                .sorted(Comparator.comparingDouble(BestTechnicianResponse::getAverageRating).reversed())
+                .sorted(
+                        Comparator.comparingDouble(BestTechnicianResponse::getAverageRating)
+                                .reversed()
+                                .thenComparing(BestTechnicianResponse::getTechnicianId)
+                )
                 .limit(limit)
                 .collect(Collectors.toList());
     }

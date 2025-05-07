@@ -1,4 +1,3 @@
-// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/OverallRatingServiceTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Review.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
@@ -64,12 +63,11 @@ class OverallRatingServiceTest {
         when(ratingStrategy.calculateRating(Collections.singletonList(r3))).thenReturn(4.0);
 
         when(userRepository.findById("tech-1"))
-                .thenReturn(Optional.of(new User("tech-1","Tech One","","","","","")));
+                .thenReturn(Optional.of(new User("tech-1","Tech One","","","","")));
         when(userRepository.findById("tech-2"))
                 .thenReturn(Optional.empty());
-
         when(userRepository.findById("userB"))
-                .thenReturn(Optional.of(new User("userB","Reviewer B","","","","","")));
+                .thenReturn(Optional.of(new User("userB","Reviewer B","","","","")));
 
         List<BestTechnicianResponse> top = service.getTopTechnicians(2);
 

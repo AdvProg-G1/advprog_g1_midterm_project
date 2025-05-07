@@ -17,35 +17,42 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final ReviewService reviewService;
-    private final OverallRatingService overallRatingService;
+    private final ReviewService           reviewService;
+    private final OverallRatingService    overallRatingService;
 
     @PostMapping
-    public ResponseEntity<ReviewResponse> createReview(@RequestBody ReviewRequest reviewRequest) {
-        return ResponseEntity.ok(reviewService.createReview(reviewRequest));
+    public ResponseEntity<ReviewResponse> create(@RequestBody ReviewRequest req) {
+        return ResponseEntity.ok(reviewService.createReview(req));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReviewResponse> updateReview(@PathVariable String id,
-                                                       @RequestBody ReviewRequest reviewRequest) {
-        return ResponseEntity.ok(reviewService.updateReview(id, reviewRequest));
+    public ResponseEntity<ReviewResponse> update(
+            @PathVariable String id,
+            @RequestBody ReviewRequest req
+    ) {
+        return ResponseEntity.ok(reviewService.updateReview(id, req));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable String id,
-                                             @RequestParam String userId) {
+    public ResponseEntity<Void> delete(
+            @PathVariable String id,
+            @RequestParam String userId
+    ) {
         reviewService.deleteReview(id, userId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/technician/{technicianId}")
-    public ResponseEntity<List<ReviewResponse>> getReviews(@PathVariable String technicianId) {
+    public ResponseEntity<List<ReviewResponse>> byTechnician(
+            @PathVariable String technicianId
+    ) {
         return ResponseEntity.ok(reviewService.getReviewsForTechnician(technicianId));
     }
 
     @GetMapping("/best")
-    public ResponseEntity<List<BestTechnicianResponse>> getBest(
-            @RequestParam(value = "limit", defaultValue = "3") int limit) {
+    public ResponseEntity<List<BestTechnicianResponse>> top(
+            @RequestParam(defaultValue = "3") int limit
+    ) {
         return ResponseEntity.ok(overallRatingService.getTopTechnicians(limit));
     }
 }
