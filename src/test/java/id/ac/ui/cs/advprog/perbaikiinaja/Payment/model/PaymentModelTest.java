@@ -18,12 +18,12 @@ public class PaymentModelTest {
         Payment payment1 = new Payment();
         payment1.setPaymentId("id-01");
         payment1.setPaymentName("GoPay");
-        payment1.setAccountNumber("124567890");
+        payment1.setPaymentBankNumber("124567890");
 
         Payment payment2 = new Payment();
         payment2.setPaymentId("id-02");
         payment2.setPaymentName("OVO");
-        payment2.setAccountNumber("070707070");
+        payment2.setPaymentBankNumber("070707070");
 
         this.payments.add(payment1);
         this.payments.add(payment2);
@@ -40,13 +40,13 @@ public class PaymentModelTest {
     }
 
     @Test
-    void testGetPaymentAccountNumber() {
-        assertEquals("124567890", this.payments.get(0).getAccountNumber());
+    void testGetPaymentPaymentBankNumber() {
+        assertEquals("124567890", this.payments.get(0).getPaymentBankNumber());
     }
 
     // unhappy
     @Test
-    void testCreatePaymentWithoutNameAndAccountNumber() {
+    void testCreatePaymentWithoutNameAndPaymentBankNumber() {
         Payment payment = new Payment();
         payment.setPaymentId("id-03");
 
@@ -55,7 +55,7 @@ public class PaymentModelTest {
         });
 
         assertThrows(IllegalArgumentException.class, () -> {
-            payment.setAccountNumber(null);
+            payment.setPaymentBankNumber(null);
         });
     }
 
@@ -66,20 +66,20 @@ public class PaymentModelTest {
         payment.setPaymentId("id-04");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            payment.setAccountNumber("1234567890");
+            payment.setPaymentBankNumber("1234567890");
             payment.setPaymentName(null);
         });
     }
 
     // unhappy
     @Test
-    void testCreatePaymentWithoutAccountNumber() {
+    void testCreatePaymentWithoutPaymentBankNumber() {
         Payment payment = new Payment();
         payment.setPaymentId("id-05");
 
         assertThrows(IllegalArgumentException.class, () -> {
             payment.setPaymentName("MasterCard");
-            payment.setAccountNumber("");
+            payment.setPaymentBankNumber("");
         });
     }
 
@@ -91,7 +91,7 @@ public class PaymentModelTest {
 
         assertDoesNotThrow(() -> {
             payment.setPaymentName("MasterCard");
-            payment.setAccountNumber("222333444");
+            payment.setPaymentBankNumber("222333444");
         });
     }
 
@@ -106,11 +106,11 @@ public class PaymentModelTest {
 
     // happy
     @Test
-    void testUpdatePaymentMethodAccountNumber() {
+    void testUpdatePaymentMethodPaymentBankNumber() {
         Payment payment = this.payments.get(0);
-        payment.setAccountNumber("1111111111");
+        payment.setPaymentBankNumber("1111111111");
 
-        assertEquals("1111111111", payment.getAccountNumber());
+        assertEquals("1111111111", payment.getPaymentBankNumber());
     }
 
     // unhappy
@@ -125,17 +125,17 @@ public class PaymentModelTest {
 
     // unhappy
     @Test
-    void testUpdatePaymentMethodAccountNumberToEmpty() {
+    void testUpdatePaymentMethodPaymentBankNumberToEmpty() {
         Payment payment = this.payments.get(0);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            payment.setAccountNumber("");
+            payment.setPaymentBankNumber("");
         });
     }
 
     // unhappy
     @Test
-    void testUpdatePaymentMethodNameAndAccountNumberToEmpty() {
+    void testUpdatePaymentMethodNameAndPaymentBankNumberToEmpty() {
         Payment payment = this.payments.get(0);
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -143,18 +143,18 @@ public class PaymentModelTest {
         });
 
         assertThrows(IllegalArgumentException.class, () -> {
-            payment.setAccountNumber("");
+            payment.setPaymentBankNumber("");
         });
     }
 
     // happy
     @Test
-    void testUpdatePaymentMethodNameAndAccountNumber() {
+    void testUpdatePaymentMethodNameAndPaymentBankNumber() {
         Payment payment = this.payments.get(0);
         payment.setPaymentName("BCA");
-        payment.setAccountNumber("1122334455");
+        payment.setPaymentBankNumber("1122334455");
 
         assertEquals("BCA", payment.getPaymentName());
-        assertEquals("1122334455", payment.getAccountNumber());
+        assertEquals("1122334455", payment.getPaymentBankNumber());
     }
 }

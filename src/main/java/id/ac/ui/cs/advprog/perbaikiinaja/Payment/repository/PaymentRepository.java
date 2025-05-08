@@ -1,10 +1,12 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class PaymentRepository {
 
     private final List<Payment> paymentMethods = new ArrayList<>();
@@ -44,7 +46,7 @@ public class PaymentRepository {
 
     public Payment findByBankNumber(String accountNumber) {
         for (Payment payment : paymentMethods) {
-            if (payment.getAccountNumber().equals(accountNumber)) {
+            if (payment.getPaymentBankNumber().equals(accountNumber)) {
                 return payment;
             }
         }

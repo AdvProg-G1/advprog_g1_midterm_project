@@ -1,26 +1,33 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.model;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
-@Getter
+@Getter @Setter
 public class Payment {
+
     private String paymentId;
     private String paymentName;
-    private String accountNumber;
+    private String paymentBankNumber;
 
     public Payment() {
         this.paymentId = UUID.randomUUID().toString();
     }
 
-    public Payment(String paymentName, String accountNumber) {
+    public Payment(String paymentName, String paymentBankNumber) {
         this.paymentId = UUID.randomUUID().toString();
         setPaymentName(paymentName);
-        setAccountNumber(accountNumber);
+        setPaymentBankNumber(paymentBankNumber);
     }
 
     public void setPaymentId(String paymentId) {
         this.paymentId = paymentId;
+    }
+    
+    public String getPaymentId() {
+        return paymentId;
     }
 
     public void setPaymentName(String paymentName) {
@@ -30,10 +37,20 @@ public class Payment {
         this.paymentName = paymentName;
     }
 
-    public void setAccountNumber(String accountNumber) {
-        if (accountNumber == null || accountNumber.isBlank()) {
-            throw new IllegalArgumentException("Account number cannot be null or empty.");
-        }
-        this.accountNumber = accountNumber;
+    public String getPaymentName() {
+        return paymentName;
     }
+
+    public void setPaymentBankNumber(String paymentBankNumber) {
+        if (paymentBankNumber == null || paymentBankNumber.isBlank()) {
+            throw new IllegalArgumentException("Bank number cannot be null or empty.");
+        }
+        this.paymentBankNumber = paymentBankNumber;
+    }
+
+    public String getPaymentBankNumber() {
+        return paymentBankNumber;
+    }
+
+
 }

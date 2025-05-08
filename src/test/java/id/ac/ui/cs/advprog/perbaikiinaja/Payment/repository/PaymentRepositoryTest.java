@@ -17,12 +17,12 @@ public class PaymentRepositoryTest {
         Payment payment1 = new Payment();
         payment1.setPaymentId("id-01");
         payment1.setPaymentName("GoPay");
-        payment1.setAccountNumber("124567890");
+        payment1.setPaymentBankNumber("124567890");
 
         Payment payment2 = new Payment();
         payment2.setPaymentId("id-02");
         payment2.setPaymentName("OVO");
-        payment2.setAccountNumber("070707070");
+        payment2.setPaymentBankNumber("070707070");
 
         paymentRepository.save(payment1);
         paymentRepository.save(payment2);
@@ -34,7 +34,7 @@ public class PaymentRepositoryTest {
         Payment newPayment = new Payment();
         newPayment.setPaymentId("id-03");
         newPayment.setPaymentName("DANA");
-        newPayment.setAccountNumber("9988776655");
+        newPayment.setPaymentBankNumber("9988776655");
 
         paymentRepository.save(newPayment);
 
@@ -46,11 +46,11 @@ public class PaymentRepositoryTest {
     @Test
     void testSaveUpdateExistingPaymentMethod() {
         Payment existingPayment = paymentRepository.findById("id-01");
-        existingPayment.setAccountNumber("999999999");
+        existingPayment.setPaymentBankNumber("999999999");
 
         paymentRepository.save(existingPayment);
 
-        assertEquals("999999999", paymentRepository.findById("id-01").getAccountNumber());
+        assertEquals("999999999", paymentRepository.findById("id-01").getPaymentBankNumber());
     }
 
     // happy

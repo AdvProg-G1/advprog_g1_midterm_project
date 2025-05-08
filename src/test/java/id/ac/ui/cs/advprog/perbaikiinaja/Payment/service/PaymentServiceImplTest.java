@@ -2,8 +2,10 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -11,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class PaymentServiceImplTest {
 
@@ -29,12 +30,12 @@ public class PaymentServiceImplTest {
         Payment payment1 = new Payment();
         payment1.setPaymentId("id-01");
         payment1.setPaymentName("GoPay");
-        payment1.setAccountNumber("124567890");
+        payment1.setPaymentBankNumber("124567890");
 
         Payment payment2 = new Payment();
         payment2.setPaymentId("id-02");
         payment2.setPaymentName("OVO");
-        payment2.setAccountNumber("070707070");
+        payment2.setPaymentBankNumber("070707070");
 
         this.payments.add(payment1);
         this.payments.add(payment2);
@@ -48,7 +49,7 @@ public class PaymentServiceImplTest {
         Payment newPayment = new Payment();
         newPayment.setPaymentId("id-03");
         newPayment.setPaymentName("DANA");
-        newPayment.setAccountNumber("1234567890");
+        newPayment.setPaymentBankNumber("1234567890");
 
         assertDoesNotThrow(() -> paymentService.createPayment(newPayment));
         assertEquals(3, paymentRepository.findAll().size());
@@ -60,7 +61,7 @@ public class PaymentServiceImplTest {
         Payment existingPayment = new Payment();
         existingPayment.setPaymentId("id-01");
         existingPayment.setPaymentName("GoPay");
-        existingPayment.setAccountNumber("124567890");
+        existingPayment.setPaymentBankNumber("124567890");
 
         assertThrows(IllegalArgumentException.class, () -> paymentService.createPayment(existingPayment));
     }
@@ -87,10 +88,10 @@ public class PaymentServiceImplTest {
     @Test
     void updateBankNumber() {
         Payment paymentToUpdate = payments.get(0);
-        paymentToUpdate.setAccountNumber("1111111111");
+        paymentToUpdate.setPaymentBankNumber("1111111111");
 
         assertDoesNotThrow(() -> paymentService.updatePaymentBankNumber(paymentToUpdate.getPaymentId(), "1111111111"));
-        assertEquals("1111111111", paymentRepository.findById(paymentToUpdate.getPaymentId()).getAccountNumber());
+        assertEquals("1111111111", paymentRepository.findById(paymentToUpdate.getPaymentId()).getPaymentBankNumber());
     }
 
     // unhappy
@@ -105,56 +106,61 @@ public class PaymentServiceImplTest {
     @Test
     void findById() {
         String idToFind = "id-01";
-        Optional<Payment> payment = paymentService.findById(idToFind);
+        Payment payment = paymentService.findById(idToFind);
 
-        assertTrue(payment.isPresent());
-        assertEquals(idToFind, payment.get().getPaymentId());
+        Payment result = paymentService.findById(payment.getPaymentId());
+        assertEquals(idToFind, result.getPaymentId());
     }
 
     // unhappy
     @Test
     void findByIdNonexistent() {
         String idToFind = "onetwothree";
-        Optional<Payment> payment = paymentService.findById(idToFind);
+        Payment payment = paymentService.findById(idToFind);
 
-        assertFalse(payment.isPresent());
+        Payment result = paymentService.findById(payment.getPaymentId());
+        assertNull(paymentService.findById(result.getPaymentId()));
     }
 
     // happy
     @Test
     void findByName() {
         String nameToFind = "GoPay";
-        Optional<Payment> payment = paymentService.findByName(nameToFind);
+        Payment payment = paymentService.findByName(nameToFind);
 
-        assertTrue(payment.isPresent());
-        assertEquals(nameToFind, payment.get().getPaymentName());
+        Payment result = paymentService.findByName(payment.getPaymentName());
+        assertEquals(nameToFind, result.getPaymentName());
     }
 
     // unhappy
     @Test
     void findByNameInvalid() {
         String nameToFind = "helloworld";
-        Optional<Payment> payment = paymentService.findByName(nameToFind);
+        Payment payment = paymentService.findByName(nameToFind);
 
-        assertFalse(payment.isPresent());
+        Payment result = paymentService.findByName(payment.getPaymentName());
+        assertNull(paymentService.findByName(result.getPaymentName()));
     }
 
     // happy
     @Test
     void findByBankNumber() {
         String bankNumberToFind = "124567890";
-        Optional<Payment> payment = paymentService.findByBankNumber(bankNumberToFind);
+        Payment payment = paymentService.findByBankNumber(bankNumberToFind);
 
-        assertTrue(payment.isPresent());
-        assertEquals(bankNumberToFind, payment.get().getAccountNumber());
+        Payment result = paymentService.findByBankNumber(payment.getPaymentBankNumber());
+        assertEquals(bankNumberToFind, result.getPaymentBankNumber());
     }
 
     // unhappy
     @Test
     void findByBankNumberInvalid() {
         String bankNumberToFind = "whatisthis";
-        Optional<Payment> payment = paymentService.findByBankNumber(bankNumberToFind);
+        Payment payment = paymentService.findByBankNumber(bankNumberToFind);
 
-        assertFalse(payment.isPresent());
+        Payment result = paymentService.findByBankNumber(payment.getPaymentBankNumber());
+        assertNull(paymentService.findByBankNumber(result.getPaymentBankNumber()));
     }
+
+
 }
