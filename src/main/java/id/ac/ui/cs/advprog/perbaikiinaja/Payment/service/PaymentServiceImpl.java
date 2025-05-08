@@ -53,7 +53,7 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findById(id);
     }
 
-    @Overrideg
+    @Override
     public Payment findByName(String name) {
         return paymentRepository.findByName(name);
     }
