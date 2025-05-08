@@ -4,11 +4,11 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 
 public interface PaymentService {
 
-    Payment createPayment(Payment payment);
+    void createPayment(Payment payment);
 
-    Payment updatePaymentName(String paymentId, String newName);
+    void updatePaymentName(String paymentId, String newName);
 
-    Payment updatePaymentBankNumber(String paymentId, String newBankNumber);
+    void updatePaymentBankNumber(String paymentId, String newBankNumber);
 
     Payment findById(String paymentId);
 

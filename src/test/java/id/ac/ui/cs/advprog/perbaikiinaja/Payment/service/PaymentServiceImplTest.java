@@ -5,16 +5,22 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
+@ExtendWith(MockitoExtension.class)
 public class PaymentServiceImplTest {
+
 
     @InjectMocks
     PaymentServiceImpl paymentService;
@@ -26,6 +32,7 @@ public class PaymentServiceImplTest {
 
     @BeforeEach
     void setUp() {
+
         this.payments = new ArrayList<>();
         Payment payment1 = new Payment();
         payment1.setPaymentId("id-01");
@@ -39,128 +46,145 @@ public class PaymentServiceImplTest {
 
         this.payments.add(payment1);
         this.payments.add(payment2);
-
-        this.paymentRepository = new PaymentRepository();
     }
 
-    // unhappy
+    // happy
     @Test
     void createPayment() {
         Payment newPayment = new Payment();
         newPayment.setPaymentId("id-03");
         newPayment.setPaymentName("DANA");
-        newPayment.setPaymentBankNumber("1234567890");
+        newPayment.setPaymentBankNumber("9876543210");
 
-        assertDoesNotThrow(() -> paymentService.createPayment(newPayment));
-        assertEquals(3, paymentRepository.findAll().size());
+        doReturn(payments).when(paymentRepository).findAll();
+        doReturn(newPayment).when(paymentRepository).save(newPayment);
+
+        paymentService.createPayment(newPayment);
+
+        verify(paymentRepository).save(newPayment);
     }
 
-    // unhappy: create existing payment
+    // unhappy
     @Test
     void createPaymentInvalid() {
         Payment existingPayment = new Payment();
         existingPayment.setPaymentId("id-01");
-        existingPayment.setPaymentName("GoPay");
-        existingPayment.setPaymentBankNumber("124567890");
+        existingPayment.setPaymentName("OVO");
+        existingPayment.setPaymentBankNumber("070707070");
 
-        assertThrows(IllegalArgumentException.class, () -> paymentService.createPayment(existingPayment));
+        doReturn(payments).when(paymentRepository).findAll();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> paymentService.createPayment(existingPayment));
+
+        verify(paymentRepository, never()).save(any());
     }
 
     // happy
     @Test
     void updateName() {
         Payment paymentToUpdate = payments.get(0);
-        paymentToUpdate.setPaymentName("Gojek");
 
-        assertDoesNotThrow(() -> paymentService.updatePaymentName(paymentToUpdate.getPaymentId(), "Gojek"));
-        assertEquals("Gojek", paymentRepository.findById(paymentToUpdate.getPaymentId()).getPaymentName());
+        doReturn(paymentToUpdate).when(paymentRepository).findById("id-01");
+        doReturn(paymentToUpdate).when(paymentRepository).save(any(Payment.class));
+
+        paymentService.updatePaymentName("id-01", "LinkAja");
+
+        assertEquals("LinkAja", paymentToUpdate.getPaymentName());
+        verify(paymentRepository).save(paymentToUpdate);
     }
 
-    // unhappy
+    // happy
     @Test
     void updateNameInvalid() {
-        Payment paymentToUpdate = payments.get(0);
+        assertThrows(IllegalArgumentException.class,
+                () -> paymentService.updatePaymentName("id-01", "   "));
 
-        assertThrows(IllegalArgumentException.class, () -> paymentService.updatePaymentName(paymentToUpdate.getPaymentId(), ""));
+        verify(paymentRepository, never()).save(any());
     }
+
 
     // happy
     @Test
     void updateBankNumber() {
         Payment paymentToUpdate = payments.get(0);
-        paymentToUpdate.setPaymentBankNumber("1111111111");
 
-        assertDoesNotThrow(() -> paymentService.updatePaymentBankNumber(paymentToUpdate.getPaymentId(), "1111111111"));
-        assertEquals("1111111111", paymentRepository.findById(paymentToUpdate.getPaymentId()).getPaymentBankNumber());
+        doReturn(paymentToUpdate).when(paymentRepository).findById("id-01");
+        doReturn(paymentToUpdate).when(paymentRepository).save(any(Payment.class));
+
+        paymentService.updatePaymentBankNumber("id-01", "9998887776");
+
+        assertEquals("9998887776", paymentToUpdate.getPaymentBankNumber());
+        verify(paymentRepository).save(paymentToUpdate);
     }
 
     // unhappy
     @Test
     void updateBankNumberInvalid() {
-        Payment paymentToUpdate = payments.get(0);
+        assertThrows(IllegalArgumentException.class,
+                () -> paymentService.updatePaymentBankNumber("id-01", "abc123"));
 
-        assertThrows(IllegalArgumentException.class, () -> paymentService.updatePaymentBankNumber(paymentToUpdate.getPaymentId(), "invalidNumber"));
+        verify(paymentRepository, never()).save(any());
     }
+
 
     // happy
     @Test
     void findById() {
-        String idToFind = "id-01";
-        Payment payment = paymentService.findById(idToFind);
+        Payment payment = payments.get(0);
 
-        Payment result = paymentService.findById(payment.getPaymentId());
-        assertEquals(idToFind, result.getPaymentId());
+        doReturn(payment).when(paymentRepository).findById("id-01");
+
+        Payment result = paymentService.findById("id-01");
+
+        assertEquals("id-01", result.getPaymentId());
     }
 
     // unhappy
     @Test
     void findByIdNonexistent() {
-        String idToFind = "onetwothree";
-        Payment payment = paymentService.findById(idToFind);
+        doReturn(null).when(paymentRepository).findById("noidhere");
 
-        Payment result = paymentService.findById(payment.getPaymentId());
-        assertNull(paymentService.findById(result.getPaymentId()));
+        assertNull(paymentService.findById("noidhere"));
     }
 
-    // happy
+    // happy: find by name
     @Test
     void findByName() {
-        String nameToFind = "GoPay";
-        Payment payment = paymentService.findByName(nameToFind);
+        Payment payment = payments.get(0);
 
-        Payment result = paymentService.findByName(payment.getPaymentName());
-        assertEquals(nameToFind, result.getPaymentName());
+        doReturn(payment).when(paymentRepository).findByName("GoPay");
+
+        Payment result = paymentService.findByName("GoPay");
+
+        assertEquals("GoPay", result.getPaymentName());
     }
 
-    // unhappy
+    // unhappy: find by name invalid
     @Test
     void findByNameInvalid() {
-        String nameToFind = "helloworld";
-        Payment payment = paymentService.findByName(nameToFind);
+        doReturn(null).when(paymentRepository).findByName("whatisaname");
 
-        Payment result = paymentService.findByName(payment.getPaymentName());
-        assertNull(paymentService.findByName(result.getPaymentName()));
+        assertNull(paymentService.findByName("whatisaname"));
     }
 
-    // happy
+    // happy: find by bank number
     @Test
     void findByBankNumber() {
-        String bankNumberToFind = "124567890";
-        Payment payment = paymentService.findByBankNumber(bankNumberToFind);
+        Payment payment = payments.get(0);
 
-        Payment result = paymentService.findByBankNumber(payment.getPaymentBankNumber());
-        assertEquals(bankNumberToFind, result.getPaymentBankNumber());
+        doReturn(payment).when(paymentRepository).findByBankNumber("124567890");
+
+        Payment result = paymentService.findByBankNumber("124567890");
+
+        assertEquals("124567890", result.getPaymentBankNumber());
     }
 
-    // unhappy
+    // unhappy: find by bank number invalid
     @Test
     void findByBankNumberInvalid() {
-        String bankNumberToFind = "whatisthis";
-        Payment payment = paymentService.findByBankNumber(bankNumberToFind);
+        doReturn(null).when(paymentRepository).findByBankNumber("notanumber");
 
-        Payment result = paymentService.findByBankNumber(payment.getPaymentBankNumber());
-        assertNull(paymentService.findByBankNumber(result.getPaymentBankNumber()));
+        assertNull(paymentService.findByBankNumber("notanumber"));
     }
-
-
 }

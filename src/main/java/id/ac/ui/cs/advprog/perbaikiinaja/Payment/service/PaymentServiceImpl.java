@@ -2,9 +2,10 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -13,21 +14,52 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentRepository paymentRepository;
 
     @Override
-    public Payment createPayment(Payment payment) {return null;}
+    public void createPayment(Payment payment) {
+        List<Payment> existingPayments = paymentRepository.findAll();
+        for (Payment existing : existingPayments) {
+            if (existing.getPaymentId().equals(payment.getPaymentId())) {
+                throw new IllegalArgumentException("Payment with ID already exists.");
+            }
+        }
+        paymentRepository.save(payment);
+    }
 
     @Override
-    public Payment updatePaymentName(String paymentId, String newName) {return null;}
+    public void updatePaymentName(String id, String newName) {
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Payment name cannot be empty.");
+        }
+        Payment payment = paymentRepository.findById(id);
+        if (payment != null) {
+            payment.setPaymentName(newName);
+            paymentRepository.save(payment);
+        }
+    }
 
     @Override
-    public Payment updatePaymentBankNumber(String paymentId, String newBankNumber) {return null;}
+    public void updatePaymentBankNumber(String id, String newBankNumber) {
+        if (!newBankNumber.matches("\\d+")) {
+            throw new IllegalArgumentException("Bank number must contain only digits.");
+        }
+        Payment payment = paymentRepository.findById(id);
+        if (payment != null) {
+            payment.setPaymentBankNumber(newBankNumber);
+            paymentRepository.save(payment);
+        }
+    }
 
     @Override
-    public Payment findById(String paymentId) {return null;}
+    public Payment findById(String id) {
+        return paymentRepository.findById(id);
+    }
 
     @Override
-    public Payment findByName(String paymentName) {return null;}
+    public Payment findByName(String name) {
+        return paymentRepository.findByName(name);
+    }
 
     @Override
-    public Payment findByBankNumber(String accountNumber) {return null;}
-
+    public Payment findByBankNumber(String bankNumber) {
+        return paymentRepository.findByBankNumber(bankNumber);
+    }
 }
