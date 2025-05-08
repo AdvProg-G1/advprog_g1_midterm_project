@@ -1,0 +1,70 @@
+.edit-profile {
+    max-width: 1500px;
+    margin: 100px auto 0;
+    padding: 0 40px;
+  }
+  
+  .edit-profile h1 {
+    font-size: 90px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  
+  .highlight-black {
+    background-color: #000;
+    color: #fff;
+    padding: 0 12px;
+  }
+  
+  .edit-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: flex-start;
+    position: relative;
+    left: -150px;
+  }
+  
+  .form-column {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group label {
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+  
+  .form-group input {
+    padding: 10px;
+    font-size: 20px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  .form-button {
+    position: absolute;
+    right: -300px;
+    bottom: -110px;
+  }
+  
+  .form-button button {
+    background-color: #f3cb14;
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 20px 90px;
+    font-size: 40px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  

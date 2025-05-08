@@ -5,14 +5,72 @@
   <title>Create Report</title>
   <link rel="stylesheet" href="../assets/css/main.css" />
   <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/technician/create-report.css" />
 </head>
 <body>
 
   <div id="navbar"></div>
   <script src="../assets/js/navbar_technician.js"></script>
 
-  <div class="container">
-  </div>
+  <section class="create-report">
+    <h1>CREATE ORDER <span class="highlight-black">REPORT</span></h1>
+
+    <form class="report-form">
+      <div class="form-column">
+        <div class="form-group">
+          <label for="item-name">Item Name</label>
+          <input type="text" id="item-name" placeholder="Name" />
+        </div>
+
+        <div class="form-group">
+          <label for="item-condition">Item Condition</label>
+          <select id="item-condition">
+            <option>Choose Condition</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="repair-type">Repair Type</label>
+          <select id="repair-type">
+            <option>Choose Desired Repair</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="service-date">Date of Service</label>
+          <input type="date" id="service-date" />
+        </div>
+      </div>
+
+      <div class="form-column">
+        <div class="form-group">
+          <label for="completion-time">Estimated Completion Time</label>
+          <input type="text" id="completion-time" placeholder="Name" />
+        </div>
+
+        <div class="form-group">
+          <label for="price">Price</label>
+          <input type="text" id="price" placeholder="Name" />
+        </div>
+
+        <div class="form-group">
+          <label for="status">Status</label>
+          <input type="text" id="status" value="COMPLETED" readonly />
+        </div>
+      </div>
+
+      <div class="fixing-column">
+        <div class="form-group">
+          <label for="fixing-process">Fixing Process</label>
+          <textarea id="fixing-process" placeholder="Please detail what you did to fix the item"></textarea>
+        </div>
+
+        <div class="form-button">
+          <button type="submit" class="btn submit-btn">SUBMIT</button>
+        </div>
+      </div>
+    </form>
+  </section>
 
 </body>
 </html>
