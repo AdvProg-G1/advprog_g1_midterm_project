@@ -60,6 +60,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment findByBankNumber(String bankNumber) {
-        return paymentRepository.findByBankNumber(bankNumber);
+        return paymentRepository.gfindByBankNumber(bankNumber);
     }
 }

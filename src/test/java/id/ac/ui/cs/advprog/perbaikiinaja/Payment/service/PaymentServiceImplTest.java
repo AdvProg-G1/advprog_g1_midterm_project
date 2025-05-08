@@ -30,6 +30,7 @@ public class PaymentServiceImplTest {
 
     List<Payment> payments;
 
+    // dummy data
     @BeforeEach
     void setUp() {
 
@@ -148,7 +149,7 @@ public class PaymentServiceImplTest {
         assertNull(paymentService.findById("noidhere"));
     }
 
-    // happy: find by name
+    // happy
     @Test
     void findByName() {
         Payment payment = payments.get(0);
@@ -160,7 +161,7 @@ public class PaymentServiceImplTest {
         assertEquals("GoPay", result.getPaymentName());
     }
 
-    // unhappy: find by name invalid
+    // unhappy
     @Test
     void findByNameInvalid() {
         doReturn(null).when(paymentRepository).findByName("whatisaname");
@@ -168,7 +169,7 @@ public class PaymentServiceImplTest {
         assertNull(paymentService.findByName("whatisaname"));
     }
 
-    // happy: find by bank number
+    // happy
     @Test
     void findByBankNumber() {
         Payment payment = payments.get(0);
