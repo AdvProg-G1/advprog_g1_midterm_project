@@ -4,6 +4,8 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,11 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class PaymentServiceTest {
+public class PaymentServiceImplTest {
 
-    private List<Payment> payments;
-    private PaymentRepository paymentRepository;
-    private PaymentService paymentService;
+    @InjectMocks
+    PaymentServiceImpl paymentService;
+
+    @Mock
+    PaymentRepository paymentRepository;
+
+    List<Payment> payments;
 
     @BeforeEach
     void setUp() {
@@ -34,7 +40,6 @@ public class PaymentServiceTest {
         this.payments.add(payment2);
 
         this.paymentRepository = new PaymentRepository();
-        this.paymentService = new PaymentService(paymentRepository);
     }
 
     // unhappy
@@ -67,7 +72,7 @@ public class PaymentServiceTest {
         paymentToUpdate.setPaymentName("Gojek");
 
         assertDoesNotThrow(() -> paymentService.updatePaymentName(paymentToUpdate.getPaymentId(), "Gojek"));
-        assertEquals("Gojek", paymentRepository.findById(paymentToUpdate.getPaymentId()).get().getPaymentName());
+        assertEquals("Gojek", paymentRepository.findById(paymentToUpdate.getPaymentId()).getPaymentName());
     }
 
     // unhappy
@@ -85,7 +90,7 @@ public class PaymentServiceTest {
         paymentToUpdate.setAccountNumber("1111111111");
 
         assertDoesNotThrow(() -> paymentService.updatePaymentBankNumber(paymentToUpdate.getPaymentId(), "1111111111"));
-        assertEquals("1111111111", paymentRepository.findById(paymentToUpdate.getPaymentId()).get().getAccountNumber());
+        assertEquals("1111111111", paymentRepository.findById(paymentToUpdate.getPaymentId()).getAccountNumber());
     }
 
     // unhappy
@@ -146,7 +151,7 @@ public class PaymentServiceTest {
 
     // unhappy
     @Test
-    void findByBankNumberUnhappy() {
+    void findByBankNumberInvalid() {
         String bankNumberToFind = "whatisthis";
         Optional<Payment> payment = paymentService.findByBankNumber(bankNumberToFind);
 
