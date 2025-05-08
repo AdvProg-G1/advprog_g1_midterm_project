@@ -1,52 +1,54 @@
-// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/model/User.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Table(name = "users")
-@Data
-@NoArgsConstructor
-public class User {
+public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(nullable = false)
     private String fullName;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    private String phone;
+    @Column(nullable = false)
     private String password;
+
+    private String phone;
     private String address;
 
-    /** main 6-arg constructor **/
-    public User(String id,
-                String fullName,
-                String email,
-                String phone,
-                String password,
-                String address) {
-        this.id = id;
-        this.fullName = fullName;
-        this.email = email;
-        this.phone = phone;
-        this.password = password;
-        this.address = address;
+    // ← add this:
+    @Column(nullable = false)
+    private String role;   // e.g. "ROLE_USER" or "ROLE_TECHNICIAN"
+
+    // --- UserDetails methods ---
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
-    /** test-friendly 7-arg overload (last param ignored) **/
-    public User(String id,
-                String fullName,
-                String email,
-                String phone,
-                String password,
-                String address,
-                String unused) {
-        this(id, fullName, email, phone, password, address);
+    @Override
+    public String getUsername() {
+        return email;
     }
+
+    // password getter is provided by Lombok
+
+    @Override public boolean isAccountNonExpired()     { return true; }
+    @Override public boolean isAccountNonLocked()      { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled()               { return true; }
 }

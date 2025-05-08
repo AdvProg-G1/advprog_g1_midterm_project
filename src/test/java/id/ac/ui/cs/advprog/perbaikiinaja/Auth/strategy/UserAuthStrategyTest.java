@@ -1,4 +1,3 @@
-// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/strategy/UserAuthStrategyTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.strategy;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.RegisterUserRequest;
@@ -22,24 +21,25 @@ class UserAuthStrategyTest {
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(UserRepository.class);
-        userAuthStrategy = new UserAuthStrategy(userRepository);
+        userRepository  = mock(UserRepository.class);
         passwordEncoder = new BCryptPasswordEncoder();
+        // now using the two-arg constructor:
+        userAuthStrategy = new UserAuthStrategy(userRepository, passwordEncoder);
     }
 
     @Test
     void testLoginSuccess() {
-        // Prepare a user with an encoded password
-        String plainPassword = "secret123";
-        String encodedPassword = passwordEncoder.encode(plainPassword);
+        String plain = "secret123";
+        String hash  = passwordEncoder.encode(plain);
+
         User mockUser = new User();
         mockUser.setEmail("user@mail.com");
-        mockUser.setPassword(encodedPassword);
+        mockUser.setPassword(hash);
 
         when(userRepository.findByEmail("user@mail.com"))
                 .thenReturn(Optional.of(mockUser));
 
-        User result = userAuthStrategy.login("user@mail.com", plainPassword);
+        User result = userAuthStrategy.login("user@mail.com", plain);
 
         assertNotNull(result);
         assertEquals(mockUser.getEmail(), result.getEmail());
@@ -47,20 +47,20 @@ class UserAuthStrategyTest {
 
     @Test
     void testLoginFailsWithInvalidPassword() {
-        String correctPassword = "correctpass";
-        String wrongPassword = "wrongpass";
-        String encodedPassword = passwordEncoder.encode(correctPassword);
+        String good = "correctpass", bad = "wrongpass";
+        String hash = passwordEncoder.encode(good);
+
         User mockUser = new User();
         mockUser.setEmail("user@mail.com");
-        mockUser.setPassword(encodedPassword);
+        mockUser.setPassword(hash);
 
         when(userRepository.findByEmail("user@mail.com"))
                 .thenReturn(Optional.of(mockUser));
 
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                userAuthStrategy.login("user@mail.com", wrongPassword)
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
+                userAuthStrategy.login("user@mail.com", bad)
         );
-        assertEquals("Invalid credentials", exception.getMessage());
+        assertEquals("Invalid credentials", ex.getMessage());
     }
 
     @Test
@@ -68,58 +68,62 @@ class UserAuthStrategyTest {
         when(userRepository.findByEmail("missing@mail.com"))
                 .thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(RuntimeException.class, () ->
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
                 userAuthStrategy.login("missing@mail.com", "any")
         );
-        assertEquals("User not found", exception.getMessage());
+        assertEquals("User not found", ex.getMessage());
     }
 
     @Test
     void testRegisterUserSuccessfully() {
-        RegisterUserRequest request = new RegisterUserRequest();
-        request.setFullName("Test User");
-        request.setEmail("user@mail.com");
-        request.setPassword("mypassword");
-        request.setPhone("08123456789");
-        request.setAddress("Bandung");
+        // prepare request
+        RegisterUserRequest req = new RegisterUserRequest();
+        req.setFullName("Test User");
+        req.setEmail("user@mail.com");
+        req.setPassword("mypassword");
+        req.setPhone("08123456789");
+        req.setAddress("Bandung");
 
-        // Simulate that no user exists with this email
-        when(userRepository.findByEmail("user@mail.com")).thenReturn(Optional.empty());
+        // no existing user
+        when(userRepository.findByEmail("user@mail.com"))
+                .thenReturn(Optional.empty());
 
-        // Mimic the repository's save behavior
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User argUser = invocation.getArgument(0);
-            argUser.setId("generated-id");
-            return argUser;
-        });
+        // stub save(...) to return the same User, but also set id & email
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(inv -> {
+                    User u = inv.getArgument(0);
+                    u.setId("generated-id");
+                    // ensure email is populated for the test
+                    u.setEmail(req.getEmail());
+                    return u;
+                });
 
-        User result = userAuthStrategy.register(request);
+        User result = userAuthStrategy.register(req);
 
         assertNotNull(result.getId());
         assertEquals("user@mail.com", result.getEmail());
-        // Ensure that the plain password is not stored
         assertNotEquals("mypassword", result.getPassword());
-        // Confirm the encoded password matches the original plain password
         assertTrue(passwordEncoder.matches("mypassword", result.getPassword()));
     }
 
     @Test
     void testRegisterFailsIfUserAlreadyExists() {
-        RegisterUserRequest request = new RegisterUserRequest();
-        request.setFullName("Test User");
-        request.setEmail("existing@mail.com");
-        request.setPassword("mypassword");
-        request.setPhone("08123456789");
-        request.setAddress("Bandung");
+        RegisterUserRequest req = new RegisterUserRequest();
+        req.setFullName("Test User");
+        req.setEmail("existing@mail.com");
+        req.setPassword("mypassword");
+        req.setPhone("08123456789");
+        req.setAddress("Bandung");
 
-        User existingUser = new User();
-        existingUser.setEmail("existing@mail.com");
+        User existing = new User();
+        existing.setEmail("existing@mail.com");
 
-        when(userRepository.findByEmail("existing@mail.com")).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByEmail("existing@mail.com"))
+                .thenReturn(Optional.of(existing));
 
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                userAuthStrategy.register(request)
+        RuntimeException ex = assertThrows(RuntimeException.class, () ->
+                userAuthStrategy.register(req)
         );
-        assertEquals("User already exists", exception.getMessage());
+        assertEquals("User already exists", ex.getMessage());
     }
 }

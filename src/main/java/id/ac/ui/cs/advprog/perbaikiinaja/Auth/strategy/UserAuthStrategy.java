@@ -6,12 +6,14 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class UserAuthStrategy implements AuthStrategy {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public User login(String email, String password) {
@@ -31,10 +33,10 @@ public class UserAuthStrategy implements AuthStrategy {
         User user = new User();
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
-        // Hash the password before saving
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhone(request.getPhone());
         user.setAddress(request.getAddress());
+        user.setRole("ROLE_USER");  // default role for new users
         return userRepository.save(user);
     }
 }
