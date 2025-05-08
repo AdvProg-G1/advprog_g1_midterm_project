@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Book Service</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/user/book_service.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+  <script src="../assets/js/navbar_user.js"></script>
+
+<section class="book-service">
+  <h1>BOOK SERVICE <span class="highlight-black">ORDER</span></h1>
+
+  <div class="form-with-button">
+    <form class="form-grid">
+      <div class="form-row">
+        <div class="form-half">
+          <label>Item Name</label>
+          <input type="text" placeholder="Name" />
+        </div>
+        <div class="form-half">
+          <label>Use a Coupon?</label>
+          <select id="coupon">
+            <option value="">Choose an Available Coupon</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-columns">
+        <div class="form-left">
+          <label>Item Condition</label>
+          <select><option>Choose Condition</option></select>
+
+          <label>Repair Type</label>
+          <select><option>Choose Desired Repair</option></select>
+
+          <label>Date of Service</label>
+          <input type="date" />
+        </div>
+
+        <div class="form-right">
+          <label>Payment Method</label>
+          <select><option>Choose a Payment Method</option></select>
+
+          <label>Select Technician</label>
+          <select><option>Choose a Technician</option></select>
+        </div>
+      </div>
+    </form>
+
+    <div class="form-button">
+      <button type="submit">SUBMIT</button>
+    </div>
+  </div>
+</section>
+
+
+
+
+</body>
+</html>

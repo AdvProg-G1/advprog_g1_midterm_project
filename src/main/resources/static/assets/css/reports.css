@@ -1,0 +1,52 @@
+    .admin-reports {
+      max-width: 1200px;
+      margin: 120px auto;
+      padding: 0 40px;
+    }
+  
+  .admin-reports h1 {
+    font-size: 70px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  
+  .highlight-black {
+    background-color: black;
+    color: white;
+    padding: 0 12px;
+  }
+  
+  /* Table */
+  .reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    background-color: white;
+  }
+  
+  .reports-table thead {
+    background: linear-gradient(to right, #fbbc04, #f57c00);
+  }
+  
+  .reports-table th {
+    padding: 16px;
+    font-weight: bold;
+    text-align: left;
+    font-size: 16px;
+    color: black;
+  }
+  
+  .reports-table td {
+    padding: 16px;
+    border-top: 1px solid #ddd;
+    font-size: 16px;
+  }
+  
+  .reports-table tbody tr:hover {
+    background-color: #f9f9f9;
+  }
+
+  .reports-table td:nth-child(4) {
+    max-width: 400px;
+  }

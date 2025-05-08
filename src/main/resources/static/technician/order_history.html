@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Order History</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/technician/order_history.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+  <script src="../assets/js/navbar_technician.js"></script>
+
+<section class="order-history">
+  <h1>ORDER <span class="highlight-black">HISTORY</span></h1>
+
+  <table class="order-table">
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Condition</th>
+        <th>Repair Type</th>
+        <th>Date of Service</th>
+        <th>Status</th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Leaking Sink</td>
+        <td>Leaking</td>
+        <td>Plumbing</td>
+        <td>10/04/2025</td>
+        <td>COMPLETED</td>
+        <td><a href="create_report.html" class="write-report">Write report</a></td>
+        <td><a href="service_details.html" class="details-link">Details</a></td>
+      </tr>
+      <tr>
+        <td>Car</td>
+        <td>Broken</td>
+        <td>Fix</td>
+        <td>10/04/2025</td>
+        <td>COMPLETED</td>
+        <td><a href="create_report.html" class="write-report">View report</a></td>
+        <td><a href="service_details.html" class="details-link">Details</a></td>
+      </tr>
+      <tr>
+        <td>Car</td>
+        <td>Broken</td>
+        <td>Fix</td>
+        <td>10/04/2025</td>
+        <td>ONGOING</td>
+        <td class="write-report">-</td>
+        <td><a href="service_details.html" class="details-link">Details</a></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>
