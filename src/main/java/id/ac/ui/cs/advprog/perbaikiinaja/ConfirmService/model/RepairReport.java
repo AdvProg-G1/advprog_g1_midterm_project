@@ -18,24 +18,10 @@ import java.util.Date;
 public class RepairReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "order_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_report_order")
-    )
-    private ServiceOrder orderId;
-
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "technician_id",
-            referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_report_technician")
-    )
-    private ServiceOrder technicianId;
-
+    private String orderId;
+    private String technicianId;
     private String details;
 
     @Temporal(TemporalType.TIMESTAMP)
