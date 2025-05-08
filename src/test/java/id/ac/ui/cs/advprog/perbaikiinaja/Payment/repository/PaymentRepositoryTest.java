@@ -1,22 +1,19 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PaymentRepositoryTest {
 
-    private List<Payment> payments;
+    private PaymentRepository paymentRepository;
 
     @BeforeEach
     void setUp() {
-        this.payments = new ArrayList<>();
+        paymentRepository = new PaymentRepository();
+
         Payment payment1 = new Payment();
         payment1.setPaymentId("id-01");
         payment1.setPaymentName("GoPay");
@@ -27,8 +24,8 @@ public class PaymentRepositoryTest {
         payment2.setPaymentName("OVO");
         payment2.setAccountNumber("070707070");
 
-        this.payments.add(payment1);
-        this.payments.add(payment2);
+        paymentRepository.save(payment1);
+        paymentRepository.save(payment2);
     }
 
     // happy
@@ -39,29 +36,27 @@ public class PaymentRepositoryTest {
         newPayment.setPaymentName("DANA");
         newPayment.setAccountNumber("9988776655");
 
-        payments.add(newPayment);
+        paymentRepository.save(newPayment);
 
-        assertEquals(3, payments.size());
-        assertTrue(payments.contains(newPayment));
+        assertEquals(3, paymentRepository.findAll().size());
+        assertTrue(paymentRepository.findAll().contains(newPayment));
     }
 
     // happy
     @Test
     void testSaveUpdateExistingPaymentMethod() {
-        Payment existing = payments.get(0);
-        existing.setAccountNumber("999999999");
+        Payment existingPayment = paymentRepository.findById("id-01");
+        existingPayment.setAccountNumber("999999999");
 
-        assertEquals("999999999", payments.get(0).getAccountNumber());
+        paymentRepository.save(existingPayment);
+
+        assertEquals("999999999", paymentRepository.findById("id-01").getAccountNumber());
     }
 
     // happy
     @Test
     void testFindByIdWithValidId() {
-        String targetId = "id-02";
-        Payment found = payments.stream()
-                .filter(p -> p.getPaymentId().equals(targetId))
-                .findFirst()
-                .orElse(null);
+        Payment found = paymentRepository.findById("id-02");
 
         assertNotNull(found);
         assertEquals("OVO", found.getPaymentName());
@@ -70,11 +65,7 @@ public class PaymentRepositoryTest {
     // unhappy
     @Test
     void testFindByIdWithInvalidId() {
-        String targetId = "invalid-id";
-        Payment found = payments.stream()
-                .filter(p -> p.getPaymentId().equals(targetId))
-                .findFirst()
-                .orElse(null);
+        Payment found = paymentRepository.findById("superfakeid");
 
         assertNull(found);
     }
@@ -82,11 +73,7 @@ public class PaymentRepositoryTest {
     // happy
     @Test
     void testFindByNameWithValidName() {
-        String targetName = "GoPay";
-        Payment found = payments.stream()
-                .filter(p -> p.getPaymentName().equalsIgnoreCase(targetName))
-                .findFirst()
-                .orElse(null);
+        Payment found = paymentRepository.findByName("GoPay");
 
         assertNotNull(found);
         assertEquals("id-01", found.getPaymentId());
@@ -95,13 +82,26 @@ public class PaymentRepositoryTest {
     // unhappy
     @Test
     void testFindByNameWithInvalidName() {
-        String targetName = "nonexistent";
-        Payment found = payments.stream()
-                .filter(p -> p.getPaymentName().equalsIgnoreCase(targetName))
-                .findFirst()
-                .orElse(null);
+        Payment found = paymentRepository.findByName("nonamehere");
 
         assertNull(found);
     }
 
+    // happy
+    @Test
+    void testFindByBankNumber() {
+        Payment found = paymentRepository.findByBankNumber("124567890");
+
+        assertNotNull(found);
+        assertEquals("id-01", found.getPaymentId());
+        assertEquals("GoPay", found.getPaymentName());
+    }
+
+    // unhappy
+    @Test
+    void testFindByBankNumberInvalid() {
+        Payment found = paymentRepository.findByBankNumber("fakenumber");
+
+        assertNull(found);
+    }
 }

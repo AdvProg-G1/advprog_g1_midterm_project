@@ -42,6 +42,15 @@ public class PaymentRepository {
         return null;
     }
 
+    public Payment findByBankNumber(String accountNumber) {
+        for (Payment payment : paymentMethods) {
+            if (payment.getAccountNumber().equals(accountNumber)) {
+                return payment;
+            }
+        }
+        return null;
+    }
+
     public List<Payment> findAll() {
         return new ArrayList<>(paymentMethods);
     }
