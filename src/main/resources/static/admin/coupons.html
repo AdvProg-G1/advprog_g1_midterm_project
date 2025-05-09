@@ -49,8 +49,8 @@
 		      <td>${discount}</td>
 		      <td>${usesLeft}</td>
 		      <td>
-		        <button class="btn edit" data-id="${coupon.id}">Edit</button>
-		        <button class="btn delete" data-id="${coupon.id}">Delete</button>
+				<button class="btn edit" data-id="${coupon.id}">Edit</button>
+				<button class="btn delete" data-id="${coupon.id}">Delete</button>
 		      </td>
 		    </tr>
 		  `;
@@ -71,6 +71,16 @@
             console.error("Erreur lors du chargement des coupons :", error);
           });
       });
+	  
+	  document.addEventListener("click", function (e) {
+	    if (e.target.classList.contains("edit")) {
+	      const couponId = e.target.getAttribute("data-id");
+	      if (couponId) {
+	        window.location.href = `edit_coupon.html?id=${couponId}`;
+	      }
+	    }
+	  });
+
     </script>
   
 </body>
