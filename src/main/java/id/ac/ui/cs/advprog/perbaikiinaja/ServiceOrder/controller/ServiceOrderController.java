@@ -6,7 +6,10 @@ import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.service.ServiceOrderServic
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,32 +18,77 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ServiceOrderController {
 
-    private final ServiceOrderService serviceOrderService;
+    private final ServiceOrderService service;
 
     @PostMapping
-    public ResponseEntity<ServiceOrder> createOrder(@RequestBody CreateServiceOrderRequest request) {
+    public ResponseEntity<ServiceOrder> createOrder(
+            @Valid @RequestBody CreateServiceOrderRequest req
+    ) {
         ServiceOrder order = ServiceOrder.builder()
-                .itemName(request.getItemName())
-                .condition(request.getCondition())
-                .problemDescription(request.getProblemDescription())
-                .technicianId(request.getTechnicianId())
-                .userId("user1") // Temp hardcoded
-                .serviceDate(request.getServiceDate())
-                .paymentMethod(request.getPaymentMethod())
-                .couponApplied(request.isCouponApplied())
+                .itemName(req.getItemName())
+                .condition(req.getCondition())
+                .problemDescription(req.getProblemDescription())
+                .technicianId(req.getTechnicianId())
+                .userId("user1")
+                .serviceDate(req.getServiceDate())
+                .paymentMethod(req.getPaymentMethod())
+                .couponApplied(req.isCouponApplied())
                 .build();
 
-        return ResponseEntity.ok(serviceOrderService.createOrder(order));
+        ServiceOrder created = service.createOrder(order);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(created);
     }
 
     @GetMapping
     public ResponseEntity<List<ServiceOrder>> getAllOrders() {
-        return ResponseEntity.ok(serviceOrderService.getAllOrders());
+        return ResponseEntity.ok(service.getAllOrders());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ServiceOrder> getOrderById(@PathVariable UUID id) {
-        ServiceOrder order = serviceOrderService.getOrderById(id);
-        return order != null ? ResponseEntity.ok(order) : ResponseEntity.notFound().build();
+        ServiceOrder o = service.getOrderById(id);
+        return o == null
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(o);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ServiceOrder> updateOrder(
+            @PathVariable UUID id,
+            @Valid @RequestBody CreateServiceOrderRequest req
+    ) {
+        ServiceOrder updated = ServiceOrder.builder()
+                .itemName(req.getItemName())
+                .condition(req.getCondition())
+                .problemDescription(req.getProblemDescription())
+                .serviceDate(req.getServiceDate())
+                .paymentMethod(req.getPaymentMethod())
+                .couponApplied(req.isCouponApplied())
+                .technicianId(req.getTechnicianId())
+                .build();
+
+        return service.update(id, updated)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
+        if (service.delete(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/technician/{techId}")
+    public ResponseEntity<List<ServiceOrder>> getByTechnician(
+            @PathVariable("techId") String techId
+    ) {
+        return ResponseEntity.ok(service.findOrdersByTechnicianId(techId));
     }
 }
