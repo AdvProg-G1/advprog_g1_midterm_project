@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final UserRepository userRepository;    // ← Injected
+    private final UserRepository userRepository;
 
     @Override
     public ReviewResponse createReview(ReviewRequest reviewRequest) {
@@ -81,7 +81,7 @@ public class ReviewServiceImpl implements ReviewService {
                 review.getUserId(),
                 review.getRating(),
                 review.getComment(),
-                reviewerName                  // ← Populate full name
+                reviewerName
         );
     }
 }
