@@ -84,7 +84,7 @@ public class PaymentServiceImpl implements PaymentService {
     public void deletePayment(String paymentId) {
         Payment existing = paymentRepository.findById(paymentId);
         if (existing != null) {
-            paymentRepository.deletePayment(existing);
+            paymentRepository.deletePayment(String.valueOf(existing));
         }
     }
 }
