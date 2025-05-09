@@ -16,53 +16,62 @@
     <h1>COUPONS & <span class="highlight">CODES</span></h1>
 
     <div class="coupon-actions">
-      <button class="btn add">+ Add Coupon</button>
+      <a href="create_coupon.html"><button class="btn add">+ Add Coupon</button></a>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Type</th>
-          <th>Discount</th>
-          <th>Uses Left</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>SPRINGPROMO2025</td>
-          <td>Fixed</td>
-          <td>Rp 50000</td>
-          <td>5</td>
-          <td>
-            <button class="btn edit">Edit</button>
-            <button class="btn delete">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>WELCOME10</td>
-          <td>Percentage</td>
-          <td>10%</td>
-          <td>2</td>
-          <td>
-            <button class="btn edit">Edit</button>
-            <button class="btn delete">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>FLASH25</td>
-          <td>Fixed</td>
-          <td>Rp 25000</td>
-          <td>1</td>
-          <td>
-            <button class="btn edit">Edit</button>
-            <button class="btn delete">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Type</th>
+            <th>Discount</th>
+            <th>Uses Left</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="coupon-table-body">
+        </tbody>
+      </table>
+    </div>
 
+    <script>
+		function formatCoupon(coupon) {
+		  const discount = coupon.type.toLowerCase() === 'percentage'
+		    ? coupon.discountValue + '%'
+		    : 'Rp ' + coupon.discountValue;
+
+		  const usesLeft = coupon.maxUsage - coupon.usageCount;
+
+		  return `
+		    <tr>
+		      <td>${coupon.code}</td>
+		      <td>${coupon.type}</td>
+		      <td>${discount}</td>
+		      <td>${usesLeft}</td>
+		      <td>
+		        <button class="btn edit" data-id="${coupon.id}">Edit</button>
+		        <button class="btn delete" data-id="${coupon.id}">Delete</button>
+		      </td>
+		    </tr>
+		  `;
+		}
+
+
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch('/api/coupons')
+          .then(response => response.json())
+          .then(data => {
+            const tbody = document.getElementById('coupon-table-body');
+            tbody.innerHTML = '';
+            data.forEach(coupon => {
+              tbody.innerHTML += formatCoupon(coupon);
+            });
+          })
+          .catch(error => {
+            console.error("Erreur lors du chargement des coupons :", error);
+          });
+      });
+    </script>
+  
 </body>
 </html>
