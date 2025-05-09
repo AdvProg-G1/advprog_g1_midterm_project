@@ -202,4 +202,46 @@ public class PaymentServiceImplTest {
 
         verify(paymentRepository).findAll();
     }
+
+    @Test
+    void testUpdatePaymentSuccess() {
+        Payment updated = new Payment();
+        updated.setPaymentId("id-01");
+        updated.setPaymentName("Dana");
+        updated.setPaymentBankNumber("999999999");
+
+        Payment result = paymentService.updatePayment("id-01", updated);
+
+        assertEquals("Dana", result.getPaymentName());
+        assertEquals("999999999", result.getPaymentBankNumber());
+
+        Payment stored = paymentService.findById("id-01");
+        assertEquals("Dana", stored.getPaymentName());
+    }
+
+    @Test
+    void testUpdatePaymentNotFound() {
+        Payment update = new Payment();
+        update.setPaymentId("id-99");
+        update.setPaymentName("LinkAja");
+        update.setPaymentBankNumber("000000000");
+
+        assertThrows(RuntimeException.class, () -> {
+            paymentService.updatePayment("id-99", update);
+        });
+    }
+
+    @Test
+    void testDeletePaymentSuccess() {
+
+        paymentService.deletePayment("id-02");
+        assertNull(paymentService.findById("id-02"));
+    }
+
+    @Test
+    void testDeletePaymentNotFound() {
+
+        paymentService.deletePayment("id-99");
+        assertEquals(2, paymentService.findAllPayment().size());
+    }
 }
