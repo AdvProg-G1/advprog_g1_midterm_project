@@ -1,3 +1,4 @@
+<!-- src/main/resources/static/user/reviews.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,63 +7,202 @@
   <link rel="stylesheet" href="../assets/css/main.css" />
   <link rel="stylesheet" href="../assets/css/navbar.css" />
   <link rel="stylesheet" href="../assets/css/user/reviews.css" />
+  <style>
+    /* Gold highlight for the best technician card */
+    .review-card.best {
+      border: 2px solid gold;
+      background-color: #fffbea;
+      position: relative;
+    }
+    .review-card.best .badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: gold;
+      color: black;
+      padding: 4px 8px;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    .controls {
+      margin: 16px 0;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .controls label {
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_user.js"></script>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
 
-  <section class="reviews">
-    <h1>REVIEWS & <span class="highlight-black">RATINGS</span></h1>
-    <div class="sub-heading">DISPLAY ONLY<br>LATEST REVIEW</div>
+<section class="reviews">
+  <h1>REVIEWS & <span class="highlight-black">RATINGS</span></h1>
+  <div class="sub-heading">DISPLAY ONLY LATEST REVIEW</div>
 
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Handy Manny</strong>
-          <div class="stars">★★★★★</div>
-          <div class="orders">Orders completed: <span>5</span></div>
+  <div class="controls">
+    <label for="rating-filter">Filter by stars:</label>
+    <select id="rating-filter">
+      <option value="all">All</option>
+      <option value="5">5</option>
+      <option value="4">4</option>
+      <option value="3">3</option>
+      <option value="2">2</option>
+      <option value="1">1</option>
+    </select>
+
+    <label for="sort-order">Sort by rating:</label>
+    <select id="sort-order">
+      <option value="desc" selected>Descending</option>
+      <option value="asc">Ascending</option>
+    </select>
+  </div>
+
+  <!-- Highlighted best technician -->
+  <div id="best-tech-container"></div>
+
+  <!-- Other top technicians -->
+  <div id="reviews-list"></div>
+</section>
+
+<script>
+  const LIMIT = 3;         // how many cards total (including best)
+  let techData = [];       // holds the fetched BestTechnicianResponse[]
+
+  // Fetch top N technicians, ordered asc/desc
+  function fetchBestTechs(limit = LIMIT, order = 'desc') {
+    return fetch(`/api/reviews/best?limit=${limit}&order=${order}`)
+            .then(r => r.json());
+  }
+
+  // Build the “Best Technician” badge
+  function renderBadge() {
+    const badge = document.createElement('div');
+    badge.className = 'badge';
+    badge.textContent = 'Best Technician';
+    return badge;
+  }
+
+  // Turn a numeric rating into ★☆☆… string
+  function createStars(rating) {
+    const full = Math.round(rating);
+    let s = '';
+    for (let i = 0; i < full; i++) s += '★';
+    for (let i = full; i < 5; i++) s += '☆';
+    return s;
+  }
+
+  // Create one card element; if isBest, add gold highlight
+  function renderTechCard(tech, isBest = false) {
+    const card = document.createElement('div');
+    card.className = 'review-card' + (isBest ? ' best' : '');
+    if (isBest) card.appendChild(renderBadge());
+
+    card.innerHTML += `
+        <div class="review-left">
+          <div class="avatar"></div>
+          <div class="reviewer-info">
+            <strong>${tech.fullName}</strong>
+            <div class="stars">${createStars(tech.averageRating)}</div>
+            <div class="orders">Orders completed: <span>${tech.reviewCount}</span></div>
+          </div>
         </div>
-      </div>
-      <div class="review-text">
-        <p>"Manny fixed my sink fast and did a great job. Super friendly, efficient, and left everything spotless. Highly recommend!”</p>
-        <div class="author">— John Ward</div>
-      </div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark" ></div> 
-      <!-- Need to add the functionnality to fill the logo in yellow and the technicians 
-       to favorite -->
-    </div>
-
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Newbie</strong>
-          <div class="stars">★★★★☆</div>
-          <div class="orders">Orders completed: <span>0</span></div>
+        <div class="review-text">
+          <p>${ tech.latestComment
+            ? `"${tech.latestComment}"`
+            : 'No reviews yet.' }</p>
+          ${ tech.latestReviewerName
+            ? `<div class="author">— ${tech.latestReviewerName}</div>`
+            : '' }
         </div>
-      </div>
-      <div class="review-text no-review">No reviews yet.</div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark"></div>
-    </div>
+        <a class="view-profile" href="technician_profile.html?id=${encodeURIComponent(tech.technicianId)}">
+          View <strong>Profile</strong>
+        </a>
+        <button class="bookmark" title="Favorites"></button>
+      `;
+    // Favorite button redirects
+    card.querySelector('.bookmark')
+            .addEventListener('click', () => location.href = 'favorites.html');
+    return card;
+  }
 
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Newbie</strong>
-          <div class="stars">★★★☆☆</div>
-          <div class="orders">Orders completed: <span>0</span></div>
-        </div>
-      </div>
-      <div class="review-text no-review">No reviews yet.</div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark"></div>
-    </div>
+  // Display the best + other technicians in their containers
+  function displayTechs(data) {
+    const bestC = document.getElementById('best-tech-container');
+    const listC = document.getElementById('reviews-list');
+    bestC.innerHTML = '';
+    listC.innerHTML = '';
 
-  </section>
+    if (!data.length) {
+      listC.textContent = 'No technicians found.';
+      return;
+    }
+    // best
+    bestC.appendChild(renderTechCard(data[0], true));
+    // rest
+    data.slice(1).forEach(tech => listC.appendChild(renderTechCard(tech)));
+
+    // start rotating comments on each card
+    document.querySelectorAll('.review-card').forEach(card => {
+      const href = card.querySelector('.view-profile').href;
+      const techId = new URL(href).searchParams.get('id');
+      initCommentRotator(card, techId);
+    });
+  }
+
+  // Filter + sort in‐memory techData, then redisplay
+  function applyFilters() {
+    const starFilter = document.getElementById('rating-filter').value;
+    const order = document.getElementById('sort-order').value;
+
+    let filtered = techData.slice();
+    if (starFilter !== 'all') {
+      const v = parseInt(starFilter);
+      filtered = filtered.filter(t => Math.round(t.averageRating) === v);
+    }
+    filtered.sort((a,b) =>
+            order === 'asc'
+                    ? a.averageRating - b.averageRating
+                    : b.averageRating - a.averageRating
+    );
+    displayTechs(filtered);
+  }
+
+  // Initial load (or after changing sort)
+  function loadAndRender() {
+    const order = document.getElementById('sort-order').value;
+    fetchBestTechs(LIMIT, order).then(list => {
+      techData = list;
+      applyFilters();
+    });
+  }
+
+  // For a given card & technician, fetch *all* reviews and rotate the <p> text every 5s
+  function initCommentRotator(card, techId) {
+    fetch(`/api/reviews/technician/${techId}`)
+            .then(r => r.json())
+            .then(revs => {
+              const cmts = revs.map(r => r.comment).filter(c => c && c.trim());
+              if (cmts.length < 2) return; // nothing to rotate
+              setInterval(() => {
+                const txt = cmts[Math.floor(Math.random()*cmts.length)];
+                const p = card.querySelector('.review-text p');
+                if (p) p.textContent = `"${txt}"`;
+              }, 5000);
+            })
+            .catch(()=>{ /* ignore if no reviews endpoint */ });
+  }
+
+  // wire up controls
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('rating-filter').addEventListener('change', applyFilters);
+    document.getElementById('sort-order') .addEventListener('change', loadAndRender);
+    loadAndRender();
+  });
+</script>
 </body>
 </html>
