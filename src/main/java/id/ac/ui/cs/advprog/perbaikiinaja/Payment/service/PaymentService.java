@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface PaymentService {
 
-    void createPayment(Payment payment);
+    Payment createPayment(Payment payment);
 
     void updatePaymentName(String paymentId, String newName);
 

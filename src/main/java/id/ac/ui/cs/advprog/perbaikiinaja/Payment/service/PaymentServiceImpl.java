@@ -14,7 +14,7 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentRepository paymentRepository;
 
     @Override
-    public void createPayment(Payment payment) {
+    public Payment createPayment(Payment payment) {
         List<Payment> existingPayments = paymentRepository.findAll();
         for (Payment existing : existingPayments) {
             if (existing.getPaymentId().equals(payment.getPaymentId())) {
@@ -22,6 +22,8 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
         paymentRepository.save(payment);
+
+        return payment;
     }
 
     @Override
