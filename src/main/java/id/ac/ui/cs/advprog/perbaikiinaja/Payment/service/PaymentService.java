@@ -17,4 +17,6 @@ public interface PaymentService {
     Payment findByName(String paymentName);
 
     Payment findByBankNumber(String accountNumber);
+
+    List<Payment> findAllPayment();
 }

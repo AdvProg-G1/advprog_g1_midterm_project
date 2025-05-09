@@ -62,4 +62,9 @@ public class PaymentServiceImpl implements PaymentService {
     public Payment findByBankNumber(String bankNumber) {
         return paymentRepository.findByBankNumber(bankNumber);
     }
+
+    @Override
+    public List<Payment> findAllPayment() {
+        return paymentRepository.findAll();
+    }
 }
