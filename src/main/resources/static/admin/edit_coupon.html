@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Edit Coupon</title>
-  <link rel="stylesheet" href="../assets/css/main.css" />
-  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/navbar.css">
+  <link rel="stylesheet" href="../assets/css/admin/create_coupon.css">
 </head>
 <body>
 
@@ -12,7 +13,122 @@
   <script src="../assets/js/navbar_admin.js"></script>
 
   <div class="container">
+    <h1>Edit <span class="highlight">Coupon</span></h1>
+
+    <form id="edit-coupon-form">
+      <label>
+        Code:
+		<input type="text" name="code" required>
+      </label>
+      <label>
+        Type:
+        <select name="type" disabled>
+          <option value="fixed">Fixed</option>
+          <option value="percentage" selected>Percentage</option>
+        </select>
+      </label>
+      <label>
+        Discount Value:
+        <input type="number" name="discountValue" required>
+      </label>
+      <label>
+        Max Usage:
+        <input type="number" name="maxUsage" required>
+      </label>
+      <button type="submit" class="btn add">Update</button>
+    </form>
   </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const couponId = urlParams.get("id");
+
+    if (!couponId) {
+      alert("No coupon ID provided.");
+      window.location.href = "coupons.html";
+    }
+
+    // Pre-fill form with coupon data
+    fetch(`/api/coupons/${couponId}`)
+      .then(response => {
+        if (!response.ok) throw new Error("Failed to load coupon");
+        return response.json();
+      })
+      .then(coupon => {
+        const form = document.getElementById("edit-coupon-form");
+        form.code.value = coupon.code;
+        form.type.value = coupon.type;
+        form.discountValue.value = coupon.discountValue;
+        form.maxUsage.value = coupon.maxUsage;
+      })
+      .catch(error => {
+        console.error("Error loading coupon:", error);
+        alert("Failed to load coupon.");
+        window.location.href = "coupons.html";
+      });
+
+    // Handle form submission
+    document.getElementById("edit-coupon-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+
+      const code = form.code.value.trim();
+      const type = form.type.value;
+      const discountValue = parseFloat(form.discountValue.value);
+      const maxUsage = parseInt(form.maxUsage.value);
+
+      // Validation
+      if (!code) {
+        alert("Coupon code cannot be empty.");
+        return;
+      }
+
+      if (!["fixed", "percentage"].includes(type)) {
+        alert("Coupon type must be 'fixed' or 'percentage'.");
+        return;
+      }
+
+      if (isNaN(discountValue) || discountValue <= 0) {
+        alert("Discount value must be a positive number.");
+        return;
+      }
+
+      if (type === "percentage" && discountValue > 100) {
+        alert("Percentage discount cannot exceed 100%.");
+        return;
+      }
+
+      if (isNaN(maxUsage) || maxUsage <= 0 || !Number.isInteger(maxUsage)) {
+        alert("Max usage must be a positive integer.");
+        return;
+      }
+
+      const updatedCoupon = { code, type, discountValue, maxUsage };
+
+      // Send PUT request
+      fetch(`/api/coupons/${couponId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedCoupon)
+      })
+        .then(response => {
+          if (!response.ok) throw new Error("Update failed");
+          return response.json();
+        })
+        .then(() => {
+          alert("Coupon updated successfully!");
+          window.location.href = "coupons.html";
+        })
+        .catch(error => {
+          console.error("Update error:", error);
+          alert("Failed to update coupon.");
+        });
+    });
+  </script>
+
 
 </body>
 </html>
