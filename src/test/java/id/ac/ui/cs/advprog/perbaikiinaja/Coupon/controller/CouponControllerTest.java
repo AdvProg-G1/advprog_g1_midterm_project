@@ -44,7 +44,7 @@ public class CouponControllerTest {
 
         when(couponService.createCoupon(request)).thenReturn(response);
 
-        mockMvc.perform(post("/admin/coupons")
+        mockMvc.perform(post("/api/coupons")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -62,7 +62,7 @@ public class CouponControllerTest {
 
         when(couponService.getAllCoupons()).thenReturn(responses);
 
-        mockMvc.perform(get("/admin/coupons"))
+        mockMvc.perform(get("/api/coupons"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.length()").value(2))
                .andExpect(jsonPath("$[0].code").value("CPN-1"))
@@ -75,7 +75,7 @@ public class CouponControllerTest {
 
         when(couponService.getCouponById("1")).thenReturn(response);
 
-        mockMvc.perform(get("/admin/coupons/1"))
+        mockMvc.perform(get("/api/coupons/1"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.code").value("CPN-GET"))
                .andExpect(jsonPath("$.discountValue").value(15000));
@@ -92,7 +92,7 @@ public class CouponControllerTest {
 
         when(couponService.updateCoupon(eq("1"), any(CouponRequest.class))).thenReturn(updated);
 
-        mockMvc.perform(put("/admin/coupons/1")
+        mockMvc.perform(put("/api/coupons/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                .andExpect(status().isOk())
@@ -102,7 +102,7 @@ public class CouponControllerTest {
 
     @Test
     void testDeleteCouponReturns204() throws Exception {
-        mockMvc.perform(delete("/admin/coupons/1"))
+        mockMvc.perform(delete("/api/coupons/1"))
                .andExpect(status().isNoContent());
 
         verify(couponService, times(1)).deleteCoupon("1");
