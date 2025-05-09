@@ -19,4 +19,8 @@ public interface PaymentService {
     Payment findByBankNumber(String accountNumber);
 
     List<Payment> findAllPayment();
+
+    Payment updatePayment(String paymentId, Payment payment);
+
+    void deletePayment(String paymentId);
 }

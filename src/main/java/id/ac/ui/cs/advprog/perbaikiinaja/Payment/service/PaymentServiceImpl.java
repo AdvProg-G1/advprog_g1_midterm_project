@@ -67,4 +67,24 @@ public class PaymentServiceImpl implements PaymentService {
     public List<Payment> findAllPayment() {
         return paymentRepository.findAll();
     }
+
+    @Override
+    public Payment updatePayment(String paymentId, Payment newPayment) {
+        Payment existing = paymentRepository.findById(paymentId);
+        if (existing == null) {
+            throw new RuntimeException("Payment not found: " + paymentId);
+        }
+
+        newPayment.setPaymentId(paymentId);
+        paymentRepository.save(newPayment);
+        return newPayment;
+    }
+
+    @Override
+    public void deletePayment(String paymentId) {
+        Payment existing = paymentRepository.findById(paymentId);
+        if (existing != null) {
+            paymentRepository.deletePayment(existing);
+        }
+    }
 }

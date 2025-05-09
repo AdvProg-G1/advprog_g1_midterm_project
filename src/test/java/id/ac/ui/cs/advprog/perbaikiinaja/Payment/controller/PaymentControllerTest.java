@@ -46,7 +46,7 @@ public class PaymentControllerTest {
 
     @Test
     void testCreatePayment() {
-        doNothing().when(paymentService).createPayment(any(Payment.class));
+        when(paymentService.createPayment(any(Payment.class))).thenReturn(samplePayment);
 
         Payment result = paymentController.createPayment(samplePayment);
 
