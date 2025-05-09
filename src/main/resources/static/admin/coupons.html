@@ -79,7 +79,36 @@
 	        window.location.href = `edit_coupon.html?id=${couponId}`;
 	      }
 	    }
+
+	    if (e.target.classList.contains("delete")) {
+	      const couponId = e.target.getAttribute("data-id");
+	      if (!couponId) return;
+
+	      const confirmDelete = confirm("Are you sure you want to delete this coupon?");
+	      if (!confirmDelete) return;
+
+	      fetch(`/api/coupons/${couponId}`, {
+	        method: "DELETE"
+	      })
+	        .then(response => {
+	          if (!response.ok) throw new Error("Failed to delete");
+	          return fetch('/api/coupons');
+	        })
+	        .then(response => response.json())
+	        .then(data => {
+	          const tbody = document.getElementById('coupon-table-body');
+	          tbody.innerHTML = '';
+	          data.forEach(coupon => {
+	            tbody.innerHTML += formatCoupon(coupon);
+	          });
+	        })
+	        .catch(error => {
+	          console.error("Delete error:", error);
+	          alert("Failed to delete the coupon.");
+	        });
+	    }
 	  });
+
 
     </script>
   
