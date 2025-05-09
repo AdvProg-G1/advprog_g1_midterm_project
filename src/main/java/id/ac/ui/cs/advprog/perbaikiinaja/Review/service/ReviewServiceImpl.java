@@ -1,6 +1,7 @@
-//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/ReviewServiceImpl.java
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/ReviewServiceImpl.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Review.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.dto.ReviewRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.dto.ReviewResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.model.Review;
@@ -17,11 +18,12 @@ import java.util.stream.Collectors;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;    // ← Injected
 
     @Override
     public ReviewResponse createReview(ReviewRequest reviewRequest) {
-        // Check for duplicate review
-        Review existing = reviewRepository.findByUserIdAndTechnicianId(reviewRequest.getUserId(), reviewRequest.getTechnicianId());
+        Review existing = reviewRepository.findByUserIdAndTechnicianId(
+                reviewRequest.getUserId(), reviewRequest.getTechnicianId());
         if (existing != null) {
             throw new RuntimeException("Review already exists");
         }
@@ -63,19 +65,23 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewResponse> getReviewsForTechnician(String technicianId) {
-        List<Review> reviews = reviewRepository.findByTechnicianId(technicianId);
-        return reviews.stream()
+        return reviewRepository.findByTechnicianId(technicianId)
+                .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     private ReviewResponse mapToResponse(Review review) {
+        String reviewerName = userRepository.findById(review.getUserId())
+                .map(u -> u.getFullName())
+                .orElse(review.getUserId());
         return new ReviewResponse(
                 review.getId(),
                 review.getTechnicianId(),
                 review.getUserId(),
                 review.getRating(),
-                review.getComment()
+                review.getComment(),
+                reviewerName                  // ← Populate full name
         );
     }
 }
