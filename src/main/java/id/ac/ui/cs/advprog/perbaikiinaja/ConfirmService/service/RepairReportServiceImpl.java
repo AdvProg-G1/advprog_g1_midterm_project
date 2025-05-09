@@ -4,45 +4,43 @@ import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairReportRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RepairReportServiceImpl implements RepairReportService {
-
-    private final RepairOrderRepository orderRepo;
     private final RepairReportRepository reportRepo;
+    private final RepairOrderRepository orderRepo;
 
-    public RepairReportServiceImpl(RepairOrderRepository orderRepo,
-                                   RepairReportRepository reportRepo) {
-        this.orderRepo  = orderRepo;
+    public RepairReportServiceImpl(RepairReportRepository reportRepo,
+                                   RepairOrderRepository orderRepo) {
         this.reportRepo = reportRepo;
+        this.orderRepo  = orderRepo;
     }
 
     @Override
-    public RepairReport createRepairReport(Long orderId, Long technicianId, String details) {
-        ServiceOrder order = orderRepo.findById(orderId);
-        if (order == null) {
-            throw new IllegalArgumentException("RepairOrder not found with ID: " + orderId);
-        }
-        if (!"COMPLETED".equals(order.getStatus())) {
-            throw new IllegalStateException("Cannot report on order not in COMPLETED state.");
-        }
+    public List<RepairReport> getReportsByOrderId(UUID orderId) {
+        return reportRepo.getReportsByOrderId(orderId);
+    }
 
-        RepairReport report = RepairReport.builder()
+    @Override
+    public RepairReport createRepairReport(String orderId, String technicianId, String details) {
+        ServiceOrder order = orderRepo.findById(orderId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if (!"COMPLETED".equals(order.getStatus()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in COMPLETED state.");
+
+        RepairReport rpt = RepairReport.builder()
                 .orderId(orderId)
                 .technicianId(technicianId)
                 .details(details)
                 .createdAt(new Date())
                 .build();
 
-        return reportRepo.createRepairReport(report);
-    }
-
-    @Override
-    public List<RepairReport> getReportsByOrderId(Long orderId) {
-        return reportRepo.getReportsByOrderId(orderId);
+        return reportRepo.save(rpt);
     }
 }

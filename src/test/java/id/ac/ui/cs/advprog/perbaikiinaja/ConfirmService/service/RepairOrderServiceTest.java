@@ -1,119 +1,137 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
-import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.service.ServiceOrderServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.repository.ServiceOrderRepository;
+import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
+import org.junit.jupiter.api.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class RepairOrderServiceTest {
+class RepairOrderServiceTest {
 
     private RepairOrderServiceImpl service;
-    private ServiceOrderServiceImpl serviceOrderService;
-    private ServiceOrder order;
+    private ServiceOrderRepository serviceOrderRepo;
+    private RepairOrderRepository repairOrderRepo;
 
     @BeforeEach
     void setUp() {
-        serviceOrderService = Mockito.mock(ServiceOrderServiceImpl.class);
-        service = new ServiceOrderServiceImpl(serviceOrderService);
+        serviceOrderRepo = mock(ServiceOrderRepository.class);
+        repairOrderRepo  = mock(RepairOrderRepository.class);
+        service = new RepairOrderServiceImpl(serviceOrderRepo, repairOrderRepo);
+    }
 
-        order = new ServiceOrder();
-        order.setId(1L);
-        order.setStatus("PENDING");
+    @Test
+    void testConfirmOrderNotFound() {
+        when(repairOrderRepo.findById("100"))
+                .thenReturn(Optional.empty());
 
-        // stub common service calls
-        when(serviceOrderService.findById(1L)).thenReturn(order);
-        when(serviceOrderService.create(any(ServiceOrder.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.confirmRepairOrder("100", 5, 100)
+        );
+        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertEquals("RepairOrder not found with ID: 100", ex.getReason());
     }
 
     @Test
     void testConfirmOrderInvalidStatus() {
-        // change status away from PENDING
-        order.setStatus("ACCEPTED");
-        when(serviceOrderService.findById(1L)).thenReturn(order);
+        ServiceOrder ord = ServiceOrder.builder()
+                .id(UUID.fromString("1"))
+                .status("ACCEPTED")
+                .build();
+        when(repairOrderRepo.findById("1"))
+                .thenReturn(Optional.of(ord));
 
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
-                () -> service.confirmRepairOrder(1L, 5, 100.0)
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.confirmRepairOrder("1", 5, 100)
         );
-        assertEquals("Cannot confirm an order that is not in PENDING state.", ex.getMessage());
+        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertEquals("Cannot confirm an order that is not in PENDING state", ex.getReason());
     }
 
     @Test
-    void testConfirmOrderAccepted() {
-        // PENDING -> should be accepted
-        order.setStatus("PENDING");
-        when(serviceOrderService.findById(1L)).thenReturn(order);
+    void testConfirmOrderSuccess() {
+        ServiceOrder ord = ServiceOrder.builder()
+                .id(UUID.fromString("1"))
+                .status("PENDING")
+                .build();
+        when(repairOrderRepo.findById("1"))
+                .thenReturn(Optional.of(ord));
+        when(repairOrderRepo.save(any(ServiceOrder.class)))
+                .thenAnswer(i -> i.getArgument(0));
 
-        ServiceOrder confirmed = service.confirmRepairOrder(1L, 5, 100.0);
-        assertEquals("ACCEPTED", confirmed.getStatus());
-        assertEquals(5, confirmed.getEstimatedCompletionTime());
-        assertEquals(100.0, confirmed.getEstimatedPrice(), 0.001);
+        ServiceOrder result = service.confirmRepairOrder("1", 5, 100);
+
+        assertEquals("ACCEPTED", result.getStatus());
+        // completion time is stored as String
+        assertEquals("5", result.getEstimatedCompletionTime());
+        assertEquals(100, result.getEstimatedPrice());
+        assertNotNull(result.getServiceDate());
+        assertEquals(LocalDate.now(), result.getServiceDate());
     }
 
     @Test
-    void testConfirmOrderInvalidId() {
-        when(serviceOrderService.findById(100L)).thenReturn(null);
+    void testRejectOrderNotFound() {
+        when(repairOrderRepo.findById("42"))
+                .thenReturn(Optional.empty());
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> service.confirmRepairOrder(100L, 5, 100.0)
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.rejectRepairOrder("42")
         );
-        assertEquals("RepairOrder not found with ID: 100", ex.getMessage());
-    }
-
-    @Test
-    void testRejectOrderDeletesEntry() {
-        order.setStatus("PENDING");
-        when(serviceOrderService.findById(1L)).thenReturn(order);
-
-        service.rejectRepairOrder(1L);
-        verify(service).deleteById(1L);
+        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertEquals("RepairOrder not found with ID: 42", ex.getReason());
     }
 
     @Test
     void testRejectOrderInvalidStatus() {
-        order.setStatus("ACCEPTED");
-        when(serviceOrderService.findById(1L)).thenReturn(order);
+        ServiceOrder ord = ServiceOrder.builder()
+                .id(UUID.fromString("1"))
+                .status("ACCEPTED")
+                .build();
+        when(repairOrderRepo.findById("1"))
+                .thenReturn(Optional.of(ord));
 
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
-                () -> service.rejectRepairOrder(1L)
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.rejectRepairOrder("1")
         );
-        assertEquals("Cannot reject an order that is not in PENDING state.", ex.getMessage());
+        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertEquals("Cannot confirm an order that is not in PENDING state", ex.getReason());
     }
 
     @Test
-    void testRejectOrderInvalidId() {
-        when(serviceOrderService.findById(100L)).thenReturn(null);
+    void testRejectOrderDeletes() {
+        ServiceOrder ord = ServiceOrder.builder()
+                .id(UUID.fromString("1"))
+                .status("PENDING")
+                .build();
+        when(repairOrderRepo.findById("1"))
+                .thenReturn(Optional.of(ord));
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> service.rejectRepairOrder(100L)
-        );
-        assertEquals("RepairOrder not found with ID: 100", ex.getMessage());
+        service.rejectRepairOrder("1");
+
+        verify(repairOrderRepo).delete(ord);
     }
 
     @Test
-    void testGetAllRepairOrders() {
-        ServiceOrder o1 = ServiceOrder.builder().id(1L).status("PENDING").build();
-        ServiceOrder o2 = ServiceOrder.builder().id(2L).status("ACCEPTED").build();
-        List<ServiceOrder> mockList = List.of(o1, o2);
+    void testFindAll() {
+        ServiceOrder o1 = ServiceOrder.builder().id(UUID.fromString("a")).status("PENDING").build();
+        ServiceOrder o2 = ServiceOrder.builder().id(UUID.fromString("b")).status("ACCEPTED").build();
+        List<ServiceOrder> list = List.of(o1, o2);
 
-        when(serviceOrderService.findAll()).thenReturn(mockList);
+        when(repairOrderRepo.findAll()).thenReturn(list);
 
-        List<ServiceOrder> result = service.findAll();
-
-        assertSame(mockList, result);
-        verify(serviceOrderService).findAll();
+        List<ServiceOrder> got = service.findAll();
+        assertSame(list, got);
+        verify(repairOrderRepo).findAll();
     }
 }

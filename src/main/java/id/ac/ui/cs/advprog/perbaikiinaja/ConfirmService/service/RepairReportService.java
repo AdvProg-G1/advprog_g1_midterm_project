@@ -1,12 +1,13 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
+import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public interface RepairReportService {
-    ServiceOrder createRepairReport(Long orderId, Long technicianId, String details);
-    List<ServiceOrder> getReportsByOrderId(Long orderId);
+    RepairReport createRepairReport(String orderId, String technicianId, String details);
+    List<RepairReport> getReportsByOrderId(UUID orderId);
 }

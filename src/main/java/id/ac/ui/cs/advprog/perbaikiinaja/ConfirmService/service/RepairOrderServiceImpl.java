@@ -3,48 +3,65 @@ package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.repository.ServiceOrderRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class RepairOrderServiceImpl implements RepairOrderService {
 
     private final ServiceOrderRepository serviceOrderRepository;
+    private final RepairOrderRepository repo;
 
-    public RepairOrderServiceImpl(ServiceOrderRepository serviceOrderRepository) {
+    public RepairOrderServiceImpl(ServiceOrderRepository serviceOrderRepository, RepairOrderRepository repo) {
         this.serviceOrderRepository = serviceOrderRepository;
+        this.repo = repo;
     }
 
     @Override
-    public ServiceOrder confirmRepairOrder(Long orderId, int estimatedDuration, double estimatedCost) {
-        ServiceOrder order = serviceOrderRepository.findById(orderId);
-        if (order == null) {
-            throw new IllegalArgumentException("RepairOrder not found with ID: " + orderId);
-        }
+    public ServiceOrder confirmRepairOrder(String id, int duration, int cost) {
+        ServiceOrder order = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
+
         if (!"PENDING".equals(order.getStatus())) {
-            throw new IllegalStateException("Cannot confirm an order that is not in PENDING state.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in PENDING state");
         }
 
         order.setStatus("ACCEPTED");
-        order.setEstimatedCompletionTime(estimatedDuration);
-        order.setEstimatedPrice(estimatedCost);
-        order.setServiceDate(new Date());
-        return serviceOrderRepository.create(order);
+        order.setEstimatedCompletionTime(String.valueOf(duration));
+        order.setEstimatedPrice(cost);
+        order.setServiceDate(LocalDate.now());
+        return repo.save(order);
     }
 
     @Override
-    public ServiceOrder rejectRepairOrder(UUID orderId) {
-        ServiceOrder order = serviceOrderRepository.findById(orderId);
-        if (order == null) {
-            throw new IllegalArgumentException("RepairOrder not found with ID: " + orderId);
-        }
+    public void rejectRepairOrder(String id) {
+        ServiceOrder order = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
+
         if (!"PENDING".equals(order.getStatus())) {
-            throw new IllegalStateException("Cannot reject an order that is not in PENDING state.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in PENDING state");
         }
 
-        serviceOrderRepository.deleteById(orderId);
-        return serviceOrderRepository.create(order);
+        repo.delete(order);
+    }
+
+    @Override
+    public ServiceOrder findById(ServiceOrder id) {
+        return serviceOrderRepository.findById(id.getId()).orElse(null);
+    }
+
+    @Override
+    public void deleteById(ServiceOrder order) {
+        ServiceOrder toDelete = findById(order);
+        repo.delete(toDelete);
+    }
+
+    @Override
+    public List<ServiceOrder> findAll() {
+        return repo.findAll();
     }
 }
