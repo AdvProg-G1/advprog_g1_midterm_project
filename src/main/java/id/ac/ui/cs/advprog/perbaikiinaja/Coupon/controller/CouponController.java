@@ -16,7 +16,7 @@ public class CouponController {
 
     private final CouponService couponService;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<CouponResponse> createCoupon(@RequestBody CouponRequest request) {
         CouponResponse created = couponService.createCoupon(request);
         return ResponseEntity.status(201).body(created);

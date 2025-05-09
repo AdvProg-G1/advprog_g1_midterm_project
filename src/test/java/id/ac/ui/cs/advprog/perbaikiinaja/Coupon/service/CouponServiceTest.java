@@ -61,7 +61,7 @@ public class CouponServiceTest {
     @Test
     void testGetCouponByIdReturnsCoupon() {
         Coupon coupon = new FixedDiscountCoupon("FIXED5", 5000.0, 2);
-        when(couponRepository.findById(coupon.getId())).thenReturn(coupon);
+        when(couponRepository.findById(coupon.getId())).thenReturn(java.util.Optional.of(coupon));
 
         CouponResponse response = couponService.getCouponById(coupon.getId());
         assertEquals("FIXED5", response.getCode());
@@ -71,7 +71,7 @@ public class CouponServiceTest {
     @Test
     void testDeleteCouponSuccess() {
         Coupon coupon = new FixedDiscountCoupon("DELETE10", 10000.0, 3);
-        when(couponRepository.findById(coupon.getId())).thenReturn(coupon);
+        when(couponRepository.findById(coupon.getId())).thenReturn(java.util.Optional.of(coupon));
         doNothing().when(couponRepository).deleteById(coupon.getId());
 
         assertDoesNotThrow(() -> couponService.deleteCoupon(coupon.getId()));
@@ -81,8 +81,8 @@ public class CouponServiceTest {
     @Test
     void testUpdateCouponSuccess() {
         Coupon coupon = new FixedDiscountCoupon("FIXED15", 15000.0, 3);
-        when(couponRepository.findById(coupon.getId())).thenReturn(coupon);
-        when(couponRepository.update(any(Coupon.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(couponRepository.findById(coupon.getId())).thenReturn(java.util.Optional.of(coupon));
+        when(couponRepository.save(any(Coupon.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         CouponRequest updateRequest = new CouponRequest();
         updateRequest.setDiscountValue(17000.0);

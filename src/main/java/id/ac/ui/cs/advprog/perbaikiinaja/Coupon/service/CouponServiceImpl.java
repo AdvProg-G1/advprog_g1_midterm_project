@@ -49,34 +49,30 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public CouponResponse getCouponById(String id) {
-        Coupon coupon = couponRepository.findById(id);
-        if (coupon == null) {
-            throw new RuntimeException("Coupon not found with id: " + id);
-        }
-        return mapToResponse(coupon);
+    	Coupon coupon = (Coupon) couponRepository.findById(id)
+    		    .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
+    	return mapToResponse(coupon);
+
     }
 
     @Override
     public void deleteCoupon(String id) {
-        Coupon coupon = couponRepository.findById(id);
-        if (coupon == null) {
-            throw new RuntimeException("Coupon not found with id: " + id);
-        }
-        couponRepository.deleteById(id);
+    	Coupon coupon = couponRepository.findById(id)
+    	        .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
+    	    couponRepository.deleteById(id);
     }
 
     @Override
     public CouponResponse updateCoupon(String id, CouponRequest request) {
-        Coupon coupon = couponRepository.findById(id);
-        if (coupon == null) {
-            throw new RuntimeException("Coupon not found with id: " + id);
-        }
+    	Coupon coupon = couponRepository.findById(id)
+    	        .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
 
-        coupon.setDiscountValue(request.getDiscountValue());
-        coupon.setMaxUsage(request.getMaxUsage());
+    	    coupon.setDiscountValue(request.getDiscountValue());
+    	    coupon.setMaxUsage(request.getMaxUsage());
 
-        couponRepository.update(coupon);
-        return mapToResponse(coupon);
+    	    Coupon updated = couponRepository.save(coupon);  
+    	    return mapToResponse(updated);
+
     }
 
     private CouponResponse mapToResponse(Coupon coupon) {

@@ -2,8 +2,13 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model;
 
 import java.util.UUID;
 
-public abstract class Coupon {
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
+@Entity
+public abstract class Coupon {
+	
+	@Id
 	private final String id; // Unique identifier for the coupon
     private String code;
     private double discountValue;
