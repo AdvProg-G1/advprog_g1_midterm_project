@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Edit Coupon</title>
-  <link rel="stylesheet" href="../assets/css/main.css" />
-  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/navbar.css">
+  <link rel="stylesheet" href="../assets/css/admin/create_coupon.css">
 </head>
 <body>
 
@@ -12,7 +13,39 @@
   <script src="../assets/js/navbar_admin.js"></script>
 
   <div class="container">
+    <h1>Edit <span class="highlight">Coupon</span></h1>
+
+    <form id="edit-coupon-form">
+      <label>
+        Code:
+        <input type="text" name="code" readonly value="WELCOME10">
+      </label>
+      <label>
+        Type:
+        <select name="type" disabled>
+          <option value="fixed">Fixed</option>
+          <option value="percentage" selected>Percentage</option>
+        </select>
+      </label>
+      <label>
+        Discount Value:
+        <input type="number" name="discountValue" required value="10">
+      </label>
+      <label>
+        Max Usage:
+        <input type="number" name="maxUsage" required value="5">
+      </label>
+      <button type="submit" class="btn add">Update</button>
+    </form>
   </div>
+
+  <script>
+    document.getElementById("edit-coupon-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      alert("Coupon updated (simulated)");
+      window.location.href = "coupons.html";
+    });
+  </script>
 
 </body>
 </html>
