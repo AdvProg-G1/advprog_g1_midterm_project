@@ -188,4 +188,18 @@ public class PaymentServiceImplTest {
 
         assertNull(paymentService.findByBankNumber("notanumber"));
     }
+
+    // happy
+    @Test
+    void findAllPayment() {
+        doReturn(payments).when(paymentRepository).findAll();
+
+        List<Payment> result = paymentService.findAllPayment();
+
+        assertEquals(2, result.size());
+        assertEquals("id-01", result.get(0).getPaymentId());
+        assertEquals("id-02", result.get(1).getPaymentId());
+
+        verify(paymentRepository).findAll();
+    }
 }
