@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../assets/css/navbar.css" />
   <link rel="stylesheet" href="../assets/css/user/reviews.css" />
   <style>
-    /* Gold highlight for the best technician card */
+    /* Gold highlight for the best technician card, badge in top-left */
     .review-card.best {
       border: 2px solid gold;
       background-color: #fffbea;
@@ -17,7 +17,8 @@
     .review-card.best .badge {
       position: absolute;
       top: 8px;
-      right: 8px;
+      left: 8px;
+      right: auto;
       background: gold;
       color: black;
       padding: 4px 8px;
@@ -32,6 +33,14 @@
     }
     .controls label {
       font-weight: bold;
+    }
+    .pagination {
+      margin: 16px 0;
+      text-align: center;
+    }
+    .pagination button {
+      margin: 0 8px;
+      padding: 6px 12px;
     }
   </style>
 </head>
@@ -67,41 +76,43 @@
 
   <!-- Other top technicians -->
   <div id="reviews-list"></div>
+
+  <!-- Pagination controls for the “others” list -->
+  <div class="pagination">
+    <button id="prev-page" disabled>Previous</button>
+    <span id="page-info">Page 1</span>
+    <button id="next-page" disabled>Next</button>
+  </div>
 </section>
 
 <script>
-  const LIMIT = 3;         // how many cards total (including best)
-  let techData = [];       // holds the fetched BestTechnicianResponse[]
+  const PAGE_SIZE = 3;        // how many cards per page (excluding best)
+  let allTechs = [];          // holds full BestTechnicianResponse[]
+  let filtered = [];          // filtered & sorted array
+  let currentPage = 0;        // zero-based
 
-  // Fetch top N technicians, ordered asc/desc
-  function fetchBestTechs(limit = LIMIT, order = 'desc') {
-    return fetch(`/api/reviews/best?limit=${limit}&order=${order}`)
+  function fetchAllTechs() {
+    // fetch a large limit to get all
+    return fetch(`/api/reviews/best?limit=1000&order=desc`)
             .then(r => r.json());
   }
 
-  // Build the “Best Technician” badge
+  function createStars(r) {
+    const full = Math.round(r);
+    return '★'.repeat(full) + '☆'.repeat(5-full);
+  }
+
   function renderBadge() {
-    const badge = document.createElement('div');
-    badge.className = 'badge';
-    badge.textContent = 'Best Technician';
-    return badge;
+    const b = document.createElement('div');
+    b.className = 'badge';
+    b.textContent = 'Best Technician';
+    return b;
   }
 
-  // Turn a numeric rating into ★☆☆… string
-  function createStars(rating) {
-    const full = Math.round(rating);
-    let s = '';
-    for (let i = 0; i < full; i++) s += '★';
-    for (let i = full; i < 5; i++) s += '☆';
-    return s;
-  }
-
-  // Create one card element; if isBest, add gold highlight
   function renderTechCard(tech, isBest = false) {
     const card = document.createElement('div');
     card.className = 'review-card' + (isBest ? ' best' : '');
     if (isBest) card.appendChild(renderBadge());
-
     card.innerHTML += `
         <div class="review-left">
           <div class="avatar"></div>
@@ -124,84 +135,93 @@
         </a>
         <button class="bookmark" title="Favorites"></button>
       `;
-    // Favorite button redirects
     card.querySelector('.bookmark')
             .addEventListener('click', () => location.href = 'favorites.html');
     return card;
   }
 
-  // Display the best + other technicians in their containers
-  function displayTechs(data) {
+  function display() {
+    // Best technician always index 0
     const bestC = document.getElementById('best-tech-container');
-    const listC = document.getElementById('reviews-list');
     bestC.innerHTML = '';
-    listC.innerHTML = '';
-
-    if (!data.length) {
-      listC.textContent = 'No technicians found.';
-      return;
+    if (filtered.length) {
+      bestC.appendChild(renderTechCard(filtered[0], true));
     }
-    // best
-    bestC.appendChild(renderTechCard(data[0], true));
-    // rest
-    data.slice(1).forEach(tech => listC.appendChild(renderTechCard(tech)));
 
-    // start rotating comments on each card
+    // slice “others” for current page
+    const listC = document.getElementById('reviews-list');
+    listC.innerHTML = '';
+    const others = filtered.slice(1);
+    const start = currentPage * PAGE_SIZE;
+    const pageItems = others.slice(start, start + PAGE_SIZE);
+    pageItems.forEach(tech => listC.appendChild(renderTechCard(tech)));
+
+    // pagination buttons
+    const totalPages = Math.ceil(others.length / PAGE_SIZE);
+    document.getElementById('prev-page').disabled = currentPage === 0;
+    document.getElementById('next-page').disabled = currentPage >= totalPages - 1;
+    document.getElementById('page-info').textContent =
+            `Page ${currentPage+1} of ${Math.max(totalPages,1)}`;
+
+    // init comment rotators
     document.querySelectorAll('.review-card').forEach(card => {
       const href = card.querySelector('.view-profile').href;
       const techId = new URL(href).searchParams.get('id');
-      initCommentRotator(card, techId);
+      rotateComments(card, techId);
     });
   }
 
-  // Filter + sort in‐memory techData, then redisplay
-  function applyFilters() {
-    const starFilter = document.getElementById('rating-filter').value;
+  function applyFiltersAndSort() {
+    const star = document.getElementById('rating-filter').value;
     const order = document.getElementById('sort-order').value;
 
-    let filtered = techData.slice();
-    if (starFilter !== 'all') {
-      const v = parseInt(starFilter);
-      filtered = filtered.filter(t => Math.round(t.averageRating) === v);
+    filtered = allTechs.slice();
+    if (star !== 'all') {
+      filtered = filtered.filter(t =>
+              Math.round(t.averageRating) === parseInt(star)
+      );
     }
     filtered.sort((a,b) =>
             order === 'asc'
                     ? a.averageRating - b.averageRating
                     : b.averageRating - a.averageRating
     );
-    displayTechs(filtered);
+    currentPage = 0;  // reset
+    display();
   }
 
-  // Initial load (or after changing sort)
-  function loadAndRender() {
-    const order = document.getElementById('sort-order').value;
-    fetchBestTechs(LIMIT, order).then(list => {
-      techData = list;
-      applyFilters();
-    });
-  }
-
-  // For a given card & technician, fetch *all* reviews and rotate the <p> text every 5s
-  function initCommentRotator(card, techId) {
+  function rotateComments(card, techId) {
     fetch(`/api/reviews/technician/${techId}`)
             .then(r => r.json())
             .then(revs => {
-              const cmts = revs.map(r => r.comment).filter(c => c && c.trim());
-              if (cmts.length < 2) return; // nothing to rotate
-              setInterval(() => {
-                const txt = cmts[Math.floor(Math.random()*cmts.length)];
+              const cmts = revs.map(r => r.comment).filter(c=>c);
+              if (cmts.length < 2) return;
+              let idx = 0;
+              setInterval(()=>{
+                idx = (idx+1)%cmts.length;
                 const p = card.querySelector('.review-text p');
-                if (p) p.textContent = `"${txt}"`;
+                if (p) p.textContent = `"${cmts[idx]}"`;
               }, 5000);
-            })
-            .catch(()=>{ /* ignore if no reviews endpoint */ });
+            });
   }
 
-  // wire up controls
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('rating-filter').addEventListener('change', applyFilters);
-    document.getElementById('sort-order') .addEventListener('change', loadAndRender);
-    loadAndRender();
+    // wire controls
+    document.getElementById('rating-filter')
+            .addEventListener('change', applyFiltersAndSort);
+    document.getElementById('sort-order')
+            .addEventListener('change', applyFiltersAndSort);
+    document.getElementById('prev-page')
+            .addEventListener('click', ()=>{ currentPage--; display(); });
+    document.getElementById('next-page')
+            .addEventListener('click', ()=>{ currentPage++; display(); });
+
+    // initial load
+    fetchAllTechs()
+            .then(data => {
+              allTechs = data;
+              applyFiltersAndSort();
+            });
   });
 </script>
 </body>
