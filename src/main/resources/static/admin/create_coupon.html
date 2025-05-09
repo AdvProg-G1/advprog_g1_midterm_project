@@ -49,8 +49,8 @@
       const type = form.type.value;
       const discountValue = parseFloat(form.discountValue.value);
       const maxUsage = parseInt(form.maxUsage.value);
-     
-	  if (!code) {
+
+      if (!code) {
         alert("Coupon code cannot be empty.");
         return;
       }
@@ -71,6 +71,24 @@
       }
 
       const couponData = { code, type, discountValue, maxUsage };
+
+      fetch('/api/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(couponData)
+      })
+        .then(response => {
+          if (!response.ok) throw new Error("Failed to create coupon.");
+          return response.json();
+        })
+        .then(() => {
+          alert("Coupon successfully created!");
+          window.location.href = "coupons.html";
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("An error occurred while creating the coupon.");
+        });
     });
   </script>
 
