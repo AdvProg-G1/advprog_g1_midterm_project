@@ -21,8 +21,13 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public CouponResponse createCoupon(CouponRequest request) {
-        String code = "CPN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    	String code = request.getCode();
+    	
+    	if (code == null || code.isBlank()) {
+            code = "CPN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
 
+    	
         Coupon coupon;
         switch (request.getType().toLowerCase()) {
             case "fixed":

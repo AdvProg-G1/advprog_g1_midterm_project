@@ -8,6 +8,9 @@ import lombok.Data;
 @Data
 public class CouponRequest {
 
+	@NotNull(message = "Coupon code is required")
+    private String code;
+	
     @NotNull(message = "Discount value is required")
     @Min(value = 0, message = "Discount must be non-negative")
     private Double discountValue;
