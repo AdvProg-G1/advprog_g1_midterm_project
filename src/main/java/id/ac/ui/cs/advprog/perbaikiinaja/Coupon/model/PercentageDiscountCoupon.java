@@ -1,7 +1,13 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model;
 
+import jakarta.persistence.Entity;
+
+@Entity
 public class PercentageDiscountCoupon extends Coupon {
 
+	public PercentageDiscountCoupon() {
+		super();
+	}
     public PercentageDiscountCoupon(String code, double discountValue, int maxUsage) {
     	super(maxUsage);
     	

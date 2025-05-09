@@ -15,6 +15,10 @@ public abstract class Coupon {
     private int maxUsage;
     private int usageCount = 0;
 
+    public Coupon() {
+    	this.id = UUID.randomUUID().toString();
+    }
+    
     public Coupon(int maxUsage) {
         this.id = UUID.randomUUID().toString(); // Generate unique ID on creation
         
