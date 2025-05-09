@@ -75,16 +75,16 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Payment not found: " + paymentId);
         }
 
-        newPayment.setPaymentId(paymentId);
-        paymentRepository.save(newPayment);
-        return newPayment;
+        existing.setPaymentName(newPayment.getPaymentName());
+        existing.setPaymentBankNumber(newPayment.getPaymentBankNumber());
+
+        return paymentRepository.save(existing);
     }
 
     @Override
     public void deletePayment(String paymentId) {
-        Payment existing = paymentRepository.findById(paymentId);
-        if (existing != null) {
-            paymentRepository.deletePayment(String.valueOf(existing));
+        boolean deleted = paymentRepository.deletePayment(paymentId);
+        if (!deleted) {
         }
     }
 }

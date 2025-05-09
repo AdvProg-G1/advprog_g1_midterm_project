@@ -204,19 +204,23 @@ public class PaymentServiceImplTest {
     }
 
     @Test
-    void testUpdatePaymentSuccess() {
+    void testUpdatePayment() {
+        Payment original = payments.get(0);  // GoPay, id-01
+
         Payment updated = new Payment();
         updated.setPaymentId("id-01");
         updated.setPaymentName("Dana");
         updated.setPaymentBankNumber("999999999");
+
+        doReturn(original).when(paymentRepository).findById("id-01");
+        doReturn(original).when(paymentRepository).save(any(Payment.class));
 
         Payment result = paymentService.updatePayment("id-01", updated);
 
         assertEquals("Dana", result.getPaymentName());
         assertEquals("999999999", result.getPaymentBankNumber());
 
-        Payment stored = paymentService.findById("id-01");
-        assertEquals("Dana", stored.getPaymentName());
+        verify(paymentRepository).save(original);
     }
 
     @Test
@@ -240,8 +244,12 @@ public class PaymentServiceImplTest {
 
     @Test
     void testDeletePaymentNotFound() {
+        doReturn(false).when(paymentRepository).deletePayment("id-99");
+        doReturn(payments).when(paymentRepository).findAll();
 
         paymentService.deletePayment("id-99");
+
         assertEquals(2, paymentService.findAllPayment().size());
+        verify(paymentRepository).deletePayment("id-99");
     }
 }
