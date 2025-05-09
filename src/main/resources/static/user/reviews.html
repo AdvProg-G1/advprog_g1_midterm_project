@@ -1,68 +1,223 @@
+<!-- src/main/resources/static/user/reviews.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <title>Reviews & Ratings</title>
-  <link rel="stylesheet" href="../assets/css/main.css" />
-  <link rel="stylesheet" href="../assets/css/navbar.css" />
-  <link rel="stylesheet" href="../assets/css/user/reviews.css" />
+  <link rel="stylesheet" href="../assets/css/main.css"/>
+  <link rel="stylesheet" href="../assets/css/navbar.css"/>
+  <link rel="stylesheet" href="../assets/css/user/reviews.css"/>
+  <style>
+    /* Top-tech highlight */
+    .review-card.best {
+      border: 2px solid gold;
+      background-color: #fff9e6;
+      position: relative;
+    }
+    .review-card.best .badge {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: gold;
+      color: #333;
+      padding: 2px 6px;
+      font-size: 0.85em;
+      border-radius: 4px;
+    }
+
+    /* Favorite bookmark */
+    .bookmark {
+      display: inline-block;
+      width: 24px; height: 24px;
+      background: url('../assets/img/bookmark-outline.svg') no-repeat center/contain;
+      border: none;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .review-card.favorited .bookmark {
+      background-image: url('../assets/img/bookmark-filled.svg');
+    }
+
+    /* Pagination controls */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1em 0;
+    }
+    .pagination button {
+      margin: 0 1em; padding: 0.5em 1em;
+    }
+    .pagination button:disabled {
+      opacity: 0.5; cursor: default;
+    }
+
+    .controls {
+      margin-bottom: 1em;
+    }
+    .controls > * {
+      margin-right: 1em;
+    }
+  </style>
 </head>
 <body>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_user.js"></script>
+<section class="reviews">
+  <h1>REVIEWS & <span class="highlight-black">RATINGS</span></h1>
 
-  <section class="reviews">
-    <h1>REVIEWS & <span class="highlight-black">RATINGS</span></h1>
-    <div class="sub-heading">DISPLAY ONLY<br>LATEST REVIEW</div>
+  <div class="controls">
+    <label for="sort-order">Sort by:</label>
+    <select id="sort-order">
+      <option value="desc" selected>High → Low</option>
+      <option value="asc">Low → High</option>
+    </select>
 
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Handy Manny</strong>
-          <div class="stars">★★★★★</div>
-          <div class="orders">Orders completed: <span>5</span></div>
-        </div>
-      </div>
-      <div class="review-text">
-        <p>"Manny fixed my sink fast and did a great job. Super friendly, efficient, and left everything spotless. Highly recommend!”</p>
-        <div class="author">— John Ward</div>
-      </div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark" ></div> 
-      <!-- Need to add the functionnality to fill the logo in yellow and the technicians 
-       to favorite -->
-    </div>
+    <label for="filter-stars">Filter stars:</label>
+    <select id="filter-stars">
+      <option value="all" selected>All</option>
+      <option value="5">★★★★★</option>
+      <option value="4">★★★★☆</option>
+      <option value="3">★★★☆☆</option>
+      <option value="2">★★☆☆☆</option>
+      <option value="1">★☆☆☆☆</option>
+    </select>
+  </div>
 
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Newbie</strong>
-          <div class="stars">★★★★☆</div>
-          <div class="orders">Orders completed: <span>0</span></div>
-        </div>
-      </div>
-      <div class="review-text no-review">No reviews yet.</div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark"></div>
-    </div>
+  <div id="reviews-container"></div>
 
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Newbie</strong>
-          <div class="stars">★★★☆☆</div>
-          <div class="orders">Orders completed: <span>0</span></div>
-        </div>
-      </div>
-      <div class="review-text no-review">No reviews yet.</div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark"></div>
-    </div>
+  <div class="pagination">
+    <button id="prev-btn" disabled>Previous</button>
+    <span id="page-info">Page 1</span>
+    <button id="next-btn">Next</button>
+  </div>
+</section>
 
-  </section>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const container   = document.getElementById('reviews-container');
+    const sortSelect  = document.getElementById('sort-order');
+    const filterSelect= document.getElementById('filter-stars');
+    const prevBtn     = document.getElementById('prev-btn');
+    const nextBtn     = document.getElementById('next-btn');
+    const pageInfo    = document.getElementById('page-info');
+    const pageSize    = 5;
+
+    let rawTechs = [], techs = [], allReviews = {}, currentPage = 1;
+
+    // 1) Fetch top technicians & all their reviews
+    async function loadData() {
+      const order = sortSelect.value;
+      rawTechs = await fetch(`/api/reviews/best?limit=100&order=${order}`)
+              .then(r => r.json());
+
+      // fetch reviews per technician
+      await Promise.all(rawTechs.map(async t => {
+        allReviews[t.technicianId] = await fetch(
+                `/api/reviews/technician/${t.technicianId}`
+        ).then(r => r.json());
+      }));
+
+      applyFiltersAndRender();
+    }
+
+    // 2) Apply star-filter then render page 1
+    function applyFiltersAndRender() {
+      const f = filterSelect.value;
+      if (f === 'all') {
+        techs = rawTechs.slice();
+      } else {
+        techs = rawTechs.filter(t =>
+                Math.round(t.averageRating) === Number(f)
+        );
+      }
+      currentPage = 1;
+      renderPage();
+    }
+
+    // 3) Render current page of techs
+    function renderPage() {
+      container.innerHTML = '';
+      const totalPages = Math.ceil(techs.length / pageSize) || 1;
+      const start = (currentPage - 1) * pageSize;
+      const pageList = techs.slice(start, start + pageSize);
+
+      pageList.forEach((t, idx) => {
+        const globalIdx = start + idx;
+        const reviews   = allReviews[t.technicianId] || [];
+        const card      = document.createElement('div');
+        card.className  = 'review-card' + (globalIdx === 0 ? ' best' : '');
+
+        card.innerHTML = `
+            ${globalIdx === 0
+                ? '<div class="badge">#1 Best Technician</div>'
+                : ''}
+            <div class="review-left">
+              <div class="avatar"
+                   style="background-image:url('/api/users/${t.technicianId}/avatar')">
+              </div>
+              <div class="reviewer-info">
+                <strong>${t.fullName}</strong>
+                <div class="stars">${renderStars(t.averageRating)}</div>
+                <div class="orders">Reviews: <span>${t.reviewCount}</span></div>
+              </div>
+            </div>
+            <div class="review-text">
+              <p>"${(reviews[0]||{}).comment||'No reviews yet.'}"</p>
+              ${reviews[0]
+                ? `<div class="author">— ${reviews[0].userId}</div>`
+                : ''}
+            </div>
+            <div class="card-actions">
+              <a href="/technician/profile.html?techId=${t.technicianId}"
+                 class="view-profile">View Profile</a>
+              <button class="bookmark" aria-label="Favorite"></button>
+            </div>
+          `;
+
+        // Toggle favorite
+        card.querySelector('.bookmark').addEventListener('click', e => {
+          e.stopPropagation();
+          card.classList.toggle('favorited');
+          // TODO: persist favorite to server
+        });
+
+        // Rotate comments every 5s
+        if (reviews.length) {
+          setInterval(() => {
+            const r = reviews[Math.floor(Math.random()*reviews.length)];
+            card.querySelector('.review-text p').textContent = `"${r.comment}"`;
+            const a = card.querySelector('.review-text .author');
+            if (a) a.textContent = `— ${r.userId}`;
+          }, 5000);
+        }
+
+        container.appendChild(card);
+      });
+
+      // Update pagination
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    }
+
+    // Helpers & event-wiring
+    function renderStars(avg) {
+      const n = Math.round(avg);
+      return '★'.repeat(n) + '☆'.repeat(5-n);
+    }
+    sortSelect.addEventListener('change', loadData);
+    filterSelect.addEventListener('change', applyFiltersAndRender);
+    prevBtn.addEventListener('click', () => {
+      if (currentPage>1) { currentPage--; renderPage(); }
+    });
+    nextBtn.addEventListener('click', () => {
+      const total = Math.ceil(techs.length/pageSize);
+      if (currentPage<total) { currentPage++; renderPage(); }
+    });
+
+    loadData();
+  });
+</script>
 </body>
 </html>
