@@ -12,4 +12,5 @@ public class ReviewResponse {
     private String userId;
     private int rating;
     private String comment;
+    private String reviewerName;
 }
