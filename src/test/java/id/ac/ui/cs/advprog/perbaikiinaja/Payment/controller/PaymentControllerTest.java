@@ -59,7 +59,7 @@ public class PaymentControllerTest {
     void testUpdatePayment() {
         when(paymentService.updatePayment(eq("id-01"), any(Payment.class))).thenReturn(samplePayment);
 
-        Payment result = paymentController.updatePayment("id-01", samplePayment);
+        Payment result = paymentController.updatePayment("id-01", samplePayment).getBody();
 
         assertEquals("id-01", result.getPaymentId());
         verify(paymentService).updatePayment("id-01", samplePayment);
@@ -79,7 +79,7 @@ public class PaymentControllerTest {
     void testGetPaymentById() {
         when(paymentService.findById("id-01")).thenReturn(samplePayment);
 
-        Payment result = paymentController.getPaymentById("id-01");
+        Payment result = paymentController.getById("id-01").getBody();
 
         assertEquals("id-01", result.getPaymentId());
     }
@@ -88,7 +88,7 @@ public class PaymentControllerTest {
     void testGetPaymentByName() {
         when(paymentService.findByName("GoPay")).thenReturn(samplePayment);
 
-        Payment result = paymentController.getPaymentByName("GoPay");
+        Payment result = paymentController.getByName("GoPay").getBody();
 
         assertEquals("GoPay", result.getPaymentName());
     }
@@ -97,7 +97,7 @@ public class PaymentControllerTest {
     void testGetPaymentByBankNumber() {
         when(paymentService.findByBankNumber("1234567890")).thenReturn(samplePayment);
 
-        Payment result = paymentController.getPaymentByBankNumber("1234567890");
+        Payment result = paymentController.getByBankNumber("1234567890").getBody();
 
         assertEquals("1234567890", result.getPaymentBankNumber());
     }
