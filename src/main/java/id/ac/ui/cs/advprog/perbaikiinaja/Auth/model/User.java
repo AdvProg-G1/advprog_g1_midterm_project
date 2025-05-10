@@ -29,24 +29,29 @@ public class User implements UserDetails {
     private String phone;
     private String address;
 
-    // ← add this:
     @Column(nullable = false)
-    private String role;   // e.g. "ROLE_USER" or "ROLE_TECHNICIAN"
+    private String role; // stored in DB as string: "ROLE_CUSTOMER", etc.
 
-    // --- UserDetails methods ---
+    // Role Authorization Methods
+
+    public Role getRoleEnum() {
+        return Role.fromAuthority(this.role);
+    }
+
+    public void setRoleEnum(Role roleEnum) {
+        this.role = roleEnum.getAuthority();
+    }
+
+    // UserDetails methods
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role));
     }
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
     // password getter is provided by Lombok
 
+    @Override public String getUsername() { return email; }
     @Override public boolean isAccountNonExpired()     { return true; }
     @Override public boolean isAccountNonLocked()      { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
