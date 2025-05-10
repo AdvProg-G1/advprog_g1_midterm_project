@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class MethodAuthorizationConfigTest {
-
+g
     @Autowired
     private RoleHierarchy roleHierarchy;
 
@@ -46,7 +46,7 @@ public class MethodAuthorizationConfigTest {
 
     @Test
     void nullRoleUserThrows() {
-        User brokenUser = new User("id-04", "Ghost", "ghost@gmail.com", "boo123", "000", "Nowhere", null);
+        User brokenUser = new User("whatid", "whatname", "whatemail@gmail.com", "whatpass", "0", "whataddr", null);
         assertThrows(NullPointerException.class, () -> brokenUser.getAuthorities());
     }
 
