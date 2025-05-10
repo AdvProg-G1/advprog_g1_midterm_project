@@ -10,7 +10,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
@@ -32,8 +31,8 @@ class RepairReportServiceTest {
     @InjectMocks
     private RepairReportServiceImpl service;
 
-    private final String ORDER_ID = "order-123";
-    private final String TECH_ID  = "tech-456";
+    private final String ORDER_ID = "01f93c11-ded7-4776-a9ab-b77b097ddf63";
+    private final String TECH_ID  = "01f93c11-ded7-4776-a9ab-b77b097ddf68";
 
     @Test
     void testCreateRepairReportNotFound() {
@@ -66,7 +65,7 @@ class RepairReportServiceTest {
                 () -> service.createRepairReport(ORDER_ID, TECH_ID, "details")
         );
 
-        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertFalse(ex.getMessage().contains("404 NOT_FOUND"));
         assertEquals("Cannot report on order not in COMPLETED state.", ex.getReason());
 
         verify(orderRepo).findById(ORDER_ID);

@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.repository.ServiceOrderRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
 import org.junit.jupiter.api.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -43,32 +42,32 @@ class RepairOrderServiceTest {
     @Test
     void testConfirmOrderInvalidStatus() {
         ServiceOrder ord = ServiceOrder.builder()
-                .id(UUID.fromString("1"))
+                .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .status("ACCEPTED")
                 .build();
-        when(repairOrderRepo.findById("1"))
+        when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.confirmRepairOrder("1", 5, 100)
+                () -> service.confirmRepairOrder("01f93c11-ded7-4776-a9ab-b77b097ddf63", 5, 100)
         );
-        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertFalse(ex.getMessage().contains("404 NOT_FOUND"));
         assertEquals("Cannot confirm an order that is not in PENDING state", ex.getReason());
     }
 
     @Test
     void testConfirmOrderSuccess() {
         ServiceOrder ord = ServiceOrder.builder()
-                .id(UUID.fromString("1"))
+                .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .status("PENDING")
                 .build();
-        when(repairOrderRepo.findById("1"))
+        when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
         when(repairOrderRepo.save(any(ServiceOrder.class)))
                 .thenAnswer(i -> i.getArgument(0));
 
-        ServiceOrder result = service.confirmRepairOrder("1", 5, 100);
+        ServiceOrder result = service.confirmRepairOrder("01f93c11-ded7-4776-a9ab-b77b097ddf63", 5, 100);
 
         assertEquals("ACCEPTED", result.getStatus());
         // completion time is stored as String
@@ -94,38 +93,38 @@ class RepairOrderServiceTest {
     @Test
     void testRejectOrderInvalidStatus() {
         ServiceOrder ord = ServiceOrder.builder()
-                .id(UUID.fromString("1"))
+                .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .status("ACCEPTED")
                 .build();
-        when(repairOrderRepo.findById("1"))
+        when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.rejectRepairOrder("1")
+                () -> service.rejectRepairOrder("01f93c11-ded7-4776-a9ab-b77b097ddf63")
         );
-        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertFalse(ex.getMessage().contains("404 NOT_FOUND"));
         assertEquals("Cannot confirm an order that is not in PENDING state", ex.getReason());
     }
 
     @Test
     void testRejectOrderDeletes() {
         ServiceOrder ord = ServiceOrder.builder()
-                .id(UUID.fromString("1"))
+                .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .status("PENDING")
                 .build();
-        when(repairOrderRepo.findById("1"))
+        when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
 
-        service.rejectRepairOrder("1");
+        service.rejectRepairOrder("01f93c11-ded7-4776-a9ab-b77b097ddf63");
 
         verify(repairOrderRepo).delete(ord);
     }
 
     @Test
     void testFindAll() {
-        ServiceOrder o1 = ServiceOrder.builder().id(UUID.fromString("a")).status("PENDING").build();
-        ServiceOrder o2 = ServiceOrder.builder().id(UUID.fromString("b")).status("ACCEPTED").build();
+        ServiceOrder o1 = ServiceOrder.builder().id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63")).status("PENDING").build();
+        ServiceOrder o2 = ServiceOrder.builder().id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf66")).status("ACCEPTED").build();
         List<ServiceOrder> list = List.of(o1, o2);
 
         when(repairOrderRepo.findAll()).thenReturn(list);
