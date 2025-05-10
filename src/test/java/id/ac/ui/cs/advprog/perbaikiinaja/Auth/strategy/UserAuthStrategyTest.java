@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.strategy;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.UserAuthStrategy;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.RegisterUserRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
