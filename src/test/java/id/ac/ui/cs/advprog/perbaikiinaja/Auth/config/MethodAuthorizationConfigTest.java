@@ -1,72 +1,78 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.config;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.Role;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 public class MethodAuthorizationConfigTest {
 
-    private RoleHierarchy roleHierarchy;
+    private RoleHierarchyImpl roleHierarchy;
+
+    @BeforeEach
+    void setup() {
+        roleHierarchy = new RoleHierarchyImpl();
+        roleHierarchy.setHierarchy("""
+            ADMIN > TECHNICIAN
+            TECHNICIAN > CUSTOMER
+        """);
+    }
 
     @Test
-    void adminHasCustomerAccess() {
-        var adminAuth = new SimpleGrantedAuthority("ROLE_ADMIN");
+    void testAdminHasCustomerAccess() {
+        var adminAuth = new SimpleGrantedAuthority("ADMIN");
         var authorities = roleHierarchy.getReachableGrantedAuthorities(Collections.singleton(adminAuth));
-        assertTrue(authorities.contains(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
+        assertTrue(authorities.contains(new SimpleGrantedAuthority("CUSTOMER")));
     }
 
     @Test
-    void customerHasNoAdminAccess() {
-        var customerAuth = new SimpleGrantedAuthority("ROLE_CUSTOMER");
+    void testCustomerHasNoAdminAccess() {
+        var customerAuth = new SimpleGrantedAuthority("CUSTOMER");
         var authorities = roleHierarchy.getReachableGrantedAuthorities(Collections.singleton(customerAuth));
-        assertFalse(authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        assertFalse(authorities.contains(new SimpleGrantedAuthority("ADMIN")));
     }
 
     @Test
-    void userAuthoritiesMatchRole() {
-        User customer = new User("id-02", "Shopper", "iliketoshop@gmail.com", "ILoveShop123", "012345679", "Shop Town", "ROLE_CUSTOMER");
-        User admin = new User("id-01", "Admin", "adminisfun@gmail.com", "admintime123", "0666777888", "Admin Place", "ROLE_ADMIN");
+    void testUserAuthoritiesMatchRole() {
+        User customer = new User("id-02", "Shopper", "iliketoshop@gmail.com", "ILoveShop123", "012345679", "Shop Town", "CUSTOMER");
+        User admin = new User("id-01", "Admin", "adminisfun@gmail.com", "admintime123", "0666777888", "Admin Place", "ADMIN");
 
-        assertTrue(customer.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
-        assertFalse(customer.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
-
-        assertTrue(admin.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        assertEquals(List.of(new SimpleGrantedAuthority("CUSTOMER")), customer.getAuthorities());
+        assertEquals(List.of(new SimpleGrantedAuthority("ADMIN")), admin.getAuthorities());
     }
 
     @Test
-    void nullRoleUserThrows() {
-        User brokenUser = new User("whatid", "whatname", "whatemail@gmail.com", "whatpass", "0", "whataddr", null);
-        assertThrows(NullPointerException.class, () -> brokenUser.getAuthorities());
+    void testNullRoleUser() {
+        User fakeUser = new User("whatid", "whatname", "whatemail@gmail.com", "whatpass", "0", "whataddr", null);
+        assertThrows(IllegalArgumentException.class, fakeUser::getAuthorities);
     }
 
     @Test
-    void invalidRoleHasNoAccess() {
-        var invalidAuth = new SimpleGrantedAuthority("ROLE_HACKER");
+    void testInvalidRoleHasNoAccess() {
+        var invalidAuth = new SimpleGrantedAuthority("HACKER");
         var authorities = roleHierarchy.getReachableGrantedAuthorities(Collections.singleton(invalidAuth));
-        assertFalse(authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        assertFalse(authorities.contains(new SimpleGrantedAuthority("ROLE_CUSTOMER")));
+        assertFalse(authorities.contains(new SimpleGrantedAuthority("ADMIN")));
+        assertFalse(authorities.contains(new SimpleGrantedAuthority("CUSTOMER")));
     }
 
     @Test
-    void anonymousHasNoRoles() {
-        var anonymous = Collections.<GrantedAuthority>emptyList();
-        assertTrue(anonymous.isEmpty());
+    void testAnonymousUserHasNoRoles() {
+        var anon = Collections.<GrantedAuthority>emptyList();
+        assertTrue(anon.isEmpty());
     }
 
     @Test
-    void technicianHasNoAdminAccess() {
-        var techAuth = new SimpleGrantedAuthority("ROLE_TECHNICIAN");
+    void testTechnicianHasNoAdminAccess() {
+        var techAuth = new SimpleGrantedAuthority("TECHNICIAN");
         var authorities = roleHierarchy.getReachableGrantedAuthorities(Collections.singleton(techAuth));
-        assertFalse(authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        assertFalse(authorities.contains(new SimpleGrantedAuthority("ADMIN")));
     }
 }

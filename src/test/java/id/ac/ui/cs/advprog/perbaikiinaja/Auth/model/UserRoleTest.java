@@ -8,25 +8,25 @@ public class UserRoleTest {
 
     @Test
     void testGetAuthority() {
-        assertEquals("ROLE_CUSTOMER", Role.CUSTOMER.getAuthority());
-        assertEquals("ROLE_TECHNICIAN", Role.TECHNICIAN.getAuthority());
-        assertEquals("ROLE_ADMIN", Role.ADMIN.getAuthority());
+        assertEquals("CUSTOMER", Role.CUSTOMER.getAuthority());
+        assertEquals("TECHNICIAN", Role.TECHNICIAN.getAuthority());
+        assertEquals("ADMIN", Role.ADMIN.getAuthority());
     }
 
     @Test
     void testFromAuthority() {
-        assertEquals(Role.CUSTOMER, Role.fromAuthority("ROLE_CUSTOMER"));
-        assertEquals(Role.TECHNICIAN, Role.fromAuthority("ROLE_TECHNICIAN"));
-        assertEquals(Role.ADMIN, Role.fromAuthority("ROLE_ADMIN"));
+        assertEquals(Role.CUSTOMER, Role.fromAuthority("CUSTOMER"));
+        assertEquals(Role.TECHNICIAN, Role.fromAuthority("TECHNICIAN"));
+        assertEquals(Role.ADMIN, Role.fromAuthority("ADMIN"));
     }
 
     @Test
     void testFromAuthorityIsCaseInsensitive() {
-        assertEquals(Role.CUSTOMER, Role.fromAuthority("role_customer"));
+        assertEquals(Role.CUSTOMER, Role.fromAuthority("customer"));
     }
 
     @Test
     void testFromAuthorityThrowsExceptionOnInvalidInput() {
-        assertThrows(IllegalArgumentException.class, () -> Role.fromAuthority("ROLE_UNKNOWN"));
+        assertThrows(IllegalArgumentException.class, () -> Role.fromAuthority("UNKNOWN"));
     }
 }

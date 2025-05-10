@@ -1,9 +1,9 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.model;
 
 public enum Role {
-    CUSTOMER("ROLE_CUSTOMER"),
-    TECHNICIAN("ROLE_TECHNICIAN"),
-    ADMIN("ROLE_ADMIN");
+    CUSTOMER("CUSTOMER"),
+    TECHNICIAN("TECHNICIAN"),
+    ADMIN("ADMIN");
 
     private final String authority;
 

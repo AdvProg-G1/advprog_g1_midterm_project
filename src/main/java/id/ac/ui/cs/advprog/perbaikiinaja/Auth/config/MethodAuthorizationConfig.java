@@ -12,8 +12,8 @@ public class MethodAuthorizationConfig {
         var hierarchy = new RoleHierarchyImpl();
         // ADMIN > TECHNICIAN > CUSTOMER
         hierarchy.setHierarchy("""
-            ROLE_ADMIN > ROLE_TECHNICIAN
-            ROLE_TECHNICIAN > ROLE_CUSTOMER
+            ADMIN > TECHNICIAN
+            TECHNICIAN > CUSTOMER
         """);
         return hierarchy;
     }

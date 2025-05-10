@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -46,8 +47,15 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role));
+        if (role == null || role.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        // remove ROLE prefix if present
+        String formattedRole = role.startsWith("ROLE_") ? role.substring(5) : role;
+        return List.of(new SimpleGrantedAuthority(formattedRole));
     }
+
 
     // password getter is provided by Lombok
 
