@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class MethodAuthorizationConfigTest {
-g
-    @Autowired
+
     private RoleHierarchy roleHierarchy;
 
     @Test
