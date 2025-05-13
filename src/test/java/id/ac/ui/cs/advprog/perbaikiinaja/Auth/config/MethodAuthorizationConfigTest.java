@@ -7,7 +7,6 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class MethodAuthorizationConfigTest {
     @Test
     void testNullRoleUser() {
         User fakeUser = new User("whatid", "whatname", "whatemail@gmail.com", "whatpass", "0", "whataddr", null);
-        assertThrows(IllegalArgumentException.class, fakeUser::getAuthorities);
+        assertTrue(fakeUser.getAuthorities().isEmpty());
     }
 
     @Test
