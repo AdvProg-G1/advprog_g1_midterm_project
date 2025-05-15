@@ -3,8 +3,111 @@
 ---
 ### *Before pushing to main we pushed on branch develop:)*
 
-**Repair Service Application**
+---
 
+### PerbaikiinAja System Architecture
+
+This documentation provides an overview of the PerbaikiinAja service system using three architectural perspectives: **Context Diagram**, **Container Diagram**, and **Deployment Diagram**. The system is built using Spring Boot (Java), a web frontend (HTML, JS, CSS), and PostgreSQL, and is deployed entirely on AWS EC2.
+
+---
+
+## 1. Context Diagram
+![Context Diagram](src/main/resources/static/assets/images/ContextDiagram.drawio.png)
+
+The Context Diagram illustrates the external actors and how they interact with the PerbaikiinAja system:
+
+- **User (Customer)**:
+  - Places and cancels repair orders
+  - Submits and edits reviews
+  - Views order history and manages profile
+
+- **Technician**:
+  - Accepts or rejects jobs
+  - Completes orders and writes reports
+  - Manages their profile
+
+- **Admin**:
+  - Verifies technicians
+  - Manages coupons
+  - Views all reports and user activities
+
+All actors use the system through a centralized application interface, which handles the orchestration of their interactions.
+
+---
+
+## 2. Container Diagram
+![Container Diagram](src/main/resources/static/assets/images/ContainerDiagram.drawio.png)
+
+The Container Diagram breaks down the PerbaikiinAja system into three main components:
+
+- **FrontEnd Page [HTML, JS, CSS]**
+  - Renders the UI for all roles (Users, Technicians, Admins)
+  - Handles authentication, order management, reviews, coupons, and profile updates
+
+- **Spring Boot REST API [Java]**
+  - Provides core REST endpoints:
+    - `/api/auth/login`, `/register`
+    - `/api/orders`, `/api/orders/{id}/status`
+    - `/api/reviews`, `/api/reviews/{id}`
+    - `/api/payments`, `/api/coupons`, `/api/reports`
+    - `/api/users/profile`
+  - Handles all business logic and connects to the database via JDBC
+
+- **Database [PostgreSQL on AWS EC2]**
+  - Stores persistent data for:
+    - Users, Technicians
+    - Orders & statuses
+    - Reviews & Reports
+    - Payments, Coupons, Audit Logs
+
+---
+
+## 3. Deployment Diagram
+![Deployment Diagram](src/main/resources/static/assets/images/DeploymentDiagram.drawio.png)
+
+The Deployment Diagram shows the infrastructure setup of PerbaikiinAja on AWS:
+
+- **Frontend Page**
+  - Runs on users’ web browsers (Chrome, Firefox, Safari, Edge) on Windows/macOS
+  - Loads HTML/CSS/JS from the backend server
+
+- **Spring Boot Application [AWS EC2]**
+  - Hosts the backend services, processes REST API calls, and applies business logic
+
+- **Database [AWS EC2 - PostgreSQL]**
+  - Handles data storage and retrieval through SQL connections from the backend
+
+### Communication Flow:
+- Users interact with the system via browsers
+- Browsers send REST API requests to the Spring Boot server
+- The server reads/writes data to PostgreSQL
+- Static frontend content is delivered to the browser from the same backend server
+
+---
+
+## 🛠️ Tech Stack Overview
+
+| Layer       | Technology Used          |
+|-------------|---------------------------|
+| Frontend    | HTML, CSS, JavaScript     |
+| Backend     | Spring Boot (Java)        |
+| Database    | PostgreSQL                |
+| Hosting     | AWS EC2                   |
+| Communication | REST API (HTTP/JSON)   |
+
+---
+
+## 👥 Role Summary
+
+| Role       | Responsibilities                                                   |
+|------------|---------------------------------------------------------------------|
+| **User**       | Register, Login, Place/Cancel Orders, Write Reviews, View History  |
+| **Technician** | Accept/Reject Orders, Complete Jobs, Submit Reports              |
+| **Admin**      | Manage Users & Technicians, View Reports, Manage Coupons         |
+
+---
+
+PerbaikiinAja provides an integrated platform to streamline the repair service lifecycle between customers, technicians, and administrators—securely hosted and deployed in the cloud.
 ---
 
 ## Table of Contents
