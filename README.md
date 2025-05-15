@@ -83,6 +83,20 @@ The Deployment Diagram shows the infrastructure setup of PerbaikiinAja on AWS:
 - The server reads/writes data to PostgreSQL
 - Static frontend content is delivered to the browser from the same backend server
 
+
+## After Risk Analysis
+
+![Risk Analysis](src/main/resources/static/assets/images/RiskAnalysisPerbaikiinaja.drawio.png)
+
+### Context Diagram
+![After ContextDiagram](src/main/resources/static/assets/images/ContextDiagramAfter.drawio.png)
+
+### Container Diagram
+![After ContainerDiagram](src/main/resources/static/assets/images/ContainerDiagramAfter.drawio.png)
+
+### Deployment Diagram
+
+![After DeploymentDiagram](src/main/resources/static/assets/images/DeploymentDiagramAfter.drawio.png)
 ---
 
 ## 🛠️ Tech Stack Overview
