@@ -9,5 +9,5 @@ import java.util.UUID;
 @Service
 public interface RepairReportService {
     RepairReport createRepairReport(String orderId, String technicianId, String details);
-    List<RepairReport> getReportsByOrderId(UUID orderId);
+    List<RepairReport> getReportsByOrderId(String orderId);
 }

@@ -13,11 +13,6 @@ public class RepairReportController {
     @Autowired
     private RepairReportServiceImpl service;
 
-    public static class CreateReport {
-        public Long technicianId;
-        public String details;
-    }
-
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public String createReportPost(Model model, @ModelAttribute RepairReport report) {

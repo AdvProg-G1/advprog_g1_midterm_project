@@ -24,7 +24,7 @@ public class RepairReportServiceImpl implements RepairReportService {
     }
 
     @Override
-    public List<RepairReport> getReportsByOrderId(UUID orderId) {
+    public List<RepairReport> getReportsByOrderId(String orderId) {
         return reportRepo.getReportsByOrderId(orderId);
     }
 
