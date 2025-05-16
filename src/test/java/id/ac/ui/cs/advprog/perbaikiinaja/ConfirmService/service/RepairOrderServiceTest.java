@@ -43,7 +43,7 @@ class RepairOrderServiceTest {
     void testConfirmOrderInvalidStatus() {
         ServiceOrder ord = ServiceOrder.builder()
                 .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
-                .status("ACCEPTED")
+                .status("TECHNICIAN_ACCEPTED")
                 .build();
         when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
@@ -53,14 +53,14 @@ class RepairOrderServiceTest {
                 () -> service.confirmRepairOrder("01f93c11-ded7-4776-a9ab-b77b097ddf63", 5, 100)
         );
         assertFalse(ex.getMessage().contains("404 NOT_FOUND"));
-        assertEquals("Cannot confirm an order that is not in PENDING state", ex.getReason());
+        assertEquals("Cannot confirm an order that is not in WAITING_CONFIRMATION state", ex.getReason());
     }
 
     @Test
     void testConfirmOrderSuccess() {
         ServiceOrder ord = ServiceOrder.builder()
                 .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
-                .status("PENDING")
+                .status("WAITING_CONFIRMATION")
                 .build();
         when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
@@ -69,7 +69,7 @@ class RepairOrderServiceTest {
 
         ServiceOrder result = service.confirmRepairOrder("01f93c11-ded7-4776-a9ab-b77b097ddf63", 5, 100);
 
-        assertEquals("ACCEPTED", result.getStatus());
+        assertEquals("TECHNICIAN_ACCEPTED", result.getStatus());
         // completion time is stored as String
         assertEquals("5", result.getEstimatedCompletionTime());
         assertEquals(100, result.getEstimatedPrice());
@@ -94,7 +94,7 @@ class RepairOrderServiceTest {
     void testRejectOrderInvalidStatus() {
         ServiceOrder ord = ServiceOrder.builder()
                 .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
-                .status("ACCEPTED")
+                .status("TECHNICIAN_ACCEPTED")
                 .build();
         when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
@@ -104,14 +104,14 @@ class RepairOrderServiceTest {
                 () -> service.rejectRepairOrder("01f93c11-ded7-4776-a9ab-b77b097ddf63")
         );
         assertFalse(ex.getMessage().contains("404 NOT_FOUND"));
-        assertEquals("Cannot confirm an order that is not in PENDING state", ex.getReason());
+        assertEquals("Cannot confirm an order that is not in WAITING_CONFIRMATION state", ex.getReason());
     }
 
     @Test
     void testRejectOrderDeletes() {
         ServiceOrder ord = ServiceOrder.builder()
                 .id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
-                .status("PENDING")
+                .status("WAITING_CONFIRMATION")
                 .build();
         when(repairOrderRepo.findById("01f93c11-ded7-4776-a9ab-b77b097ddf63"))
                 .thenReturn(Optional.of(ord));
@@ -123,8 +123,8 @@ class RepairOrderServiceTest {
 
     @Test
     void testFindAll() {
-        ServiceOrder o1 = ServiceOrder.builder().id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63")).status("PENDING").build();
-        ServiceOrder o2 = ServiceOrder.builder().id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf66")).status("ACCEPTED").build();
+        ServiceOrder o1 = ServiceOrder.builder().id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf63")).status("WAITING_CONFIRMATION").build();
+        ServiceOrder o2 = ServiceOrder.builder().id(UUID.fromString("01f93c11-ded7-4776-a9ab-b77b097ddf66")).status("TECHNICIAN_ACCEPTED").build();
         List<ServiceOrder> list = List.of(o1, o2);
 
         when(repairOrderRepo.findAll()).thenReturn(list);

@@ -120,12 +120,12 @@ class RepairReportServiceTest {
                 .build();
 
         List<RepairReport> fakeList = List.of(r1, r2);
-        when(reportRepo.getReportsByOrderId(uuid))
+        when(reportRepo.getReportsByOrderId(String.valueOf(uuid)))
                 .thenReturn(fakeList);
 
-        List<RepairReport> actual = service.getReportsByOrderId(uuid);
+        List<RepairReport> actual = service.getReportsByOrderId(String.valueOf(uuid));
 
         assertSame(fakeList, actual);
-        verify(reportRepo).getReportsByOrderId(uuid);
+        verify(reportRepo).getReportsByOrderId(String.valueOf(uuid));
     }
 }
