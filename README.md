@@ -125,6 +125,11 @@ Feature : **Reviews Module & Authentication – PerbaikiinAja**
 
 ![Code Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/CodeDiagramCoupon.png)
 
+### Place Order
+
+![Component Diagram for Place Order Feature](src/main/resources/static/assets/images/Component_Diagram_ServiceOrder.drawio.png)
+
+![Code Diagram for Place Order Feature](src/main/resources/static/assets/images/ServiceOrder_CodeDiagram.png)
 ## 🛠️ Tech Stack Overview
 
 | Layer       | Technology Used          |
