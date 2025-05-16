@@ -104,6 +104,21 @@ In the PerbaikiinAja system, applying Risk Storming led to important architectur
 
 ## 4. Individual Component Diagrams
 
+## 👤 Author
+**Andhika Nayaka Arya Wibowo** – *NPM 2306174135*  
+Feature : **Reviews Module & Authentication – PerbaikiinAja**
+
+## 📊 Architecture & Design Diagrams
+
+| # | Preview | C4 Level | Description |
+|---|---------|----------|-------------|
+| 1 | ![Auth Code Diagram](src/main/resources/static/assets/images/auth_codediagram.drawio.png) | **Code Diagram** | **Authentication module – class view**<br>• Shows `RegisterUserRequest` & `UserResponse` DTOs, `User` JPA entity, `UserRepository` (Spring-Data JPA).<br>• `AuthStrategy` interface ⇄ `UserAuthStrategy` implementation (BCrypt password hashing).<br>• Unit test class `UserAuthStrategyTest` with all success/error paths.<br>• HTML pages (`login.html`, `register.html`, `welcome.html`, profile page) are indicated to illustrate the end-to-end flow from UI → strategy → database. |
+| 2 | ![Reviews Code Diagram](src/main/resources/static/assets/images/reviews_codediagram.drawio.png) | **Code Diagram** | **Reviews feature – detailed class diagram**<br>• Core domain classes: `Review` entity, DTOs (`ReviewRequest`, `ReviewResponse`, `BestTechnicianResponse`).<br>• Layers: controller → service → repository.<br>• Rating engine: `RatingStrategy` interface with `SimpleAverageRatingStrategy` (Primary) & `WeightedRatingStrategy` implementations.<br>• Supporting services (`OverallRatingService`) and unit-test classes (`ReviewServiceTest`, `OverallRatingServiceTest`, `RatingStrategyTest`). |
+| 3 | ![Reviews Component Diagram](src/main/resources/static/assets/images/reviews_componentdiagram.drawio.png) | **Component Diagram** | **“Review Module” inside the Spring-Boot application**<br>• Breaks the container into components: Controller, Service + Impl, Repository, DTOs, JPA Model, Strategy plug-ins.<br>• Highlights calls to the Auth module for user look-up, unit-test boundaries, and the JDBC link to PostgreSQL.<br>• Also shows front-end HTML/JS pages that invoke the REST endpoints. |
+| 4 | ![Reviews Container Diagram](src/main/resources/static/assets/images/reviews_containerdiagram.drawio.png) | **Container Diagram** | **System-level view focused on Reviews**<br>• Web Browser (SPA + static Technician/User pages) consumes the Reviews API over REST/JSON.<br>• Reviews API (Spring Boot) deployed on AWS EC2; persists data in PostgreSQL.<br>• Depends on Auth Service for authentication/authorisation.<br>• CI/CD pipeline (GitHub Actions + SonarQube) builds, tests, and deploys the container. |
+---
+
+
 ### Feature Coupons
 
 ![Component Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/ComponentDiagramCoupon.png)
