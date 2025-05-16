@@ -118,6 +118,11 @@ Feature : **Reviews Module & Authentication – PerbaikiinAja**
 | 4 | ![Reviews Container Diagram](src/main/resources/static/assets/images/reviews_containerdiagram.drawio.png) | **Container Diagram** | **System-level view focused on Reviews**<br>• Web Browser (SPA + static Technician/User pages) consumes the Reviews API over REST/JSON.<br>• Reviews API (Spring Boot) deployed on AWS EC2; persists data in PostgreSQL.<br>• Depends on Auth Service for authentication/authorisation.<br>• CI/CD pipeline (GitHub Actions + SonarQube) builds, tests, and deploys the container. |
 ---
 
+### Feature Confirm Service
+
+![Component DiagramD](src/main/resources/static/assets/images/ComponentDiagramConfirmService.png)
+
+![Code Diagram](src/main/resources/static/assets/images/CodeDiagramConfirmService.png)
 
 ### Feature Coupons
 
