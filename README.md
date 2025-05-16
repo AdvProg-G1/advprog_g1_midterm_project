@@ -120,10 +120,17 @@ Feature : **Reviews Module & Authentication – PerbaikiinAja**
 
 
 ### Feature Coupons
-
+By: Azim Barhoumi
 ![Component Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/ComponentDiagramCoupon.png)
 
 ![Code Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/CodeDiagramCoupon.png)
+
+### Feature: Payment Management
+By: Ameera Khaira Tawfiqa
+| # | Preview | C4 Level |
+|---|---------|----------|
+| 1 | ![Payment Component Diagram](src/main/resources/static/assets/images/PaymentContainerDiagram.drawio.png) | **Component Diagram** |
+| 2 | ![Payment Code Diagram](src/main/resources/static/assets/images/Payment_Module_Code_Diagram.png) | **Code Diagram** |
 
 ### Place Order
 
