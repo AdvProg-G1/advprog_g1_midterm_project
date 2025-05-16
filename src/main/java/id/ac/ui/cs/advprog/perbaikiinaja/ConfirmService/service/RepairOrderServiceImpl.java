@@ -26,11 +26,11 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         ServiceOrder order = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
 
-        if (!"PENDING".equals(order.getStatus())) {
+        if (!"WAITING_CONFIRMATION".equals(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in PENDING state");
         }
 
-        order.setStatus("ACCEPTED");
+        order.setStatus("TECHNICIAN_ACCEPTED");
         order.setEstimatedCompletionTime(String.valueOf(duration));
         order.setEstimatedPrice(cost);
         order.setServiceDate(LocalDate.now());
@@ -42,11 +42,12 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         ServiceOrder order = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
 
-        if (!"PENDING".equals(order.getStatus())) {
+        if (!"WAITING_CONFIRMATION".equals(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in PENDING state");
         }
 
-        repo.delete(order);
+        String orderId = String.valueOf(repo.findById(id));
+        repo.deleteById(orderId);
     }
 
     @Override
@@ -63,5 +64,14 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     @Override
     public List<ServiceOrder> findAll() {
         return repo.findAll();
+    }
+
+    @Override
+    public List<ServiceOrder> findByStatus(String status) {
+        String normalized = status
+                .replace('-', '_')
+                .replace(' ', '_')
+                .toLowerCase();
+        return repo.findByStatus(normalized);
     }
 }

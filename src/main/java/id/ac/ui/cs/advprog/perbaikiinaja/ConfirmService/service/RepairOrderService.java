@@ -10,4 +10,5 @@ public interface RepairOrderService {
     ServiceOrder findById(ServiceOrder order);
     void deleteById(ServiceOrder orderId);
     List<ServiceOrder> findAll();
+    List<ServiceOrder> findByStatus(String status);
 }
