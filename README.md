@@ -101,6 +101,15 @@ The Deployment Diagram shows the infrastructure setup of PerbaikiinAja on AWS:
 Risk Storming is a technique used to systematically identify, evaluate, and prioritize potential risks within a software architecture, enabling teams to address vulnerabilities early in the development process. By analyzing each architectural component, such as potential performance bottlenecks in the API or security gaps in the authentication system, teams can design more targeted and effective safeguards like role-based access control, audit logs, and scalability solutions.
 
 In the PerbaikiinAja system, applying Risk Storming led to important architectural decisions including implementing horizontal scaling through an Auto Scaling Group to handle varying loads efficiently and introducing an internal audit logging module to track sensitive operations. These enhancements directly address key risk areas, ensuring the application remains stable, secure, and accountable during real-world use.
+
+## 4. Individual Component Diagrams
+
+### Feature Coupons
+
+![Component Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/ComponentDiagramCoupon.png)
+
+![Code Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/CodeDiagramCoupon.png)
+
 ## 🛠️ Tech Stack Overview
 
 | Layer       | Technology Used          |
