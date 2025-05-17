@@ -79,7 +79,7 @@ body {
     display: flex;
     flex-direction: column;
     width: 60%;
-    gap: 16px;
+    gap: 8px;
   }
   
   .register-form label {
