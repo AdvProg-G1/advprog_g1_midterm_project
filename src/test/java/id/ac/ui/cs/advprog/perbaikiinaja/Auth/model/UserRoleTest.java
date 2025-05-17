@@ -1,32 +1,33 @@
+// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/model/UserRoleTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.model;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserRoleTest {
+class UserRoleTest {
 
     @Test
-    void testGetAuthority() {
-        assertEquals("CUSTOMER", Role.CUSTOMER.getAuthority());
+    void getAuthorityReturnsExactText() {
+        assertEquals("USER",       Role.USER.getAuthority());
         assertEquals("TECHNICIAN", Role.TECHNICIAN.getAuthority());
-        assertEquals("ADMIN", Role.ADMIN.getAuthority());
+        assertEquals("ADMIN",      Role.ADMIN.getAuthority());
     }
 
     @Test
-    void testFromAuthority() {
-        assertEquals(Role.CUSTOMER, Role.fromAuthority("CUSTOMER"));
+    void fromAuthorityParsesExactCase() {
+        assertEquals(Role.USER,       Role.fromAuthority("USER"));
         assertEquals(Role.TECHNICIAN, Role.fromAuthority("TECHNICIAN"));
-        assertEquals(Role.ADMIN, Role.fromAuthority("ADMIN"));
+        assertEquals(Role.ADMIN,      Role.fromAuthority("ADMIN"));
     }
 
     @Test
-    void testFromAuthorityIsCaseInsensitive() {
-        assertEquals(Role.CUSTOMER, Role.fromAuthority("customer"));
+    void fromAuthorityIsCaseInsensitive() {
+        assertEquals(Role.USER, Role.fromAuthority("user"));
     }
 
     @Test
-    void testFromAuthorityThrowsExceptionOnInvalidInput() {
+    void fromAuthorityThrowsOnUnknown() {
         assertThrows(IllegalArgumentException.class, () -> Role.fromAuthority("UNKNOWN"));
     }
 }

@@ -1,12 +1,15 @@
 // src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/strategy/UserAuthStrategy.java
-package id.ac.ui.cs.advprog.perbaikiinaja.Auth;
+package id.ac.ui.cs.advprog.perbaikiinaja.Auth.strategy;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.RegisterUserRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.Role;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -16,8 +19,8 @@ public class UserAuthStrategy implements AuthStrategy {
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public User login(String email, String password) {
-        User user = userRepository.findByEmail(email)
+    public User login(String username, String password) {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
@@ -26,17 +29,22 @@ public class UserAuthStrategy implements AuthStrategy {
     }
 
     @Override
-    public User register(RegisterUserRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("User already exists");
+    public User register(RegisterUserRequest r) {
+        if (userRepository.findByUsername(r.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already taken");
         }
-        User user = new User();
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setPhone(request.getPhone());
-        user.setAddress(request.getAddress());
-        user.setRole("ROLE_USER");  // default role for new users
-        return userRepository.save(user);
+        if (userRepository.findByEmail(r.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+        User u = new User();
+        u.setId(UUID.randomUUID().toString());
+        u.setUsername(r.getUsername());
+        u.setFullName(r.getFullName());
+        u.setEmail(r.getEmail());
+        u.setPassword(passwordEncoder.encode(r.getPassword()));
+        u.setPhone(r.getPhone());
+        u.setAddress(r.getAddress());
+        u.setRoleEnum(Role.CUSTOMER);           // default role
+        return userRepository.save(u);
     }
 }

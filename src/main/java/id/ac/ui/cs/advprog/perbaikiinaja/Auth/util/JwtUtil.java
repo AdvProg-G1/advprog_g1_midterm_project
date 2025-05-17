@@ -1,3 +1,4 @@
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/util/JwtUtil.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.util;
 
 import io.jsonwebtoken.*;
@@ -13,12 +14,12 @@ public class JwtUtil {
     @Value("${jwt.expiration-ms}")
     private long validityInMs;
 
-    public String generateToken(String userId, String email, String role) {
+    public String generateToken(String userId, String username, String role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + validityInMs);
         return Jwts.builder()
                 .setSubject(userId)
-                .claim("email", email)
+                .claim("username", username)
                 .claim("role", role)
                 .setIssuedAt(now)
                 .setExpiration(expiry)

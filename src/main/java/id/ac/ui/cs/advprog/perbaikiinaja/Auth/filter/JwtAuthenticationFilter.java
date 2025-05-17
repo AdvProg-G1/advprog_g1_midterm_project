@@ -1,6 +1,7 @@
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/filter/JWTAuthenticationFilter.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.filter;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.Auth.util.JwtUtil;           // <– your util
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.util.JwtUtil;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import io.jsonwebtoken.Claims;
@@ -33,14 +34,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             if (jwtUtil.validateToken(token)) {
                 Claims claims = jwtUtil.getClaims(token);
-                String userId = claims.getSubject();
-                User user = userRepository.findById(userId).orElse(null);
+                String username = claims.get("username", String.class);
+                User user = userRepository.findByUsername(username).orElse(null);
                 if (user != null) {
-                    // You’ll need to implement getAuthorities() on your User,
-                    // e.g. return List.of(new SimpleGrantedAuthority(user.getRole()));
                     var auth = new UsernamePasswordAuthenticationToken(
-                            user, null, user.getAuthorities()
-                    );
+                            user, null, user.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource()
                             .buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
