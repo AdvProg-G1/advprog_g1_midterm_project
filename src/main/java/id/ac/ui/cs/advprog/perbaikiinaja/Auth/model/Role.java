@@ -1,7 +1,8 @@
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/model/Role.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.model;
 
 public enum Role {
-    CUSTOMER("CUSTOMER"),
+    USER("USER"),
     TECHNICIAN("TECHNICIAN"),
     ADMIN("ADMIN");
 
@@ -16,11 +17,9 @@ public enum Role {
     }
 
     public static Role fromAuthority(String authority) {
-        for (Role role : Role.values()) {
-            if (role.getAuthority().equalsIgnoreCase(authority)) {
-                return role;
-            }
+        for (Role r : values()) {
+            if (r.authority.equalsIgnoreCase(authority)) return r;
         }
-        throw new IllegalArgumentException("Unknown authority: " + authority);
+        throw new IllegalArgumentException("Unknown role: " + authority);
     }
 }

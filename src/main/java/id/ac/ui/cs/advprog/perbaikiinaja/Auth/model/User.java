@@ -1,3 +1,4 @@
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/model/User.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.model;
 
 import jakarta.persistence.*;
@@ -18,6 +19,9 @@ public class User implements UserDetails {
     @Id
     private String id;
 
+    @Column(nullable = false, unique = true)
+    private String username;
+
     @Column(nullable = false)
     private String fullName;
 
@@ -31,37 +35,22 @@ public class User implements UserDetails {
     private String address;
 
     @Column(nullable = false)
-    private String role; // stored in DB as string: "ROLE_CUSTOMER", etc.
+    private String role; // "CUSTOMER", etc.
 
-    // Role Authorization Methods
+    // Role helpers
+    public Role getRoleEnum()           { return Role.fromAuthority(this.role); }
+    public void setRoleEnum(Role role ) { this.role = role.getAuthority(); }
 
-    public Role getRoleEnum() {
-        return Role.fromAuthority(this.role);
+    // UserDetails
+    @Override public Collection<? extends GrantedAuthority> getAuthorities() {
+        return role == null || role.isBlank()
+                ? Collections.emptyList()
+                : List.of(new SimpleGrantedAuthority(role));
     }
-
-    public void setRoleEnum(Role roleEnum) {
-        this.role = roleEnum.getAuthority();
-    }
-
-    // UserDetails methods
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (role == null || role.isBlank()) {
-            return Collections.emptyList();
-        }
-
-        // remove ROLE prefix if present
-        String formattedRole = role.startsWith("ROLE_") ? role.substring(5) : role;
-        return List.of(new SimpleGrantedAuthority(formattedRole));
-    }
-
-
-    // password getter is provided by Lombok
-
-    @Override public String getUsername() { return email; }
-    @Override public boolean isAccountNonExpired()     { return true; }
-    @Override public boolean isAccountNonLocked()      { return true; }
-    @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled()               { return true; }
+    @Override public String getPassword()             { return password; }
+    @Override public String getUsername()             { return username; }
+    @Override public boolean isAccountNonExpired()    { return true; }
+    @Override public boolean isAccountNonLocked()     { return true; }
+    @Override public boolean isCredentialsNonExpired(){ return true; }
+    @Override public boolean isEnabled()              { return true; }
 }
