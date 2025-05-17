@@ -1,3 +1,4 @@
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/config/SecurityConfig.java
 package id.ac.ui.cs.advprog.perbaikiinaja.config;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.filter.JwtAuthenticationFilter;
@@ -11,42 +12,39 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
-public class    SecurityConfig {
+public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-                // Disable CSRF, because we’re stateless
-                .csrf(csrf -> csrf.disable())
+                // ─── CSRF – ignore the two public POST endpoints ───────────────
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/auth/register", "/auth/login"))
 
-                // Stateless session—no HttpSession
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // ─── Session policy: keep JSESSIONID after login ───────────────
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 
-                // Define which URLs are public
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(
-                                "/",
-                                "/auth/login",
-                                "/auth/register",
-                                "/auth/welcome",
-                                "/auth/login.html",
-                                "/auth/register.html",
-                                "/auth/welcome.html",
-                                "/assets/**"
-                        ).permitAll()
-                        // Everything else needs authentication
-                        .anyRequest().authenticated()
-                )
+                // ─── Authorisation rules ───────────────────────────────────────
+                .authorizeHttpRequests(auth -> auth
+                        // public assets and auth pages
+                        .requestMatchers("/", "/auth/**", "/assets/**", "/favicon.ico").permitAll()
 
-                // Disable the default login form and basic auth
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
+                        // role-scoped areas (authority strings are USER / TECHNICIAN / ADMIN)
+                        .requestMatchers("/user/**")       .hasAuthority("USER")
+                        .requestMatchers("/technician/**") .hasAuthority("TECHNICIAN")
+                        .requestMatchers("/admin/**")      .hasAuthority("ADMIN")
 
-                // Insert your JWT filter
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-        ;
+                        // anything else = authenticated
+                        .anyRequest().authenticated())
+
+                // ─── No default login form or HTTP Basic ───────────────────────
+                .formLogin(f -> f.disable())
+                .httpBasic(b -> b.disable())
+
+                // ─── Add JWT filter before UsernamePasswordAuthenticationFilter ─
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

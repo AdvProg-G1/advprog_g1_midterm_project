@@ -1,3 +1,4 @@
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/config/AuthConfig.java
 package id.ac.ui.cs.advprog.perbaikiinaja.config;
 
 import org.springframework.context.annotation.Bean;
