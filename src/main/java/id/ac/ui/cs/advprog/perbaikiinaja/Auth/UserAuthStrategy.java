@@ -1,5 +1,5 @@
-// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/strategy/UserAuthStrategy.java
-package id.ac.ui.cs.advprog.perbaikiinaja.Auth.strategy;
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/UserAuthStrategy.java
+package id.ac.ui.cs.advprog.perbaikiinaja.Auth;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.RegisterUserRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.Role;
@@ -15,36 +15,51 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserAuthStrategy implements AuthStrategy {
 
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository repo;
+    private final BCryptPasswordEncoder enc;
+
+    // ─── Helper ──────────────────────────────────────────────────────────
+    private static boolean looksBCrypt(String s) {
+        return s != null && s.startsWith("$2");
+    }
 
     @Override
-    public User login(String username, String password) {
-        User user = userRepository.findByUsername(username)
+    public User login(String username, String raw) {
+
+        User u = repo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+
+        boolean ok;
+        if (looksBCrypt(u.getPassword())) {          // normal case
+            ok = enc.matches(raw, u.getPassword());
+        } else {                                     // legacy plain-text row
+            ok = raw.equals(u.getPassword());
+            if (ok) {                                // upgrade to BCrypt
+                u.setPassword(enc.encode(raw));
+                repo.save(u);
+            }
         }
-        return user;
+
+        if (!ok) throw new RuntimeException("Invalid credentials");
+        return u;
     }
 
     @Override
     public User register(RegisterUserRequest r) {
-        if (userRepository.findByUsername(r.getUsername()).isPresent()) {
+        if (repo.findByUsername(r.getUsername()).isPresent())
             throw new RuntimeException("Username already taken");
-        }
-        if (userRepository.findByEmail(r.getEmail()).isPresent()) {
+        if (repo.findByEmail(r.getEmail()).isPresent())
             throw new RuntimeException("Email already registered");
-        }
+
         User u = new User();
         u.setId(UUID.randomUUID().toString());
         u.setUsername(r.getUsername());
         u.setFullName(r.getFullName());
         u.setEmail(r.getEmail());
-        u.setPassword(passwordEncoder.encode(r.getPassword()));
+        u.setPassword(enc.encode(r.getPassword()));   // always BCrypt
         u.setPhone(r.getPhone());
         u.setAddress(r.getAddress());
-        u.setRoleEnum(Role.CUSTOMER);           // default role
-        return userRepository.save(u);
+        u.setRoleEnum(Role.USER);
+        return repo.save(u);
     }
 }
