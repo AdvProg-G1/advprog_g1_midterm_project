@@ -11,10 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -54,7 +51,7 @@ class OverallRatingServiceTest {
     @Test
     void getTopTechnicians_filtersOutUnknownTech_andBuildsCorrectResponse() {
 
-        // ─── data setup ────────────────────────────────────────────────────────────
+        // ─── sample reviews ────────────────────────────────────────────────────
         Review r1 = new Review("r1","userA","tech-1",5,"Great",
                 LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(2));
         Review r2 = new Review("r2","userB","tech-1",3,"Ok",
@@ -63,28 +60,31 @@ class OverallRatingServiceTest {
                 LocalDateTime.now(),             LocalDateTime.now());
 
         when(reviewRepository.findAll()).thenReturn(Arrays.asList(r1, r2, r3));
-
-        // rating calculations
         when(ratingStrategy.calculateRating(Arrays.asList(r1, r2))).thenReturn(4.0);
 
-        // tech-1 exists in users table; tech-2 does NOT
-        when(userRepository.findById("tech-1"))
-                .thenReturn(Optional.of(new User("tech-1","Tech One",
-                        "","","","")));
+        // ─── mock existing technician (tech-1) ───────────────────────────────
+        User techOne = new User();
+        techOne.setId("tech-1");
+        techOne.setFullName("Tech One");
+        techOne.setRole("technician");
+        when(userRepository.findById("tech-1")).thenReturn(Optional.of(techOne));
+
+        // tech-2 does NOT exist → filtered out
         when(userRepository.findById("tech-2")).thenReturn(Optional.empty());
 
-        // latest reviewer name (userB)
-        when(userRepository.findById("userB"))
-                .thenReturn(Optional.of(new User("userB","Reviewer B",
-                        "","","","")));
+        // ─── mock latest reviewer (userB) ─────────────────────────────────────
+        User reviewerB = new User();
+        reviewerB.setId("userB");
+        reviewerB.setFullName("Reviewer B");
+        when(userRepository.findById("userB")).thenReturn(Optional.of(reviewerB));
 
-        // ─── exercise ─────────────────────────────────────────────────────────────
+        // ─── exercise ─────────────────────────────────────────────────────────
         List<BestTechnicianResponse> top = service.getTopTechnicians(5);
 
-        // ─── verify ───────────────────────────────────────────────────────────────
-        assertThat(top).hasSize(1);                       // tech-2 filtered out
-        BestTechnicianResponse best = top.get(0);
+        // ─── verify ───────────────────────────────────────────────────────────
+        assertThat(top).hasSize(1);                 // tech-2 filtered out
 
+        BestTechnicianResponse best = top.get(0);
         assertThat(best.getTechnicianId()).isEqualTo("tech-1");
         assertThat(best.getFullName()).isEqualTo("Tech One");
         assertThat(best.getAverageRating()).isEqualTo(4.0);
