@@ -1,3 +1,4 @@
+// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/OverallRatingServiceTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Review.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
@@ -20,24 +21,25 @@ import static org.mockito.Mockito.*;
 
 class OverallRatingServiceTest {
 
-    private ReviewRepository reviewRepository;
-    private RatingStrategy ratingStrategy;
-    private UserRepository userRepository;
+    private ReviewRepository  reviewRepository;
+    private RatingStrategy    ratingStrategy;
+    private UserRepository    userRepository;
     private OverallRatingService service;
 
     @BeforeEach
     void setUp() {
         reviewRepository = mock(ReviewRepository.class);
-        ratingStrategy  = mock(RatingStrategy.class);
-        userRepository  = mock(UserRepository.class);
-        service = new OverallRatingService(reviewRepository, ratingStrategy, userRepository);
+        ratingStrategy   = mock(RatingStrategy.class);
+        userRepository   = mock(UserRepository.class);
+        service          = new OverallRatingService(reviewRepository, ratingStrategy, userRepository);
     }
 
     @Test
     void calculateOverallRating_delegatesToStrategy() {
         String techId = "tech-1";
         List<Review> reviews = Collections.singletonList(
-                new Review("r1","u1","tech-1",5,"Good", LocalDateTime.now(), LocalDateTime.now())
+                new Review("r1","u1","tech-1",5,"Good",
+                        LocalDateTime.now(), LocalDateTime.now())
         );
 
         when(reviewRepository.findByTechnicianId(techId)).thenReturn(reviews);
@@ -50,39 +52,44 @@ class OverallRatingServiceTest {
     }
 
     @Test
-    void getTopTechnicians_buildsCorrectResponse() {
-        Review r1 = new Review("r1","userA","tech-1",5,"Great", LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(2));
-        Review r2 = new Review("r2","userB","tech-1",3,"Ok",    LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1));
-        Review r3 = new Review("r3","userC","tech-2",4,"Nice",  LocalDateTime.now(),             LocalDateTime.now());
+    void getTopTechnicians_filtersOutUnknownTech_andBuildsCorrectResponse() {
 
-        when(reviewRepository.findAll()).thenReturn(Arrays.asList(r1,r2,r3));
-        when(reviewRepository.findByTechnicianId("tech-1")).thenReturn(Arrays.asList(r1,r2));
-        when(reviewRepository.findByTechnicianId("tech-2")).thenReturn(Collections.singletonList(r3));
+        // ─── data setup ────────────────────────────────────────────────────────────
+        Review r1 = new Review("r1","userA","tech-1",5,"Great",
+                LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(2));
+        Review r2 = new Review("r2","userB","tech-1",3,"Ok",
+                LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1));
+        Review r3 = new Review("r3","userC","tech-2",4,"Nice",
+                LocalDateTime.now(),             LocalDateTime.now());
 
-        when(ratingStrategy.calculateRating(Arrays.asList(r1,r2))).thenReturn(4.0);
-        when(ratingStrategy.calculateRating(Collections.singletonList(r3))).thenReturn(4.0);
+        when(reviewRepository.findAll()).thenReturn(Arrays.asList(r1, r2, r3));
 
+        // rating calculations
+        when(ratingStrategy.calculateRating(Arrays.asList(r1, r2))).thenReturn(4.0);
+
+        // tech-1 exists in users table; tech-2 does NOT
         when(userRepository.findById("tech-1"))
-                .thenReturn(Optional.of(new User("tech-1","Tech One","","","","")));
-        when(userRepository.findById("tech-2"))
-                .thenReturn(Optional.empty());
+                .thenReturn(Optional.of(new User("tech-1","Tech One",
+                        "","","","")));
+        when(userRepository.findById("tech-2")).thenReturn(Optional.empty());
+
+        // latest reviewer name (userB)
         when(userRepository.findById("userB"))
-                .thenReturn(Optional.of(new User("userB","Reviewer B","","","","")));
+                .thenReturn(Optional.of(new User("userB","Reviewer B",
+                        "","","","")));
 
-        List<BestTechnicianResponse> top = service.getTopTechnicians(2);
+        // ─── exercise ─────────────────────────────────────────────────────────────
+        List<BestTechnicianResponse> top = service.getTopTechnicians(5);
 
-        assertThat(top).hasSize(2);
-        BestTechnicianResponse first = top.get(0);
-        assertThat(first.getTechnicianId()).isEqualTo("tech-1");
-        assertThat(first.getFullName()).isEqualTo("Tech One");
-        assertThat(first.getAverageRating()).isEqualTo(4.0);
-        assertThat(first.getLatestComment()).isEqualTo("Ok");
-        assertThat(first.getLatestReviewerName()).isEqualTo("Reviewer B");
+        // ─── verify ───────────────────────────────────────────────────────────────
+        assertThat(top).hasSize(1);                       // tech-2 filtered out
+        BestTechnicianResponse best = top.get(0);
 
-        BestTechnicianResponse second = top.get(1);
-        assertThat(second.getTechnicianId()).isEqualTo("tech-2");
-        assertThat(second.getFullName()).isEqualTo("Unknown Technician");
-        assertThat(second.getLatestComment()).isEqualTo("Nice");
-        assertThat(second.getLatestReviewerName()).isEqualTo("");
+        assertThat(best.getTechnicianId()).isEqualTo("tech-1");
+        assertThat(best.getFullName()).isEqualTo("Tech One");
+        assertThat(best.getAverageRating()).isEqualTo(4.0);
+        assertThat(best.getReviewCount()).isEqualTo(2);
+        assertThat(best.getLatestComment()).isEqualTo("Ok");
+        assertThat(best.getLatestReviewerName()).isEqualTo("Reviewer B");
     }
 }

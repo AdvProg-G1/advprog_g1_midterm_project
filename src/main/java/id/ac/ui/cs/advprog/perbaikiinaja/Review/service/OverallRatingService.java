@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,54 +19,71 @@ import java.util.stream.Collectors;
 public class OverallRatingService {
 
     private final ReviewRepository reviewRepository;
-    private final RatingStrategy ratingStrategy;
-    private final UserRepository userRepository;
+    private final RatingStrategy   ratingStrategy;
+    private final UserRepository   userRepository;
+
+    /* ---------- Single technician ---------- */
 
     public double calculateOverallRating(String techId) {
         List<Review> reviews = reviewRepository.findByTechnicianId(techId);
         return ratingStrategy.calculateRating(reviews);
     }
 
+    /* ---------- Leaderboard ---------- */
+
     public List<BestTechnicianResponse> getTopTechnicians(int limit) {
-        Set<String> techIds = reviewRepository.findAll().stream()
-                .map(Review::getTechnicianId)
-                .collect(Collectors.toSet());
 
-        return techIds.stream()
-                .map(techId -> {
-                    List<Review> reviews = reviewRepository.findByTechnicianId(techId);
-                    double avg = ratingStrategy.calculateRating(reviews);
-                    Review latest = reviews.stream()
-                            .max(Comparator.comparing(Review::getCreatedAt))
-                            .orElse(null);
+        /* 1.  Group all reviews by technician once (O(N)) */
+        Map<String, List<Review>> byTech =
+                reviewRepository.findAll()
+                        .stream()
+                        .collect(Collectors.groupingBy(Review::getTechnicianId));
 
-                    String comment = latest != null
-                            ? latest.getComment()
-                            : "No reviews yet.";
-                    String reviewer = (latest != null)
-                            ? userRepository.findById(latest.getUserId())
-                            .map(u -> u.getFullName())
-                            .orElse("")
-                            : "";
-                    String fullName = userRepository.findById(techId)
-                            .map(u -> u.getFullName())
-                            .orElse("Unknown Technician");
-
-                    return new BestTechnicianResponse(
-                            techId,
-                            fullName,
-                            avg,
-                            reviews.size(),
-                            comment,
-                            reviewer
-                    );
-                })
+        /* 2.  Build DTOs, skip tech IDs that aren’t in users table */
+        return byTech.entrySet()
+                .stream()
+                .map(entry -> toBestTech(entry.getKey(), entry.getValue()))
+                .filter(dto -> !"Unknown Technician".equals(dto.getFullName()))
                 .sorted(
-                        Comparator.comparingDouble(BestTechnicianResponse::getAverageRating)
-                                .reversed()
+                        Comparator.comparingDouble(BestTechnicianResponse::getAverageRating).reversed()
+                                .thenComparingLong(BestTechnicianResponse::getReviewCount).reversed()
                                 .thenComparing(BestTechnicianResponse::getTechnicianId)
                 )
                 .limit(limit)
                 .collect(Collectors.toList());
+    }
+
+    /* ---------- Helper ---------- */
+
+    private BestTechnicianResponse toBestTech(String techId, List<Review> reviews) {
+
+        double avg   = ratingStrategy.calculateRating(reviews);
+        long   count = reviews.size();
+
+        // Latest review preview (if any)
+        Review latest = reviews.stream()
+                .max(Comparator.comparing(Review::getCreatedAt))
+                .orElse(null);
+
+        String latestComment  = latest != null ? latest.getComment() : "No reviews yet.";
+        String latestReviewer = latest != null
+                ? userRepository.findById(latest.getUserId())
+                .map(u -> u.getFullName())
+                .orElse("")
+                : "";
+
+        // Look up technician’s real name; if absent we’ll filter it out later
+        String fullName = userRepository.findById(techId)
+                .map(u -> u.getFullName())
+                .orElse("Unknown Technician");
+
+        return new BestTechnicianResponse(
+                techId,
+                fullName,
+                avg,
+                count,
+                latestComment,
+                latestReviewer
+        );
     }
 }
