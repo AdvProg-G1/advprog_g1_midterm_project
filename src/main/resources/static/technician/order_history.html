@@ -20,48 +20,44 @@
       <tr>
         <th>Item Name</th>
         <th>Condition</th>
-        <th>Description</th>
+        <th>Repair Type</th>
         <th>Date of Service</th>
         <th>Status</th>
         <th></th>
         <th></th>
       </tr>
     </thead>
-    <tbody id="orders-table">
+    <tbody>
+      <tr>
+        <td>Leaking Sink</td>
+        <td>Leaking</td>
+        <td>Plumbing</td>
+        <td>10/04/2025</td>
+        <td>COMPLETED</td>
+        <td><a href="#" class="write-report">Write report</a></td>
+        <td><a href="#" class="details-link">Details</a></td>
+      </tr>
+      <tr>
+        <td>Car</td>
+        <td>Broken</td>
+        <td>Fix</td>
+        <td>10/04/2025</td>
+        <td>COMPLETED</td>
+        <td><a href="#" class="write-report">View report</a></td>
+        <td><a href="#" class="details-link">Details</a></td>
+      </tr>
+      <tr>
+        <td>Car</td>
+        <td>Broken</td>
+        <td>Fix</td>
+        <td>10/04/2025</td>
+        <td>ONGOING</td>
+        <td class="write-report">-</td>
+        <td><a href="#" class="details-link">Details</a></td>
+      </tr>
     </tbody>
   </table>
 </section>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    fetch('/api/repair/history')
-            .then(res => res.json())
-            .then(orders => {
-              const tbody = document.getElementById('orders-table');
-              tbody.innerHTML = '';  // clear any placeholder rows
-
-              orders.forEach(o => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-            <td>${o.itemName.charAt(0).toUpperCase() + o.itemName.slice(1)}</td>
-            <td>${ o.condition.charAt(0).toUpperCase() + o.condition.slice(1) }</td>
-            <td>${o.problemDescription || ''}</td>
-            <td>${new Date(o.serviceDate).toLocaleDateString()}</td>
-            <td>${o.status.replace(/_/g, ' ').toUpperCase()}</td>
-            <td>
-              ${o.status === 'completed'
-                        ? `<a href="/technician/write_report?orderId=${encodeURIComponent(o.id)}" class="write-report">Write report</a>`
-                        : '-'}
-            </td>
-            <td>
-              <a href="/technician/order_details?orderId=${encodeURIComponent(o.id)}" class="details-link">Details</a>
-            </td>
-          `;
-                tbody.appendChild(tr);
-              });
-            })
-            .catch(err => console.error('Could not load order history:', err));
-  });
-</script>
 </body>
 </html>
