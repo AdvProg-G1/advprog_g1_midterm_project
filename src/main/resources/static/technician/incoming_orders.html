@@ -41,8 +41,8 @@
       const tr = document.createElement('tr');
       tr.className = 'border-b';
       tr.innerHTML = `
-      <td class="px-4 py-2">${o.itemName}</td>
-      <td class="px-4 py-2">${o.condition}</td>
+      <td class="px-4 py-2">${o.itemName.charAt(0).toUpperCase() + o.itemName.slice(1)}</td>
+      <td class="px-4 py-2">${ o.condition.charAt(0).toUpperCase() + o.condition.slice(1) }</td>
       <td class="px-4 py-2">${o.problemDescription||''}</td>
       <td class="px-4 py-2">${o.serviceDate||''}</td>
       <td><a href="#" class="details-link">Details</a></td>

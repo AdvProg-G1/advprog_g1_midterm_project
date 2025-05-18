@@ -33,9 +33,15 @@ public class RepairOrderController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<ServiceOrder>> orderList() {
-        List<ServiceOrder> waiting = repairOrderService.findByStatus("waiting_confirmation");
+    public ResponseEntity<List<ServiceOrder>> incomingOrderList() {
+        List<ServiceOrder> waiting = repairOrderService.findByStatus(List.of("waiting_confirmation"));
         return ResponseEntity.ok(waiting);
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<ServiceOrder>> orderHistory() {
+        List<ServiceOrder> allOrders = repairOrderService.findByStatus(List.of("in_progress", "completed"));
+        return ResponseEntity.ok(allOrders);
     }
 }
 

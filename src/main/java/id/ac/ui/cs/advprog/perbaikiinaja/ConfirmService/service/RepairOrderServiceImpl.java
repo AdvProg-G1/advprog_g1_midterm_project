@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RepairOrderServiceImpl implements RepairOrderService {
@@ -67,11 +68,10 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
-    public List<ServiceOrder> findByStatus(String status) {
-        String normalized = status
-                .replace('-', '_')
-                .replace(' ', '_')
-                .toLowerCase();
-        return repo.findByStatus(normalized);
+    public List<ServiceOrder> findByStatus(List<String> statuses) {
+        List<String> upper = statuses.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+        return repo.findByStatusIn(upper);
     }
 }
