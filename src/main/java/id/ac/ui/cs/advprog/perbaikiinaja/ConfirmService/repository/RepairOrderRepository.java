@@ -6,8 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface RepairOrderRepository extends JpaRepository<ServiceOrder, String> {
+public interface RepairOrderRepository extends JpaRepository<ServiceOrder, UUID> {
     List<ServiceOrder> findByStatusIn(Collection<String> statuses);
 }

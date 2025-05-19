@@ -43,6 +43,15 @@ public class RepairOrderController {
         List<ServiceOrder> allOrders = repairOrderService.findByStatus(List.of("in_progress", "completed"));
         return ResponseEntity.ok(allOrders);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ServiceOrder> getOrder(@PathVariable("id") String id) {
+        ServiceOrder order = repairOrderService.findById(id);
+        if (order == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(order);
+    }
 }
 
 
