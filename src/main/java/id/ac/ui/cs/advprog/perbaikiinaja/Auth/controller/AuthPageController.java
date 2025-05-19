@@ -3,22 +3,29 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Auth.controller;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.AuthStrategy;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.RegisterUserRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.UserResponse;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
 
 @Controller
 @RequiredArgsConstructor
 public class AuthPageController {
 
     private final AuthStrategy auth;
+    private final UserRepository userRepo;
 
     // ─── Views ───────────────────────────────────────────────────────────
     @GetMapping("/")              public String root()         { return "forward:/auth/welcome.html"; }
@@ -31,7 +38,6 @@ public class AuthPageController {
     public String register(@ModelAttribute @Valid RegisterUserRequest req,
                            BindingResult br,
                            RedirectAttributes flash) {
-
         if (br.hasErrors()) {
             flash.addFlashAttribute("errors", br.getAllErrors());
             return "redirect:/auth/register";
@@ -73,5 +79,38 @@ public class AuthPageController {
             flash.addFlashAttribute("error", ex.getMessage());
             return "redirect:/auth/login";
         }
+    }
+
+    // ─── REST for current user ───────────────────────────────────────────
+    @GetMapping("/api/auth/current")
+    @ResponseBody
+    public UserResponse current(@AuthenticationPrincipal User ud) {
+        if (ud == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        return new UserResponse(
+                ud.getId(),
+                ud.getUsername(),
+                ud.getFullName(),
+                ud.getEmail(),
+                ud.getPhone(),
+                ud.getAddress()
+        );
+    }
+
+    // ─── REST to fetch any user by ID ───────────────────────────────────
+    @GetMapping("/api/users/{id}")
+    @ResponseBody
+    public UserResponse getUserById(@PathVariable String id) {
+        return userRepo.findById(id)
+                .map(u -> new UserResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getFullName(),
+                        u.getEmail(),
+                        u.getPhone(),
+                        u.getAddress()
+                ))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }
