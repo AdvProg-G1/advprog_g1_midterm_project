@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,14 +23,15 @@ public class RepairReportServiceImpl implements RepairReportService {
     }
 
     @Override
-    public List<RepairReport> getReportsByOrderId(UUID orderId) {
+    public RepairReport getReportsByOrderId(String orderId) {
         return reportRepo.getReportsByOrderId(orderId);
     }
 
     @Override
-    public RepairReport createRepairReport(String orderId, String technicianId, String details) {
-        ServiceOrder order = orderRepo.findById(orderId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        if (!"COMPLETED".equals(order.getStatus()))
+    public RepairReport createRepairReport(String orderId, String details) {
+        ServiceOrder order = orderRepo.findById(UUID.fromString(orderId)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        String technicianId = order.getTechnicianId();
+        if (!"completed".equals(order.getStatus()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in COMPLETED state.");
 
         RepairReport rpt = RepairReport.builder()

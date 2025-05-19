@@ -12,11 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,18 +36,17 @@ class RepairReportServiceTest {
 
     @Test
     void testCreateRepairReportNotFound() {
-        when(orderRepo.findById(ORDER_ID))
+        when(orderRepo.findById(UUID.fromString(ORDER_ID)))
                 .thenReturn(Optional.empty());
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.createRepairReport(ORDER_ID, TECH_ID, "details")
+                () -> service.createRepairReport(ORDER_ID, "details")
         );
 
         assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
         assertEquals("Order not found", ex.getReason());
-
-        verify(orderRepo).findById(ORDER_ID);
+        verify(orderRepo).findById(UUID.fromString(ORDER_ID));
         verifyNoInteractions(reportRepo);
     }
 
@@ -57,18 +56,20 @@ class RepairReportServiceTest {
         ord.setId(UUID.fromString(ORDER_ID));
         ord.setStatus("PENDING");
 
-        when(orderRepo.findById(ORDER_ID))
+        when(orderRepo.findById(UUID.fromString(ORDER_ID)))
                 .thenReturn(Optional.of(ord));
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.createRepairReport(ORDER_ID, TECH_ID, "details")
+                () -> service.createRepairReport(ORDER_ID, "details")
         );
 
         assertFalse(ex.getMessage().contains("404 NOT_FOUND"));
-        assertEquals("Cannot report on order not in COMPLETED state.", ex.getReason());
-
-        verify(orderRepo).findById(ORDER_ID);
+        assertEquals(
+                "Cannot report on order not in COMPLETED state.",
+                ex.getReason()
+        );
+        verify(orderRepo).findById(UUID.fromString(ORDER_ID));
         verifyNoInteractions(reportRepo);
     }
 
@@ -76,9 +77,10 @@ class RepairReportServiceTest {
     void testCreateRepairReportSuccess() {
         ServiceOrder ord = new ServiceOrder();
         ord.setId(UUID.fromString(ORDER_ID));
-        ord.setStatus("COMPLETED");
+        ord.setStatus("completed");
+        ord.setTechnicianId(TECH_ID);
 
-        when(orderRepo.findById(ORDER_ID))
+        when(orderRepo.findById(UUID.fromString(ORDER_ID)))
                 .thenReturn(Optional.of(ord));
         when(reportRepo.save(any(RepairReport.class)))
                 .thenAnswer(inv -> {
@@ -87,7 +89,7 @@ class RepairReportServiceTest {
                     return r;
                 });
 
-        RepairReport result = service.createRepairReport(ORDER_ID, TECH_ID, "Fixed bathroom");
+        RepairReport result = service.createRepairReport(ORDER_ID, "Fixed bathroom");
 
         ArgumentCaptor<RepairReport> cap = ArgumentCaptor.forClass(RepairReport.class);
         verify(reportRepo).save(cap.capture());
@@ -103,29 +105,20 @@ class RepairReportServiceTest {
     }
 
     @Test
-    void testGetReportsByOrderId() {
-        UUID uuid = UUID.randomUUID();
-
-        RepairReport r1 = RepairReport.builder()
+    void testGetReportByOrderId() {
+        RepairReport rpt = RepairReport.builder()
                 .id("1")
-                .orderId(uuid.toString())
+                .orderId(ORDER_ID)
                 .details("A")
                 .createdAt(new Date())
                 .build();
-        RepairReport r2 = RepairReport.builder()
-                .id("2")
-                .orderId(uuid.toString())
-                .details("B")
-                .createdAt(new Date())
-                .build();
 
-        List<RepairReport> fakeList = List.of(r1, r2);
-        when(reportRepo.getReportsByOrderId(uuid))
-                .thenReturn(fakeList);
+        when(reportRepo.getReportsByOrderId(ORDER_ID))
+                .thenReturn(rpt);
 
-        List<RepairReport> actual = service.getReportsByOrderId(uuid);
+        RepairReport actual = service.getReportsByOrderId(ORDER_ID);
 
-        assertSame(fakeList, actual);
-        verify(reportRepo).getReportsByOrderId(uuid);
+        assertSame(rpt, actual);
+        verify(reportRepo).getReportsByOrderId(ORDER_ID);
     }
 }
