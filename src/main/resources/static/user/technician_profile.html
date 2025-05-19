@@ -7,94 +7,209 @@
   <link rel="stylesheet" href="../assets/css/main.css" />
   <link rel="stylesheet" href="../assets/css/navbar.css" />
   <link rel="stylesheet" href="../assets/css/technician/profile.css" />
+  <style>
+    /* minimal overrides for dynamic placeholders */
+    .stars { font-size: 1.5rem; }
+    .add-review {
+      max-width: 800px; margin: 1rem auto; background: #f9f9f9;
+      padding: 1rem; border-radius: 8px; display: none;
+    }
+    .add-review form { display: grid; gap: 0.5rem; }
+    .add-review label { font-weight: bold; }
+    .add-review button { width: fit-content; padding: 0.5rem 1rem; }
+    .review-card {
+      background: #fff; padding: 1rem; border-radius: 8px;
+      margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stars_review { font-size: 1.25rem; }
+  </style>
 </head>
 <body>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_user.js"></script>
-  
-  <div class="yellow-banner">
-    <div class="white-box">
-      <div class="profile-header">
-        <img src="../assets/images/user_black.png" class="profile-icon">
-        <h1 class="technician-name">Handy Manny</h1>
-      </div>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
+
+<div class="yellow-banner">
+  <div class="white-box">
+    <div class="profile-header">
+      <img src="../assets/images/user_black.png" class="profile-icon" />
+      <h1 class="technician-name">Loading…</h1>
     </div>
   </div>
-
-  <div class="details-rating">
-    <div class="details">
-      <h2>Technician Details</h2>
-     <div class="detail-item">
-        <strong>Experience</strong>
-        <span>Professional</span>
-      </div>
-      <div class="detail-item">
-        <strong>Email</strong>
-        <a href="mailto:cheese@gmail.com">cheese@gmail.com</a>
-      </div>
-      <div class="detail-item">
-        <strong>Phone number</strong>
-        <span>081122333444</span>
-      </div>
-      <div class="detail-item">
-        <strong>Address</strong>
-       <span>Cheeseville</span>
-      </div>
-    </div>
-    
-    <div class="rating">
-      <h3>Rating</h3>
-      <div class="stars">★★★★★</div>
-    </div>
-
-    <a><img src="../assets/images/bookmark.png" class="bookmark-icon" /></a>
-
-  </div>
-
-  <div class="reviews-section">
-    <h2>Reviews</h2>
-  
-    <div class="review-card">
-      <div class="review-header">
-        <strong>John Doe</strong>
-        <div class="stars_review">★★★★★</div>
-      </div>
-      <p class="review-text">
-        "Manny fixed my sink fast and did a great job. Super friendly, efficient, and left everything spotless. Highly recommend!"
-      </p>
-      <div class="review-date">10/04/2025</div>
-    </div>
-  
-    <div class="review-card">
-      <div class="review-header">
-        <strong>John Doe</strong>
-        <div class="stars_review">★★★★★</div>
-      </div>
-      <p class="review-text">
-        "Manny fixed my sink fast and did a great job. Super friendly, efficient, and left everything spotless. Highly recommend!"
-      </p>
-      <div class="review-date">10/04/2025</div>
-    </div>
-  
-    <div class="review-card">
-      <div class="review-header">
-        <strong>John Doe</strong>
-        <div class="stars_review">★★★★★</div>
-      </div>
-      <p class="review-text">
-        "Manny fixed my sink fast and did a great job. Super friendly, efficient, and left everything spotless. Highly recommend!"
-      </p>
-      <div class="review-date">10/04/2025</div>
-    </div>
-  </div>
-  
-
-
 </div>
 
-  
+<div class="details-rating">
+  <div class="details">
+    <h2>Technician Details</h2>
+    <div class="detail-item">
+      <strong>Experience</strong>
+      <span>Professional</span>
+    </div>
+    <div class="detail-item">
+      <strong>Email</strong>
+      <a id="tech-email" href="#">—</a>
+    </div>
+    <div class="detail-item">
+      <strong>Phone number</strong>
+      <span id="tech-phone">—</span>
+    </div>
+    <div class="detail-item">
+      <strong>Address</strong>
+      <span id="tech-address">—</span>
+    </div>
+  </div>
 
+  <div class="rating">
+    <h3>Rating</h3>
+    <div class="stars" id="tech-stars">☆☆☆☆☆</div>
+  </div>
 
+  <a><img src="../assets/images/bookmark.png" class="bookmark-icon" /></a>
+</div>
+
+<section class="add-review" id="add-review-section">
+  <h3>Add Your Review</h3>
+  <form id="review-form">
+    <input type="hidden" id="technician-id" name="technicianId" />
+    <input type="hidden" id="user-id" name="userId" />
+    <label for="rating">Rating:</label>
+    <select id="rating" name="rating" required>
+      <option value="5">★★★★★</option>
+      <option value="4">★★★★☆</option>
+      <option value="3">★★★☆☆</option>
+      <option value="2">★★☆☆☆</option>
+      <option value="1">★☆☆☆☆</option>
+    </select>
+    <label for="comment">Comment:</label>
+    <textarea id="comment" name="comment" rows="3"></textarea>
+    <button type="submit">Submit Review</button>
+  </form>
+</section>
+
+<div class="reviews-section">
+  <h2>Reviews</h2>
+  <div id="reviews-container">Loading reviews…</div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const techId = params.get('id');
+    if (!techId) return alert('No technician ID provided');
+
+    document.getElementById('technician-id').value = techId;
+
+    // 1) Fetch and display technician info
+    fetch(`/api/users/${techId}`)
+            .then(r => {
+              console.log('→ GET /api/users status', r.status);
+              return r.ok ? r.json() : Promise.reject(`status ${r.status}`);
+            })
+            .then(u => {
+              console.log('← GET /api/users response', u);
+              document.querySelector('.technician-name').textContent = u.fullName;
+              const emailA = document.getElementById('tech-email');
+              emailA.textContent = u.email;
+              emailA.href = `mailto:${u.email}`;
+              document.getElementById('tech-phone').textContent = u.phone || '—';
+              document.getElementById('tech-address').textContent = u.address || '—';
+            })
+            .catch(err => {
+              console.error('🔥 error loading technician', err);
+              document.querySelector('.technician-name').textContent = 'Unknown Technician';
+            });
+
+    // 2) Load and render reviews
+    function loadReviews() {
+      fetch(`/api/reviews/technician/${techId}`)
+              .then(r => {
+                console.log('→ GET /api/reviews/technician status', r.status);
+                return r.json();
+              })
+              .then(revs => {
+                console.log('← reviews array', revs);
+                const ctn = document.getElementById('reviews-container');
+                ctn.innerHTML = '';
+                if (!revs.length) {
+                  return ctn.innerHTML = '<p>No reviews yet.</p>';
+                }
+                const avg = revs.reduce((sum,r)=> sum+r.rating,0)/revs.length;
+                document.getElementById('tech-stars').textContent =
+                        '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+
+                revs.forEach(r => {
+                  const card = document.createElement('div');
+                  card.className = 'review-card';
+                  card.innerHTML = `
+              <div class="review-header">
+                <strong>${r.reviewerName}</strong>
+                <div class="stars_review">${
+                          '★'.repeat(r.rating) + '☆'.repeat(5-r.rating)
+                  }</div>
+              </div>
+              <p class="review-text">${r.comment || ''}</p>
+              <div class="review-date">${
+                          new Date(r.createdAt).toLocaleDateString('en-GB')
+                  }</div>
+            `;
+                  ctn.appendChild(card);
+                });
+              })
+              .catch(err => console.error('🔥 error loading reviews', err));
+    }
+    loadReviews();
+
+    // 3) Show “Add Your Review” only if user is logged in
+    fetch('/api/auth/current', { credentials: 'same-origin' })
+            .then(r => {
+              console.log('→ GET /api/auth/current status', r.status);
+              return r.ok ? r.json() : Promise.reject();
+            })
+            .then(cur => {
+              console.log('← current user', cur);
+              document.getElementById('user-id').value = cur.id;
+              document.getElementById('add-review-section').style.display = 'block';
+            })
+            .catch(() => {
+              console.log('— no current user, hiding form');
+            });
+
+    // 4) Handle new-review submission
+    document.getElementById('review-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const payload = {
+        technicianId: techId,
+        userId: document.getElementById('user-id').value,
+        rating: parseInt(document.getElementById('rating').value, 10),
+        comment: document.getElementById('comment').value
+      };
+      console.log('→ POST /api/reviews payload', payload);
+
+      fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload)
+      })
+              .then(r => {
+                console.log('← POST /api/reviews status', r.status);
+                return r.text().then(text => {
+                  console.log('← POST body:', text);
+                  if (!r.ok) throw new Error(`status ${r.status}`);
+                  return JSON.parse(text);
+                });
+              })
+              .then(json => {
+                console.log('← created review JSON', json);
+                document.getElementById('comment').value = '';
+                loadReviews();
+              })
+              .catch(err => {
+                console.error('🔥 submit error', err);
+                alert('Failed to submit review');
+              });
+    });
+  });
+</script>
 </body>
 </html>
