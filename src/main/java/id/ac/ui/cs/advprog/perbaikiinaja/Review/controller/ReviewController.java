@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -17,8 +18,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final ReviewService           reviewService;
-    private final OverallRatingService    overallRatingService;
+    private final ReviewService reviewService;
+    private final OverallRatingService overallRatingService;
+
 
     @PostMapping
     public ResponseEntity<ReviewResponse> create(@RequestBody ReviewRequest req) {
@@ -49,10 +51,19 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewsForTechnician(technicianId));
     }
 
+    /**
+     * Returns the top `limit` technicians sorted by average rating desc,
+     * or asc if order=asc.
+     */
     @GetMapping("/best")
     public ResponseEntity<List<BestTechnicianResponse>> top(
-            @RequestParam(defaultValue = "3") int limit
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(defaultValue = "desc") String order
     ) {
-        return ResponseEntity.ok(overallRatingService.getTopTechnicians(limit));
+        List<BestTechnicianResponse> list = overallRatingService.getTopTechnicians(limit);
+        if ("asc".equalsIgnoreCase(order)) {
+            Collections.reverse(list);
+        }
+        return ResponseEntity.ok(list);
     }
 }

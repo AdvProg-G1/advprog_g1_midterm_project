@@ -2,9 +2,11 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 
+import java.util.List;
+
 public interface PaymentService {
 
-    void createPayment(Payment payment);
+    Payment createPayment(Payment payment);
 
     void updatePaymentName(String paymentId, String newName);
 
@@ -16,4 +18,9 @@ public interface PaymentService {
 
     Payment findByBankNumber(String accountNumber);
 
+    List<Payment> findAllPayment();
+
+    Payment updatePayment(String paymentId, Payment payment);
+
+    void deletePayment(String paymentId);
 }

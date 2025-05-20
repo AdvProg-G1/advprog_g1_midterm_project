@@ -1,4 +1,4 @@
-//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/dto/UserResponse.java
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/dto/UserResponse.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto;
 
 import lombok.AllArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserResponse {
     private String id;
+    private String username;
     private String fullName;
     private String email;
     private String phone;

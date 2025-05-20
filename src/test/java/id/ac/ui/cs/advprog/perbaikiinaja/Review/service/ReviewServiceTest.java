@@ -1,5 +1,7 @@
+// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/ReviewServiceTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Review.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.dto.ReviewRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.dto.ReviewResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.model.Review;
@@ -20,12 +22,17 @@ import static org.mockito.Mockito.*;
 public class ReviewServiceTest {
 
     private ReviewRepository reviewRepository;
-    private ReviewService reviewService;
+    private UserRepository userRepository;
+    private ReviewServiceImpl reviewService;
 
     @BeforeEach
     void setUp() {
         reviewRepository = Mockito.mock(ReviewRepository.class);
-        reviewService = new ReviewServiceImpl(reviewRepository);
+        userRepository   = Mockito.mock(UserRepository.class);
+        // make findById(...) return Optional.empty() so mapToResponse falls back
+        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        reviewService = new ReviewServiceImpl(reviewRepository, userRepository);
     }
 
     @Test
@@ -47,9 +54,9 @@ public class ReviewServiceTest {
 
         ReviewResponse response = reviewService.createReview(request);
         assertNotNull(response.getId());
-        assertEquals("tech-1", response.getTechnicianId());
-        assertEquals("user-1", response.getUserId());
-        assertEquals(5, response.getRating());
+        assertEquals("tech-1",       response.getTechnicianId());
+        assertEquals("user-1",       response.getUserId());
+        assertEquals(5,              response.getRating());
         assertEquals("Excellent service!", response.getComment());
     }
 
@@ -74,7 +81,7 @@ public class ReviewServiceTest {
         updateRequest.setComment("Excellent service!");
 
         ReviewResponse response = reviewService.updateReview("review-1", updateRequest);
-        assertEquals(5, response.getRating());
+        assertEquals(5,  response.getRating());
         assertEquals("Excellent service!", response.getComment());
     }
 
@@ -93,9 +100,26 @@ public class ReviewServiceTest {
 
     @Test
     void testGetReviewsForTechnician() {
-        // Correct parameter order: id, rating, comment, technicianId, userId, createdAt, updatedAt.
-        Review review1 = new Review("review-1", 5, "Great!", "tech-1", "user-1", LocalDateTime.now(), LocalDateTime.now());
-        Review review2 = new Review("review-2", 4, "Good", "tech-1", "user-2", LocalDateTime.now(), LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+
+        Review review1 = new Review();
+        review1.setId("review-1");
+        review1.setRating(5);
+        review1.setComment("Great!");
+        review1.setTechnicianId("tech-1");
+        review1.setUserId("user-1");
+        review1.setCreatedAt(now);
+        review1.setUpdatedAt(now);
+
+        Review review2 = new Review();
+        review2.setId("review-2");
+        review2.setRating(4);
+        review2.setComment("Good");
+        review2.setTechnicianId("tech-1");
+        review2.setUserId("user-2");
+        review2.setCreatedAt(now);
+        review2.setUpdatedAt(now);
+
         List<Review> reviews = new ArrayList<>();
         reviews.add(review1);
         reviews.add(review2);

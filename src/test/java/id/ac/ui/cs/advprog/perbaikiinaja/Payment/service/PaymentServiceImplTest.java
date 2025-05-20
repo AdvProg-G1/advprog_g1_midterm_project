@@ -188,4 +188,68 @@ public class PaymentServiceImplTest {
 
         assertNull(paymentService.findByBankNumber("notanumber"));
     }
+
+    // happy
+    @Test
+    void findAllPayment() {
+        doReturn(payments).when(paymentRepository).findAll();
+
+        List<Payment> result = paymentService.findAllPayment();
+
+        assertEquals(2, result.size());
+        assertEquals("id-01", result.get(0).getPaymentId());
+        assertEquals("id-02", result.get(1).getPaymentId());
+
+        verify(paymentRepository).findAll();
+    }
+
+    @Test
+    void testUpdatePayment() {
+        Payment original = payments.get(0);  // GoPay, id-01
+
+        Payment updated = new Payment();
+        updated.setPaymentId("id-01");
+        updated.setPaymentName("Dana");
+        updated.setPaymentBankNumber("999999999");
+
+        doReturn(original).when(paymentRepository).findById("id-01");
+        doReturn(original).when(paymentRepository).save(any(Payment.class));
+
+        Payment result = paymentService.updatePayment("id-01", updated);
+
+        assertEquals("Dana", result.getPaymentName());
+        assertEquals("999999999", result.getPaymentBankNumber());
+
+        verify(paymentRepository).save(original);
+    }
+
+    @Test
+    void testUpdatePaymentNotFound() {
+        Payment update = new Payment();
+        update.setPaymentId("id-99");
+        update.setPaymentName("LinkAja");
+        update.setPaymentBankNumber("000000000");
+
+        assertThrows(RuntimeException.class, () -> {
+            paymentService.updatePayment("id-99", update);
+        });
+    }
+
+    @Test
+    void testDeletePaymentSuccess() {
+
+        paymentService.deletePayment("id-02");
+        assertNull(paymentService.findById("id-02"));
+    }
+
+    @Test
+    void testDeletePaymentNotFound() {
+        doReturn(false).when(paymentRepository).deletePayment("id-99");
+        doReturn(payments).when(paymentRepository).findAll();
+
+        paymentService.deletePayment("id-99");
+
+        assertEquals(2, paymentService.findAllPayment().size());
+        verify(paymentRepository).deletePayment("id-99");
+    }
 }

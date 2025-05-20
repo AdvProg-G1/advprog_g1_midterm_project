@@ -14,7 +14,7 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentRepository paymentRepository;
 
     @Override
-    public void createPayment(Payment payment) {
+    public Payment createPayment(Payment payment) {
         List<Payment> existingPayments = paymentRepository.findAll();
         for (Payment existing : existingPayments) {
             if (existing.getPaymentId().equals(payment.getPaymentId())) {
@@ -22,6 +22,8 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
         paymentRepository.save(payment);
+
+        return payment;
     }
 
     @Override
@@ -61,5 +63,30 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment findByBankNumber(String bankNumber) {
         return paymentRepository.findByBankNumber(bankNumber);
+    }
+
+    @Override
+    public List<Payment> findAllPayment() {
+        return paymentRepository.findAll();
+    }
+
+    @Override
+    public Payment updatePayment(String paymentId, Payment newPayment) {
+        Payment existing = paymentRepository.findById(paymentId);
+        if (existing == null) {
+            throw new RuntimeException("Payment not found: " + paymentId);
+        }
+
+        existing.setPaymentName(newPayment.getPaymentName());
+        existing.setPaymentBankNumber(newPayment.getPaymentBankNumber());
+
+        return paymentRepository.save(existing);
+    }
+
+    @Override
+    public void deletePayment(String paymentId) {
+        boolean deleted = paymentRepository.deletePayment(paymentId);
+        if (!deleted) {
+        }
     }
 }

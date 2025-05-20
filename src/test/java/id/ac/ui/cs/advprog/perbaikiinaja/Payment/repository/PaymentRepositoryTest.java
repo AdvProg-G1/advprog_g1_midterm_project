@@ -104,4 +104,23 @@ public class PaymentRepositoryTest {
 
         assertNull(found);
     }
+
+    // happy
+    @Test
+    void testDeleteExistingPayment() {
+        boolean deleted = paymentRepository.deletePayment("id-01");
+
+        assertTrue(deleted);
+        assertNull(paymentRepository.findById("id-01"));
+        assertEquals(1, paymentRepository.findAll().size());
+    }
+
+    // unhappy
+    @Test
+    void testDeleteNonExistingPayment() {
+        boolean deleted = paymentRepository.deletePayment("superfakeid");
+
+        assertFalse(deleted);
+        assertEquals(2, paymentRepository.findAll().size());
+    }
 }
