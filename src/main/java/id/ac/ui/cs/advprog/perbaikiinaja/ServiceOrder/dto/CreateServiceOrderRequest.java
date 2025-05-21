@@ -29,4 +29,11 @@ public class CreateServiceOrderRequest {
     private String paymentMethod;
 
     private boolean couponApplied;
+
+    // New fields added for update
+    private String estimatedCompletionTime;  // e.g. "2 days"
+
+    private Integer estimatedPrice;          // e.g. 120000
+
+    private String status;                   // e.g. "WAITING_CONFIRMATION"
 }

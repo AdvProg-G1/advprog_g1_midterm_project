@@ -18,32 +18,43 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                // ─── CSRF – ignore the two public POST endpoints ───────────────
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/auth/register", "/auth/login"))
+                // ─── Disable CSRF on all our API endpoints ──────────────────────────
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(
+                                "/auth/register",
+                                "/auth/login",
+                                "/api/reviews/**",
+                                "/api/auth/**",
+                                "/api/users/**",
+                                "/api/orders/**"
+                        )
+                )
 
-                // ─── Session policy: keep JSESSIONID after login ───────────────
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                // ─── Keep JSESSIONID after login ────────────────────────────────────
+                .sessionManagement(sm -> sm
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
 
-                // ─── Authorisation rules ───────────────────────────────────────
+                // ─── Authorization rules ───────────────────────────────────────────
                 .authorizeHttpRequests(auth -> auth
                         // public assets and auth pages
                         .requestMatchers("/", "/auth/**", "/assets/**", "/favicon.ico").permitAll()
 
-                        // role-scoped areas (authority strings are USER / TECHNICIAN / ADMIN)
+                        // role-scoped areas
                         .requestMatchers("/user/**")       .hasAuthority("USER")
                         .requestMatchers("/technician/**") .hasAuthority("TECHNICIAN")
                         .requestMatchers("/admin/**")      .hasAuthority("ADMIN")
 
-                        // anything else = authenticated
-                        .anyRequest().authenticated())
+                        // everything else (including our API) must be authenticated
+                        .anyRequest().authenticated()
+                )
 
-                // ─── No default login form or HTTP Basic ───────────────────────
+                // ─── No default login form or HTTP Basic ───────────────────────────
                 .formLogin(f -> f.disable())
                 .httpBasic(b -> b.disable())
 
-                // ─── Add JWT filter before UsernamePasswordAuthenticationFilter ─
+                // ─── Add JWT filter (if you’re ever using JWT headers) ────────────
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
