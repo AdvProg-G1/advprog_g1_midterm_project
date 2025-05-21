@@ -22,6 +22,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewResponse createReview(ReviewRequest reviewRequest) {
+        System.out.println(">>> createReview called with: " + reviewRequest);
         Review existing = reviewRepository.findByUserIdAndTechnicianId(
                 reviewRequest.getUserId(), reviewRequest.getTechnicianId());
         if (existing != null) {
@@ -36,6 +37,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUpdatedAt(LocalDateTime.now());
 
         review = reviewRepository.save(review);
+        System.out.println("<<< review saved: " + review.getId());
         return mapToResponse(review);
     }
 
