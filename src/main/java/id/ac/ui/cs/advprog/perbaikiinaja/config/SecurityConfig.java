@@ -26,7 +26,9 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/api/reviews/**",
                                 "/api/auth/**",
-                                "/api/users/**"
+                                "/api/users/**",
+                                "api/repair/**",
+                                "api/report/**"
                         )
                 )
 

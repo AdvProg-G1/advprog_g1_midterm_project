@@ -1,7 +1,7 @@
 .service-order {
-    max-width: 1500px;
-    margin: 100px auto 0;
-    padding: 0 40px;
+  max-width: 1800px;
+  margin: 70px auto 0;
+  padding: 0 40px;
   }
   
   .order-header {
@@ -28,10 +28,9 @@
   .order-form {
     display: flex;
     flex-wrap: wrap;
-    gap: 40px;
+    gap: 70px;
     align-items: flex-start;
     position: relative;
-    left: -150px;
   }
   
   .form-column {
@@ -61,12 +60,10 @@
   }
   
   .form-actions {
-    position: absolute;
-    right: -320px;
-    bottom: -150px;
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row;
+    gap: 15px;
+    margin-top: 30px;
   }
   
   .btn {
@@ -87,17 +84,28 @@
     border-radius: 5px;
     cursor: pointer;
     border: none;
-    position: absolute;
+    position: static;
     right: -150px;
-  }
-  
-  .reject-btn {
-    background-color: black;
-    color: white;
   }
   
   .accept-btn {
     background-color: #f3cb14;
     color: black;
+    padding: 20px 50px;
+    border-radius: 5px;
+    border: none;
+    font-weight: bold;
+    font-size: 18px;
   }
+
+  .done-btn {
+    background-color: #f5ac23;
+    color: white;
+    padding: 20px 50px;
+    border-radius: 5px;
+    border: none;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
   
