@@ -2,18 +2,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <title>Edit Review</title>
-  <link rel="stylesheet" href="../assets/css/main.css" />
-  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/main.css"/>
+  <link rel="stylesheet" href="../assets/css/navbar.css"/>
 </head>
 <body>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_user.js"></script>
+<div class="edit-form" style="max-width:600px;margin:2rem auto;padding:1rem;background:#f9f9f9;border-radius:8px;">
+  <h2>Edit Review</h2>
+  <input type="hidden" id="review-id"/>
+  <input type="hidden" id="technician-id"/>
+  <input type="hidden" id="user-id"/>
+  <label>Rating:</label>
+  <select id="rating">
+    <option value="5">★★★★★</option>
+    <option value="4">★★★★☆</option>
+    <option value="3">★★★☆☆</option>
+    <option value="2">★★☆☆☆</option>
+    <option value="1">★☆☆☆☆</option>
+  </select>
+  <label>Comment:</label>
+  <textarea id="comment" rows="4"></textarea>
+  <button id="save-btn">Save</button>
+</div>
 
-  <div class="container">
-  </div>
+<script>
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const qp=new URLSearchParams(location.search);
+    const rid=qp.get('reviewId'), tid=qp.get('techId');
+    let uid=null;
 
+    fetch('/api/auth/current',{credentials:'same-origin'})
+            .then(r=>r.json()).then(u=>uid=u.id)
+            .then(()=>fetch(`/api/reviews/${rid}`)
+                    .then(r=>r.json())
+                    .then(rdata=>{
+                      document.getElementById('review-id').value=rid;
+                      document.getElementById('technician-id').value=tid;
+                      document.getElementById('user-id').value=uid;
+                      document.getElementById('rating').value=rdata.rating;
+                      document.getElementById('comment').value=rdata.comment;
+                    })
+            );
+
+    document.getElementById('save-btn').onclick=()=>{
+      const p={
+        technicianId:tid,
+        userId:uid,
+        rating:+document.getElementById('rating').value,
+        comment:document.getElementById('comment').value
+      };
+      fetch(`/api/reviews/${rid}`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(p)
+      })
+              .then(_=>location.href=`/user/technician_profile.html?id=${tid}`);
+    };
+  });
+</script>
 </body>
 </html>

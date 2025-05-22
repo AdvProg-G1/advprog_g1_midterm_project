@@ -27,8 +27,14 @@ public class ReviewController {
     public ResponseEntity<ReviewResponse> create(@RequestBody ReviewRequest req) {
         log.info("🔥 POST /api/reviews received: {}", req);
         ReviewResponse resp = reviewService.createReview(req);
-        log.info("← POST /api/reviews created: {}", resp);
+        log.info("← POST created: {}", resp);
         return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ReviewResponse> getOne(@PathVariable String id) {
+        log.info("→ GET /api/reviews/{} called", id);
+        return ResponseEntity.ok(reviewService.getReviewById(id));
     }
 
     @PutMapping("/{id}")
@@ -36,7 +42,10 @@ public class ReviewController {
             @PathVariable String id,
             @RequestBody ReviewRequest req
     ) {
-        return ResponseEntity.ok(reviewService.updateReview(id, req));
+        log.info("🔥 PUT /api/reviews/{} received: {}", id, req);
+        ReviewResponse resp = reviewService.updateReview(id, req);
+        log.info("← PUT updated: {}", resp);
+        return ResponseEntity.ok(resp);
     }
 
     @DeleteMapping("/{id}")
@@ -44,7 +53,9 @@ public class ReviewController {
             @PathVariable String id,
             @RequestParam String userId
     ) {
+        log.info("🔥 DELETE /api/reviews/{}?userId={}", id, userId);
         reviewService.deleteReview(id, userId);
+        log.info("← DELETE succeeded");
         return ResponseEntity.noContent().build();
     }
 
