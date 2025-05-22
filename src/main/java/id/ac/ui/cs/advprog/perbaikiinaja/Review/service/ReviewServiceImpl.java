@@ -22,45 +22,54 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewResponse createReview(ReviewRequest reviewRequest) {
+        // prevent duplicate
         Review existing = reviewRepository.findByUserIdAndTechnicianId(
                 reviewRequest.getUserId(), reviewRequest.getTechnicianId());
         if (existing != null) {
             throw new RuntimeException("Review already exists");
         }
-        Review review = new Review();
-        review.setTechnicianId(reviewRequest.getTechnicianId());
-        review.setUserId(reviewRequest.getUserId());
-        review.setRating(reviewRequest.getRating());
-        review.setComment(reviewRequest.getComment());
-        review.setCreatedAt(LocalDateTime.now());
-        review.setUpdatedAt(LocalDateTime.now());
 
-        review = reviewRepository.save(review);
-        return mapToResponse(review);
+        Review r = new Review();
+        r.setTechnicianId(reviewRequest.getTechnicianId());
+        r.setUserId(reviewRequest.getUserId());
+        r.setRating(reviewRequest.getRating());
+        r.setComment(reviewRequest.getComment());
+        r.setCreatedAt(LocalDateTime.now());
+        r.setUpdatedAt(LocalDateTime.now());
+
+        r = reviewRepository.save(r);
+        return mapToResponse(r);
+    }
+
+    @Override
+    public ReviewResponse getReviewById(String reviewId) {
+        Review r = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found: " + reviewId));
+        return mapToResponse(r);
     }
 
     @Override
     public ReviewResponse updateReview(String reviewId, ReviewRequest reviewRequest) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found for id: " + reviewId));
-        if (!review.getUserId().equals(reviewRequest.getUserId())) {
-            throw new RuntimeException("Unauthorized to update review for review id: " + reviewId);
+        Review r = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found: " + reviewId));
+        if (!r.getUserId().equals(reviewRequest.getUserId())) {
+            throw new RuntimeException("Unauthorized to update review");
         }
-        review.setRating(reviewRequest.getRating());
-        review.setComment(reviewRequest.getComment());
-        review.setUpdatedAt(LocalDateTime.now());
-        review = reviewRepository.save(review);
-        return mapToResponse(review);
+        r.setRating(reviewRequest.getRating());
+        r.setComment(reviewRequest.getComment());
+        r.setUpdatedAt(LocalDateTime.now());
+        r = reviewRepository.save(r);
+        return mapToResponse(r);
     }
 
     @Override
     public void deleteReview(String reviewId, String userId) {
-        Review review = reviewRepository.findById(reviewId)
+        Review r = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
-        if (!review.getUserId().equals(userId)) {
+        if (!r.getUserId().equals(userId)) {
             throw new RuntimeException("Unauthorized to delete review");
         }
-        reviewRepository.delete(review);
+        reviewRepository.delete(r);
     }
 
     @Override

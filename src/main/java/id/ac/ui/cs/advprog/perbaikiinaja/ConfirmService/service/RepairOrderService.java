@@ -7,7 +7,8 @@ import java.util.List;
 public interface RepairOrderService {
     ServiceOrder confirmRepairOrder(String id, int duration, int cost);
     void rejectRepairOrder(String id);
-    ServiceOrder findById(ServiceOrder order);
-    void deleteById(ServiceOrder orderId);
+    ServiceOrder findById(String id);
+    void deleteById(String id);
     List<ServiceOrder> findAll();
+    List<ServiceOrder> findByStatus(List<String> status);
 }

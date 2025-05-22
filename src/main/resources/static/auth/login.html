@@ -1,3 +1,4 @@
+<!-- src/main/resources/static/auth/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,35 +8,29 @@
   <link rel="stylesheet" href="../assets/css/auth/login.css" />
 </head>
 <body>
+<header class="navbar">
+  <a href="welcome.html"><span class="Perbaikiin">Perbaikiin<span class="aja">Aja</span></span></a>
+</header>
 
-  <header class="navbar">
-    <a href="welcome.html"><span class="Perbaikiin">Perbaikiin<span class="aja">Aja</span></span></a>
-  </header>
+<main class="auth-container">
+  <div class="auth-left">
+    <img src="../assets/images/AuthBG.png" alt="Auth Background" />
+    <div class="slogan"><h1>We fix,<br />we care<br />and we deliver</h1></div>
+  </div>
 
-  <main class="auth-container">
-    <div class="auth-left">
-      <img src="../assets/images/AuthBG.png" alt="Auth Background" />
-      <div class="slogan">
-        <h1>We fix,<br />we care<br />and we deliver</h1>
-      </div>
-    </div>
+  <div class="auth-right">
+    <h2>Welcome <span class="highlight-black">Back !</span></h2>
+    <form class="login-form" action="/auth/login" method="post">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Type your username here" required />
 
-    <div class="auth-right">
-      <h2>Welcome <span class="highlight-black">Back !</span></h2>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Type your password here" required />
 
-      <form class="login-form" action="#" method="post">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" placeholder="Type your username here" required />
-
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Type your password here" required />
-
-        <button type="submit" class="btn yellow">LOGIN</button>
-      </form>
-
-      <p class="register-link">Don’t have an account? <a href="register.html"><strong>Register</strong></a></p>
-    </div>
-  </main>
-
+      <button type="submit" class="btn yellow">LOGIN</button>
+    </form>
+    <p class="register-link">Don’t have an account? <a href="register.html"><strong>Register</strong></a></p>
+  </div>
+</main>
 </body>
 </html>

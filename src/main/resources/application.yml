@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://100.26.87.107:5432/perbaikiinajadb
-    username: springuser
-    password: Perbaikiinaja1
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
