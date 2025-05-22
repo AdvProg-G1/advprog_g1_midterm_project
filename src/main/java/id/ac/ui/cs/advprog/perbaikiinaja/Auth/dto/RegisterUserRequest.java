@@ -7,6 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 
 @Data
 public class RegisterUserRequest {
+    @NotBlank(message = "Username is required")
+    private String username;
+
     @NotBlank(message = "Full name is required")
     private String fullName;
 

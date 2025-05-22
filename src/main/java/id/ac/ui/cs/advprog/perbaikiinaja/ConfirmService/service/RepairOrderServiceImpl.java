@@ -9,6 +9,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class RepairOrderServiceImpl implements RepairOrderService {
@@ -23,14 +25,14 @@ public class RepairOrderServiceImpl implements RepairOrderService {
 
     @Override
     public ServiceOrder confirmRepairOrder(String id, int duration, int cost) {
-        ServiceOrder order = repo.findById(id)
+        ServiceOrder order = repo.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
 
-        if (!"PENDING".equals(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in PENDING state");
+        if (!"waiting_confirmation".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
         }
 
-        order.setStatus("ACCEPTED");
+        order.setStatus("technician_accepted");
         order.setEstimatedCompletionTime(String.valueOf(duration));
         order.setEstimatedPrice(cost);
         order.setServiceDate(LocalDate.now());
@@ -39,29 +41,38 @@ public class RepairOrderServiceImpl implements RepairOrderService {
 
     @Override
     public void rejectRepairOrder(String id) {
-        ServiceOrder order = repo.findById(id)
+        ServiceOrder order = repo.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
 
-        if (!"PENDING".equals(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in PENDING state");
+        if (!"waiting_confirmation".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
         }
 
-        repo.delete(order);
+        repo.deleteById(UUID.fromString(id));
     }
 
     @Override
-    public ServiceOrder findById(ServiceOrder id) {
-        return serviceOrderRepository.findById(id.getId()).orElse(null);
+    public ServiceOrder findById(String id) {
+        return repo.findById(UUID.fromString(id))
+                .orElse(null);
     }
 
     @Override
-    public void deleteById(ServiceOrder order) {
-        ServiceOrder toDelete = findById(order);
+    public void deleteById(String id) {
+        ServiceOrder toDelete = findById(id);
         repo.delete(toDelete);
     }
 
     @Override
     public List<ServiceOrder> findAll() {
         return repo.findAll();
+    }
+
+    @Override
+    public List<ServiceOrder> findByStatus(List<String> statuses) {
+        List<String> upper = statuses.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+        return repo.findByStatusIn(upper);
     }
 }

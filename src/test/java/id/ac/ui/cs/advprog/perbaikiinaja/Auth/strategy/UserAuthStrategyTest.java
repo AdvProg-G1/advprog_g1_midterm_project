@@ -1,7 +1,9 @@
 // src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/strategy/UserAuthStrategyTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.strategy;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.UserAuthStrategy;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.RegisterUserRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.Role;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,109 +19,125 @@ import static org.mockito.Mockito.*;
 class UserAuthStrategyTest {
 
     private UserRepository userRepository;
-    private UserAuthStrategy userAuthStrategy;
     private BCryptPasswordEncoder passwordEncoder;
+    private UserAuthStrategy userAuthStrategy;
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(UserRepository.class);
-        userAuthStrategy = new UserAuthStrategy(userRepository);
+        userRepository  = mock(UserRepository.class);
         passwordEncoder = new BCryptPasswordEncoder();
+        userAuthStrategy = new UserAuthStrategy(userRepository, passwordEncoder);
     }
 
-    @Test
-    void testLoginSuccess() {
-        // Prepare a user with an encoded password
-        String plainPassword = "secret123";
-        String encodedPassword = passwordEncoder.encode(plainPassword);
-        User mockUser = new User();
-        mockUser.setEmail("user@mail.com");
-        mockUser.setPassword(encodedPassword);
+    /* ─────────────── Login ─────────────── */
 
-        when(userRepository.findByEmail("user@mail.com"))
+    @Test
+    void loginSuccess() {
+        String username = "shopper01";
+        String raw      = "secret123";
+        String hash     = passwordEncoder.encode(raw);
+
+        User mockUser = new User();
+        mockUser.setUsername(username);
+        mockUser.setPassword(hash);
+
+        when(userRepository.findByUsername(username))
                 .thenReturn(Optional.of(mockUser));
 
-        User result = userAuthStrategy.login("user@mail.com", plainPassword);
+        User result = userAuthStrategy.login(username, raw);
 
         assertNotNull(result);
-        assertEquals(mockUser.getEmail(), result.getEmail());
+        assertEquals(username, result.getUsername());
     }
 
     @Test
-    void testLoginFailsWithInvalidPassword() {
-        String correctPassword = "correctpass";
-        String wrongPassword = "wrongpass";
-        String encodedPassword = passwordEncoder.encode(correctPassword);
-        User mockUser = new User();
-        mockUser.setEmail("user@mail.com");
-        mockUser.setPassword(encodedPassword);
+    void loginFailsWithInvalidPassword() {
+        String username = "shopper01";
+        String good = "correctpass";
+        String bad  = "wrongpass";
+        String hash = passwordEncoder.encode(good);
 
-        when(userRepository.findByEmail("user@mail.com"))
+        User mockUser = new User();
+        mockUser.setUsername(username);
+        mockUser.setPassword(hash);
+
+        when(userRepository.findByUsername(username))
                 .thenReturn(Optional.of(mockUser));
 
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                userAuthStrategy.login("user@mail.com", wrongPassword)
-        );
-        assertEquals("Invalid credentials", exception.getMessage());
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userAuthStrategy.login(username, bad));
+        assertEquals("Invalid credentials", ex.getMessage());
     }
 
     @Test
-    void testLoginFailsWhenUserNotFound() {
-        when(userRepository.findByEmail("missing@mail.com"))
+    void loginFailsWhenUserNotFound() {
+        when(userRepository.findByUsername("missing"))
                 .thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                userAuthStrategy.login("missing@mail.com", "any")
-        );
-        assertEquals("User not found", exception.getMessage());
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userAuthStrategy.login("missing", "any"));
+        assertEquals("User not found", ex.getMessage());
     }
 
-    @Test
-    void testRegisterUserSuccessfully() {
-        RegisterUserRequest request = new RegisterUserRequest();
-        request.setFullName("Test User");
-        request.setEmail("user@mail.com");
-        request.setPassword("mypassword");
-        request.setPhone("08123456789");
-        request.setAddress("Bandung");
+    /* ─────────────── Register ─────────────── */
 
-        // Simulate that no user exists with this email
+    @Test
+    void registerUserSuccessfully() {
+        RegisterUserRequest req = new RegisterUserRequest();
+        req.setUsername("newuser01");
+        req.setFullName("Test User");
+        req.setEmail("user@mail.com");
+        req.setPassword("mypassword");
+        req.setPhone("08123456789");
+        req.setAddress("Bandung");
+
+        when(userRepository.findByUsername("newuser01")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("user@mail.com")).thenReturn(Optional.empty());
 
-        // Mimic the repository's save behavior
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User argUser = invocation.getArgument(0);
-            argUser.setId("generated-id");
-            return argUser;
-        });
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(inv -> {
+                    User u = inv.getArgument(0);
+                    u.setId("generated-id");
+                    return u;
+                });
 
-        User result = userAuthStrategy.register(request);
+        User result = userAuthStrategy.register(req);
 
-        assertNotNull(result.getId());
-        assertEquals("user@mail.com", result.getEmail());
-        // Ensure that the plain password is not stored
-        assertNotEquals("mypassword", result.getPassword());
-        // Confirm the encoded password matches the original plain password
+        assertEquals("generated-id", result.getId());
+        assertEquals(Role.USER.getAuthority(), result.getRole());
         assertTrue(passwordEncoder.matches("mypassword", result.getPassword()));
     }
 
     @Test
-    void testRegisterFailsIfUserAlreadyExists() {
-        RegisterUserRequest request = new RegisterUserRequest();
-        request.setFullName("Test User");
-        request.setEmail("existing@mail.com");
-        request.setPassword("mypassword");
-        request.setPhone("08123456789");
-        request.setAddress("Bandung");
+    void registerFailsIfUsernameTaken() {
+        RegisterUserRequest req = new RegisterUserRequest();
+        req.setUsername("taken");
+        req.setFullName("Test User");
+        req.setEmail("free@mail.com");
+        req.setPassword("pw");
 
-        User existingUser = new User();
-        existingUser.setEmail("existing@mail.com");
+        when(userRepository.findByUsername("taken"))
+                .thenReturn(Optional.of(new User()));
 
-        when(userRepository.findByEmail("existing@mail.com")).thenReturn(Optional.of(existingUser));
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userAuthStrategy.register(req));
+        assertEquals("Username already taken", ex.getMessage());
+    }
 
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                userAuthStrategy.register(request)
-        );
-        assertEquals("User already exists", exception.getMessage());
+    @Test
+    void registerFailsIfEmailAlreadyRegistered() {
+        RegisterUserRequest req = new RegisterUserRequest();
+        req.setUsername("freeuser");
+        req.setFullName("Test User");
+        req.setEmail("existing@mail.com");
+        req.setPassword("pw");
+
+        when(userRepository.findByUsername("freeuser")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("existing@mail.com"))
+                .thenReturn(Optional.of(new User()));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userAuthStrategy.register(req));
+        assertEquals("Email already registered", ex.getMessage());
     }
 }
