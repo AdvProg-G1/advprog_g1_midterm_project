@@ -56,4 +56,8 @@ public class PaymentRepository {
     public List<Payment> findAll() {
         return new ArrayList<>(paymentMethods);
     }
+
+    public boolean deletePayment(String paymentId) {
+        return paymentMethods.removeIf(p -> p.getPaymentId().equals(paymentId));
+    }
 }

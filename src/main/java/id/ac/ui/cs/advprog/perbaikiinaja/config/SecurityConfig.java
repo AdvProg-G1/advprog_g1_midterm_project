@@ -28,7 +28,10 @@ public class SecurityConfig {
                                 "/auth/logout",         // allow logout without CSRF
                                 "/api/reviews/**",
                                 "/api/auth/**",
-                                "/api/users/**"
+                                "/api/users/**",
+                                "/api/orders/**",
+                                "api/repair/**",
+                                "api/report/**"
                         )
                 )
 

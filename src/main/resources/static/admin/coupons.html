@@ -6,6 +6,8 @@
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/navbar.css">
   <link rel="stylesheet" href="../assets/css/admin/coupons.css">
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 <body>
 
@@ -16,7 +18,7 @@
     <h1>COUPONS & <span class="highlight">CODES</span></h1>
 
     <div class="coupon-actions">
-      <button class="btn add">+ Add Coupon</button>
+      <a href="create_coupon.html"><button class="btn add">+ Add Coupon</button></a>
     </div>
 
     <table>
@@ -29,40 +31,104 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>SPRINGPROMO2025</td>
-          <td>Fixed</td>
-          <td>Rp 50000</td>
-          <td>5</td>
-          <td>
-            <button class="btn edit">Edit</button>
-            <button class="btn delete">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>WELCOME10</td>
-          <td>Percentage</td>
-          <td>10%</td>
-          <td>2</td>
-          <td>
-            <button class="btn edit">Edit</button>
-            <button class="btn delete">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>FLASH25</td>
-          <td>Fixed</td>
-          <td>Rp 25000</td>
-          <td>1</td>
-          <td>
-            <button class="btn edit">Edit</button>
-            <button class="btn delete">Delete</button>
-          </td>
-        </tr>
+      <tbody id="coupon-table-body">
       </tbody>
     </table>
   </div>
+
+  <script>
+    function formatCoupon(coupon) {
+      const discount = coupon.type.toLowerCase() === 'percentage'
+        ? coupon.discountValue + '%'
+        : 'Rp ' + coupon.discountValue;
+
+      const usesLeft = coupon.maxUsage - coupon.usageCount;
+
+      return `
+        <tr>
+          <td>${coupon.code}</td>
+          <td>${coupon.type}</td>
+          <td>${discount}</td>
+          <td>${usesLeft}</td>
+          <td>
+            <button class="btn edit" data-id="${coupon.id}">Edit</button>
+            <button class="btn delete" data-id="${coupon.id}">Delete</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function refreshCouponTable() {
+      fetch('/api/coupons')
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.getElementById('coupon-table-body');
+          tbody.innerHTML = '';
+          data.forEach(coupon => {
+            tbody.innerHTML += formatCoupon(coupon);
+          });
+        })
+        .catch(error => {
+          console.error("Erreur lors du chargement des coupons :", error);
+        });
+    }
+
+    function setupWebSocket() {
+      const socket = new SockJS('/ws');
+      const stompClient = Stomp.over(socket);
+
+      stompClient.connect({}, function () {
+        stompClient.subscribe('/topic/coupons', function (message) {
+          if (message.body === 'refresh') {
+            console.log("Mise à jour reçue via WebSocket");
+            refreshCouponTable();
+          }
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      refreshCouponTable();
+      setupWebSocket();
+    });
+
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("edit")) {
+        const couponId = e.target.getAttribute("data-id");
+        if (couponId) {
+          window.location.href = `edit_coupon.html?id=${couponId}`;
+        }
+      }
+
+      if (e.target.classList.contains("delete")) {
+        const couponId = e.target.getAttribute("data-id");
+        if (!couponId) return;
+
+        const confirmDelete = confirm("Are you sure you want to delete this coupon?");
+        if (!confirmDelete) return;
+
+        fetch(`/api/coupons/${couponId}`, {
+          method: "DELETE"
+        })
+          .then(response => {
+            if (!response.ok) throw new Error("Failed to delete");
+            return fetch('/api/coupons');
+          })
+          .then(response => response.json())
+          .then(data => {
+            const tbody = document.getElementById('coupon-table-body');
+            tbody.innerHTML = '';
+            data.forEach(coupon => {
+              tbody.innerHTML += formatCoupon(coupon);
+            });
+          })
+          .catch(error => {
+            console.error("Delete error:", error);
+            alert("Failed to delete the coupon.");
+          });
+      }
+    });
+  </script>
 
 </body>
 </html>

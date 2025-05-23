@@ -9,55 +9,66 @@
 </head>
 <body>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_technician.js"></script>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_technician.js"></script>
 
 <section class="order-history">
   <h1>ORDER <span class="highlight-black">HISTORY</span></h1>
 
   <table class="order-table">
     <thead>
-      <tr>
-        <th>Item Name</th>
-        <th>Condition</th>
-        <th>Repair Type</th>
-        <th>Date of Service</th>
-        <th>Status</th>
-        <th></th>
-        <th></th>
-      </tr>
+    <tr>
+      <th>Item Name</th>
+      <th>Condition</th>
+      <th>Description</th>
+      <th>Date of Service</th>
+      <th>Status</th>
+      <th></th>
+      <th></th>
+    </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>Leaking Sink</td>
-        <td>Leaking</td>
-        <td>Plumbing</td>
-        <td>10/04/2025</td>
-        <td>COMPLETED</td>
-        <td><a href="create_report.html" class="write-report">Write report</a></td>
-        <td><a href="service_details.html" class="details-link">Details</a></td>
-      </tr>
-      <tr>
-        <td>Car</td>
-        <td>Broken</td>
-        <td>Fix</td>
-        <td>10/04/2025</td>
-        <td>COMPLETED</td>
-        <td><a href="create_report.html" class="write-report">View report</a></td>
-        <td><a href="service_details.html" class="details-link">Details</a></td>
-      </tr>
-      <tr>
-        <td>Car</td>
-        <td>Broken</td>
-        <td>Fix</td>
-        <td>10/04/2025</td>
-        <td>ONGOING</td>
-        <td class="write-report">-</td>
-        <td><a href="service_details.html" class="details-link">Details</a></td>
-      </tr>
+    <tbody id="orders-table">
     </tbody>
   </table>
 </section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/repair/history')
+      .then(res => res.json())
+      .then(orders => {
+        const tbody = document.getElementById('orders-table');
+        tbody.innerHTML = '';
+
+        orders.forEach(o => {
+          const tr = document.createElement('tr');
+          const st = o.status.toLowerCase();
+
+          tr.innerHTML = `
+          <td>${o.itemName.charAt(0).toUpperCase() + o.itemName.slice(1)}</td>
+          <td>${ o.condition.charAt(0).toUpperCase() + o.condition.slice(1) }</td>
+          <td>${o.problemDescription || ''}</td>
+          <td>${new Date(o.serviceDate).toLocaleDateString()}</td>
+          <td>${o.status.replace(/_/g, ' ').toUpperCase()}</td>
+          <td>
+            ${
+                st === 'in_progress'
+                    ? `<a href="/technician/create_report.html?orderId=${encodeURIComponent(o.id)}" class="btn write-report">WRITE REPORT</a>`
+                : st === 'completed'
+                    ? `<button class="btn submitted-btn" disabled>REPORT SUBMITTED</button>`
+                    : '-'
+              }
+          </td>
+          <td>
+            <a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="details-link">Details</a>
+          </td>
+        `;
+          tbody.appendChild(tr);
+        });
+      })
+    .catch(err => console.error('Could not load order history:', err));
+  });
+</script>
 
 </body>
 </html>

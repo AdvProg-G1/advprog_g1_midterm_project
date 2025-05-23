@@ -9,68 +9,131 @@
 </head>
 <body>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_technician.js"></script>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_technician.js"></script>
 
-  <section class="create-report">
-    <h1>CREATE ORDER <span class="highlight-black">REPORT</span></h1>
+<section class="create-report">
+  <h1>CREATE ORDER <span class="highlight-black">REPORT</span></h1>
 
-    <form class="report-form">
-      <div class="form-column">
-        <div class="form-group">
-          <label for="item-name">Item Name</label>
-          <input type="text" id="item-name" placeholder="Name" />
-        </div>
+  <form class="report-form" id="report-form">
+    <input type="hidden" id="order-id" name="orderId" />
+    <input type="hidden" id="technician-id" name="technicianId" value="<!--[[${techId}]]-->"/>
 
-        <div class="form-group">
-          <label for="item-condition">Item Condition</label>
-          <select id="item-condition">
-            <option>Choose Condition</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="repair-type">Repair Type</label>
-          <select id="repair-type">
-            <option>Choose Desired Repair</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="service-date">Date of Service</label>
-          <input type="date" id="service-date" />
-        </div>
+    <div class="form-column">
+      <div class="form-group">
+        <label for="item-name">Item Name</label>
+        <input type="text" id="item-name" name="itemName" readonly />
       </div>
 
-      <div class="form-column">
-        <div class="form-group">
-          <label for="completion-time">Estimated Completion Time</label>
-          <input type="text" id="completion-time" placeholder="Name" />
-        </div>
-
-        <div class="form-group">
-          <label for="price">Price</label>
-          <input type="text" id="price" placeholder="Name" />
-        </div>
-
-        <div class="form-group">
-          <label for="status">Status</label>
-          <input type="text" id="status" value="COMPLETED" readonly />
-        </div>
+      <div class="form-group">
+        <label for="item-condition">Item Condition</label>
+        <input type="text" id="item-condition" name="itemCondition" readonly />
       </div>
 
-      <div class="fixing-column">
-        <div class="form-group">
-          <label for="fixing-process">Fixing Process</label>
-          <textarea id="fixing-process" placeholder="Please detail what you did to fix the item"></textarea>
-        </div>
-
-        <div class="form-button">
-          <button type="submit" class="btn submit-btn">SUBMIT</button>
-        </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" readonly></textarea>
       </div>
-    </form>
-  </section>
+
+      <div class="form-group">
+        <label for="service-date">Date of Service</label>
+        <input type="date" id="service-date" name="serviceDate" readonly />
+      </div>
+    </div>
+
+    <div class="form-column">
+      <div class="form-group">
+        <label for="completion-time">Estimated Completion Time</label>
+        <input type="text" id="completion-time" name="estimatedDuration" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="price">Price</label>
+        <input type="text" id="price" name="estimatedCost" readonly />
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status</label>
+        <input type="text" id="status" name="status" readonly />
+      </div>
+    </div>
+
+    <div class="fixing-column">
+      <div class="form-group">
+        <label for="fixing-process">Fixing Process</label>
+        <textarea
+                id="fixing-process"
+                name="details"
+                placeholder="Please detail what you did to fix the item"
+                required
+        ></textarea>
+      </div>
+
+      <div class="form-button">
+        <button type="submit" class="btn submit-btn">SUBMIT</button>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const params  = new URLSearchParams(window.location.search);
+    const orderId = params.get('orderId');
+    if (!orderId) {
+      return alert('Missing orderId');
+    }
+    document.getElementById('order-id').value = orderId;
+
+    fetch(`/api/repair/${encodeURIComponent(orderId)}`)
+      .then(r => {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then(order => {
+        document.getElementById('item-name').value         = order.itemName;
+        document.getElementById('item-condition').value    = order.condition;
+        document.getElementById('description').value       = order.problemDescription || '';
+        document.getElementById('service-date').value      = new Date(order.serviceDate)
+                .toISOString()
+                .slice(0, 10);
+        document.getElementById('completion-time').value   = order.estimatedCompletionTime;
+        document.getElementById('price').value             = order.estimatedPrice;
+        document.getElementById('status').value            = order.status.toUpperCase();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Could not load order details.');
+      });
+
+    document.getElementById('report-form')
+      .addEventListener('submit', e => {
+        e.preventDefault();
+        const details = document.getElementById('fixing-process')
+          .value.trim();
+        if (!details) return alert('Please fill in the fixing process.');
+
+        fetch(`/api/report/${encodeURIComponent(orderId)}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(details)
+        })
+          .then(res => {
+            if (!res.ok) {
+              return res.text()
+                      .then(t => Promise.reject(`${res.status}: ${t}`));
+            }
+            window.location.href = '/technician/order_history.html';
+          })
+          .catch(err => {
+            console.error('Report submission failed:', err);
+            alert('Failed to submit report.');
+          });
+      });
+  });
+</script>
 
 </body>
 </html>
