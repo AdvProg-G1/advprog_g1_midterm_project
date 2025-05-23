@@ -91,25 +91,25 @@
 
     let currentUserId = null;
 
-    // 1) Determine logged-in user
+    // 1) Determine logged-in user via AJAX
     fetch('/api/auth/current', { credentials: 'same-origin' })
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(u => {
               currentUserId = u.id;
-              // show edit link if we're looking at our own profile
               if (u.id === techId) {
                 document.getElementById('edit-link').style.display = 'block';
               }
             })
             .catch(() => {
-              // not logged in, leave edit hidden
+              // not logged in or error
             })
             .finally(() => {
               loadTechnician();
               loadReviews();
+              setupWebSocket();
             });
 
-    // 2) Load technician info by ID
+    // 2) Load technician info via AJAX
     function loadTechnician() {
       fetch(`/api/users/${techId}`)
               .then(r => r.ok ? r.json() : Promise.reject())
@@ -126,52 +126,66 @@
               });
     }
 
-    // 3) Load & render all reviews for this technician
+    // 3) Load & render all reviews via AJAX
     function loadReviews() {
       fetch(`/api/reviews/technician/${techId}`)
               .then(r => r.ok ? r.json() : Promise.reject())
-              .then(revs => {
-                // show newest first
-                revs.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-                const container = document.getElementById('reviews-container');
-                container.innerHTML = '';
-
-                if (!revs.length) {
-                  container.innerHTML = '<p>No reviews yet.</p>';
-                  document.getElementById('tech-stars').textContent = '☆☆☆☆☆';
-                  return;
-                }
-
-                // compute average
-                const avg = revs.reduce((sum, r) => sum + r.rating, 0) / revs.length;
-                document.getElementById('tech-stars').textContent =
-                        '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-
-                revs.forEach(r => {
-                  const card = document.createElement('div');
-                  card.className = 'review-card';
-
-                  const date = r.createdAt
-                          ? new Date(r.createdAt).toLocaleDateString('en-GB')
-                          : 'Unknown date';
-
-                  card.innerHTML = `
-              <div class="review-header">
-                <strong>${r.reviewerName}</strong>
-                <div class="stars_review">${
-                          '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)
-                  }</div>
-              </div>
-              <div class="review-text">${r.comment || ''}</div>
-              <div class="review-date">Posted: ${date}</div>
-            `;
-                  container.appendChild(card);
-                });
-              })
+              .then(renderReviews)
               .catch(() => {
                 document.getElementById('reviews-container').innerHTML = '<p>Error loading reviews.</p>';
               });
+    }
+
+    function renderReviews(revs) {
+      revs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const container = document.getElementById('reviews-container');
+      container.innerHTML = '';
+
+      if (!revs.length) {
+        container.innerHTML = '<p>No reviews yet.</p>';
+        document.getElementById('tech-stars').textContent = '☆☆☆☆☆';
+        return;
+      }
+
+      // compute average
+      const avg = revs.reduce((sum, r) => sum + r.rating, 0) / revs.length;
+      document.getElementById('tech-stars').textContent =
+              '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+
+      revs.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        const date = r.createdAt
+                ? new Date(r.createdAt).toLocaleDateString('en-GB')
+                : 'Unknown date';
+
+        card.innerHTML = `
+          <div class="review-header">
+            <strong>${r.reviewerName}</strong>
+            <div class="stars_review">
+              ${'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}
+            </div>
+          </div>
+          <div class="review-text">${r.comment || ''}</div>
+          <div class="review-date">Posted: ${date}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 4) Real-time updates via WebSocket
+    function setupWebSocket() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${proto}//${location.host}/ws/reviews/${techId}`);
+      socket.onmessage = event => {
+        try {
+          const updatedRevs = JSON.parse(event.data);
+          renderReviews(updatedRevs);
+        } catch (e) {
+          console.error('Invalid WS payload', e);
+        }
+      };
+      socket.onerror = err => console.error('WebSocket error', err);
     }
   });
 </script>

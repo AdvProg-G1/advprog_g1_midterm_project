@@ -254,9 +254,24 @@
     document.getElementById('next-page')
             .addEventListener('click', () => { currentPage++; display(); });
 
+    // initial load via AJAX
     fetchAllTechs().then(data => {
       allTechs = data;
       applyFiltersAndSort();
+
+      // then open WebSocket for real-time updates
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${proto}//${location.host}/ws/reviews`);
+      socket.onmessage = event => {
+        try {
+          const updated = JSON.parse(event.data);
+          allTechs = updated;
+          applyFiltersAndSort();
+        } catch (e) {
+          console.error('Invalid WS payload', e);
+        }
+      };
+      socket.onerror = err => console.error('WebSocket error', err);
     });
   });
 </script>
