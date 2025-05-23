@@ -23,7 +23,7 @@ public class CouponServiceImpl implements CouponService {
     private final CouponRepository couponRepository;
     
     @Autowired
-    private CouponNotificationController notificationController;
+    private final CouponNotificationController notificationController;
 
     @Override
     public CouponResponse createCoupon(CouponRequest request) {
