@@ -18,34 +18,34 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/create")
+    @PostMapping
     public Payment createPayment(@RequestBody Payment payment) {
         paymentService.createPayment(payment);
         return payment;
     }
 
-    @GetMapping("/history/id/{paymentId}")
+    @GetMapping
     public ResponseEntity<Payment> getById(@PathVariable String paymentId) {
         return Optional.ofNullable(paymentService.findById(paymentId))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/history/name/{paymentName}")
+    @GetMapping
     public ResponseEntity<Payment> getByName(@PathVariable String paymentName) {
         return Optional.ofNullable(paymentService.findByName(paymentName))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/history/bankNumber/{bankNumber}")
+    @GetMapping("/{Id}")
     public ResponseEntity<Payment> getByBankNumber(@PathVariable String bankNumber) {
         return Optional.ofNullable(paymentService.findByBankNumber(bankNumber))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/update/{paymentId}")
+    @PutMapping("/{Id}")
     public ResponseEntity<Payment> updatePayment(
             @PathVariable String paymentId,
             @RequestBody Payment payment
@@ -58,13 +58,13 @@ public class PaymentController {
         }
     }
 
-    @DeleteMapping("/delete/{paymentId}")
+    @DeleteMapping("/{Id}")
     public ResponseEntity<Void> deletePayment(@PathVariable String paymentId) {
         paymentService.deletePayment(paymentId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/history")
+    @GetMapping
     public List<Payment> getAllPayments() {
         return paymentService.findAllPayment();
     }
