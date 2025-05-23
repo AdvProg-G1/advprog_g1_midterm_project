@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Coupon.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.controller.CouponNotificationController;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.dto.CouponResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model.Coupon;
@@ -7,6 +8,8 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model.FixedDiscountCoupon;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model.PercentageDiscountCoupon;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.repository.CouponRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +21,9 @@ import java.util.stream.Collectors;
 public class CouponServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
+    
+    @Autowired
+    private final CouponNotificationController notificationController;
 
     @Override
     public CouponResponse createCoupon(CouponRequest request) {
@@ -41,7 +47,7 @@ public class CouponServiceImpl implements CouponService {
         }
 
         couponRepository.save(coupon);
-
+        notificationController.notifyCouponListChanged();
         return mapToResponse(coupon);
     }
 
@@ -65,6 +71,8 @@ public class CouponServiceImpl implements CouponService {
     	Coupon coupon = couponRepository.findById(id)
     	        .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
     	    couponRepository.deleteById(id);
+    	   
+    	notificationController.notifyCouponListChanged();
     }
 
     @Override
@@ -76,7 +84,9 @@ public class CouponServiceImpl implements CouponService {
     	    coupon.setMaxUsage(request.getMaxUsage());
 
     	    Coupon updated = couponRepository.save(coupon);  
+    	    notificationController.notifyCouponListChanged();
     	    return mapToResponse(updated);
+    	    
 
     }
 
