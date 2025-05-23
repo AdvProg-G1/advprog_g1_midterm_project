@@ -1,3 +1,4 @@
+<!-- src/main/resources/static/technician/reviews.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,63 +7,273 @@
   <link rel="stylesheet" href="../assets/css/main.css" />
   <link rel="stylesheet" href="../assets/css/navbar.css" />
   <link rel="stylesheet" href="../assets/css/technician/reviews.css" />
+  <style>
+    /* Best‐technician badge */
+    .review-card.best {
+      border: 2px solid gold;
+      background-color: #fffbea;
+      position: relative;
+    }
+    .review-card.best .badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: inline-block;     /* wrap text only */
+      background: gold;
+      color: black;
+      padding: 4px 8px;
+      font-weight: bold;
+      border-radius: 4px;
+      white-space: nowrap;       /* no wrapping */
+    }
+
+    .controls {
+      margin: 16px 0;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .controls label {
+      font-weight: bold;
+    }
+
+    .pagination {
+      margin: 16px 0;
+      text-align: center;
+    }
+    .pagination button {
+      margin: 0 8px;
+      padding: 6px 12px;
+    }
+
+    .review-text {
+      margin: 1rem 0;
+    }
+    .review-text p {
+      margin: 0 0 0.25rem;
+      text-align: left;
+      word-wrap: break-word;
+    }
+    .review-text .author {
+      margin: 0;
+      text-align: left;
+    }
+
+    .reviewer-info strong {
+      display: block;
+      line-height: 1.2;
+    }
+  </style>
 </head>
 <body>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_technician.js"></script>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_technician.js"></script>
 
-  <section class="reviews">
-    <h1>REVIEWS & <span class="highlight-black">RATINGS</span></h1>
-    <div class="sub-heading">DISPLAY ONLY<br>LATEST REVIEW</div>
+<section class="reviews">
+  <h1>REVIEWS & <span class="highlight-black">RATINGS</span></h1>
+  <div class="sub-heading">DISPLAY ONLY LATEST REVIEW</div>
 
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Handy Manny</strong>
-          <div class="stars">★★★★★</div>
-          <div class="orders">Orders completed: <span>5</span></div>
+  <div class="controls">
+    <label for="rating-filter">Filter by stars:</label>
+    <select id="rating-filter">
+      <option value="all">All</option>
+      <option value="5">5</option>
+      <option value="4">4</option>
+      <option value="3">3</option>
+      <option value="2">2</option>
+      <option value="1">1</option>
+    </select>
+
+    <label for="sort-order">Sort by rating:</label>
+    <select id="sort-order">
+      <option value="desc" selected>Descending</option>
+      <option value="asc">Ascending</option>
+    </select>
+  </div>
+
+  <!-- Highlighted best technician -->
+  <div id="best-tech-container"></div>
+
+  <!-- Other top technicians -->
+  <div id="reviews-list"></div>
+
+  <!-- Pagination controls -->
+  <div class="pagination">
+    <button id="prev-page" disabled>Previous</button>
+    <span id="page-info">Page 1</span>
+    <button id="next-page" disabled>Next</button>
+  </div>
+</section>
+
+<script>
+  const PAGE_SIZE = 3;
+  let allTechs = [], filtered = [], currentPage = 0;
+
+  function fetchAllTechs() {
+    return fetch(`/api/reviews/best?limit=1000&order=desc`)
+            .then(r => r.json());
+  }
+
+  function createStars(r) {
+    const full = Math.round(r);
+    return '★'.repeat(full) + '☆'.repeat(5-full);
+  }
+
+  function splitName(name) {
+    const parts = name.split(' ');
+    return parts.length > 1
+            ? parts[0] + '<br>' + parts.slice(1).join(' ')
+            : name;
+  }
+
+  function renderBadge() {
+    const b = document.createElement('div');
+    b.className = 'badge';
+    b.textContent = 'Best Technician';
+    return b;
+  }
+
+  function renderTechCard(tech, isBest = false) {
+    const card = document.createElement('div');
+    card.className = 'review-card' + (isBest ? ' best' : '');
+    if (isBest) card.appendChild(renderBadge());
+
+    const htmlName = splitName(tech.fullName);
+
+    card.innerHTML += `
+        <div class="review-left">
+          <div class="avatar"></div>
+          <div class="reviewer-info">
+            <strong>${htmlName}</strong>
+            <div class="stars">${createStars(tech.averageRating)}</div>
+            <div class="orders">Orders completed: <span>${tech.reviewCount}</span></div>
+          </div>
         </div>
-      </div>
-      <div class="review-text">
-        <p>"Manny fixed my sink fast and did a great job. Super friendly, efficient, and left everything spotless. Highly recommend!”</p>
-        <div class="author">— John Ward</div>
-      </div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark" ></div> 
-      <!-- Need to add the functionnality to fill the logo in yellow and the technicians 
-       to favorite -->
-    </div>
-
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Newbie</strong>
-          <div class="stars">★★★★☆</div>
-          <div class="orders">Orders completed: <span>0</span></div>
+        <div class="review-text">
+          <p>${
+            tech.latestComment
+                    ? `"${tech.latestComment}"`
+                    : 'No reviews yet.'
+    }</p>
+          ${
+            tech.latestReviewerName
+                    ? `<div class="author">— ${tech.latestReviewerName}</div>`
+                    : ''
+    }
         </div>
-      </div>
-      <div class="review-text no-review">No reviews yet.</div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark"></div>
-    </div>
+        <a class="view-profile"
+           href="/technician/profile.html?id=${encodeURIComponent(tech.technicianId)}">
+          View <strong>Profile</strong>
+        </a>
+        <button class="bookmark" title="Favorites"></button>
+      `;
 
-    <div class="review-card">
-      <div class="review-left">
-        <div class="avatar"></div>
-        <div class="reviewer-info">
-          <strong>Newbie</strong>
-          <div class="stars">★★★☆☆</div>
-          <div class="orders">Orders completed: <span>0</span></div>
-        </div>
-      </div>
-      <div class="review-text no-review">No reviews yet.</div>
-      <a href="#" class="view-profile">View <strong>Profile</strong></a>
-      <div class="bookmark"></div>
-    </div>
+    card.querySelector('.bookmark')
+            .addEventListener('click', () => {
+              card.querySelector('.bookmark').classList.toggle('favorited');
+            });
 
-  </section>
+    return card;
+  }
+
+  function display() {
+    const bestC = document.getElementById('best-tech-container');
+    const listC = document.getElementById('reviews-list');
+    bestC.innerHTML = '';
+    listC.innerHTML = '';
+
+    if (filtered.length) {
+      bestC.appendChild(renderTechCard(filtered[0], true));
+    }
+
+    const others = filtered.slice(1);
+    const start = currentPage * PAGE_SIZE;
+    others.slice(start, start + PAGE_SIZE)
+            .forEach(t => listC.appendChild(renderTechCard(t)));
+
+    const totalPages = Math.ceil(others.length / PAGE_SIZE);
+    document.getElementById('prev-page').disabled = currentPage === 0;
+    document.getElementById('next-page').disabled = currentPage >= totalPages - 1;
+    document.getElementById('page-info').textContent =
+            `Page ${currentPage+1} of ${Math.max(totalPages,1)}`;
+
+    document.querySelectorAll('.review-card').forEach(card => {
+      const href = card.querySelector('.view-profile').href;
+      const techId = new URL(href).searchParams.get('id');
+      rotateComments(card, techId);
+    });
+  }
+
+  function applyFiltersAndSort() {
+    const star  = document.getElementById('rating-filter').value;
+    const order = document.getElementById('sort-order').value;
+
+    filtered = allTechs.slice();
+    if (star !== 'all') {
+      const v = parseInt(star,10);
+      filtered = filtered.filter(t => Math.round(t.averageRating) === v);
+    }
+    filtered.sort((a,b) =>
+            order === 'asc'
+                    ? a.averageRating - b.averageRating
+                    : b.averageRating - a.averageRating
+    );
+    currentPage = 0;
+    display();
+  }
+
+  function rotateComments(card, techId) {
+    fetch(`/api/reviews/technician/${techId}`)
+            .then(r => r.json())
+            .then(revs => {
+              const items = revs
+                      .filter(r => r.comment)
+                      .map(r => ({ comment: r.comment, reviewer: r.reviewerName }));
+              if (items.length < 2) return;
+              let idx = 0;
+              setInterval(() => {
+                idx = (idx + 1) % items.length;
+                const { comment, reviewer } = items[idx];
+                const p = card.querySelector('.review-text p');
+                const a = card.querySelector('.review-text .author');
+                if (p) p.textContent = `"${comment}"`;
+                if (a) a.textContent = `— ${reviewer}`;
+              }, 5000);
+            })
+            .catch(console.warn);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('rating-filter')
+            .addEventListener('change', applyFiltersAndSort);
+    document.getElementById('sort-order')
+            .addEventListener('change', applyFiltersAndSort);
+    document.getElementById('prev-page')
+            .addEventListener('click', () => { currentPage--; display(); });
+    document.getElementById('next-page')
+            .addEventListener('click', () => { currentPage++; display(); });
+
+    // initial load via AJAX
+    fetchAllTechs().then(data => {
+      allTechs = data;
+      applyFiltersAndSort();
+
+      // then open WebSocket for real-time updates
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${proto}//${location.host}/ws/reviews`);
+      socket.onmessage = event => {
+        try {
+          const updated = JSON.parse(event.data);
+          allTechs = updated;
+          applyFiltersAndSort();
+        } catch (e) {
+          console.error('Invalid WS payload', e);
+        }
+      };
+      socket.onerror = err => console.error('WebSocket error', err);
+    });
+  });
+</script>
 </body>
 </html>

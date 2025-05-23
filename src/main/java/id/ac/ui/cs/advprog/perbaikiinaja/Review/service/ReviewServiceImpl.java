@@ -1,6 +1,7 @@
-//src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/ReviewServiceImpl.java
+// src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/Review/service/ReviewServiceImpl.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Review.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.dto.ReviewRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.dto.ReviewResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Review.model.Review;
@@ -17,65 +18,79 @@ import java.util.stream.Collectors;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
 
     @Override
     public ReviewResponse createReview(ReviewRequest reviewRequest) {
-        // Check for duplicate review
-        Review existing = reviewRepository.findByUserIdAndTechnicianId(reviewRequest.getUserId(), reviewRequest.getTechnicianId());
+        // prevent duplicate
+        Review existing = reviewRepository.findByUserIdAndTechnicianId(
+                reviewRequest.getUserId(), reviewRequest.getTechnicianId());
         if (existing != null) {
             throw new RuntimeException("Review already exists");
         }
-        Review review = new Review();
-        review.setTechnicianId(reviewRequest.getTechnicianId());
-        review.setUserId(reviewRequest.getUserId());
-        review.setRating(reviewRequest.getRating());
-        review.setComment(reviewRequest.getComment());
-        review.setCreatedAt(LocalDateTime.now());
-        review.setUpdatedAt(LocalDateTime.now());
 
-        review = reviewRepository.save(review);
-        return mapToResponse(review);
+        Review r = new Review();
+        r.setTechnicianId(reviewRequest.getTechnicianId());
+        r.setUserId(reviewRequest.getUserId());
+        r.setRating(reviewRequest.getRating());
+        r.setComment(reviewRequest.getComment());
+        r.setCreatedAt(LocalDateTime.now());
+        r.setUpdatedAt(LocalDateTime.now());
+
+        r = reviewRepository.save(r);
+        return mapToResponse(r);
+    }
+
+    @Override
+    public ReviewResponse getReviewById(String reviewId) {
+        Review r = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found: " + reviewId));
+        return mapToResponse(r);
     }
 
     @Override
     public ReviewResponse updateReview(String reviewId, ReviewRequest reviewRequest) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found for id: " + reviewId));
-        if (!review.getUserId().equals(reviewRequest.getUserId())) {
-            throw new RuntimeException("Unauthorized to update review for review id: " + reviewId);
+        Review r = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found: " + reviewId));
+        if (!r.getUserId().equals(reviewRequest.getUserId())) {
+            throw new RuntimeException("Unauthorized to update review");
         }
-        review.setRating(reviewRequest.getRating());
-        review.setComment(reviewRequest.getComment());
-        review.setUpdatedAt(LocalDateTime.now());
-        review = reviewRepository.save(review);
-        return mapToResponse(review);
+        r.setRating(reviewRequest.getRating());
+        r.setComment(reviewRequest.getComment());
+        r.setUpdatedAt(LocalDateTime.now());
+        r = reviewRepository.save(r);
+        return mapToResponse(r);
     }
 
     @Override
     public void deleteReview(String reviewId, String userId) {
-        Review review = reviewRepository.findById(reviewId)
+        Review r = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
-        if (!review.getUserId().equals(userId)) {
+        if (!r.getUserId().equals(userId)) {
             throw new RuntimeException("Unauthorized to delete review");
         }
-        reviewRepository.delete(review);
+        reviewRepository.delete(r);
     }
 
     @Override
     public List<ReviewResponse> getReviewsForTechnician(String technicianId) {
-        List<Review> reviews = reviewRepository.findByTechnicianId(technicianId);
-        return reviews.stream()
+        return reviewRepository.findByTechnicianId(technicianId)
+                .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     private ReviewResponse mapToResponse(Review review) {
+        String reviewerName = userRepository.findById(review.getUserId())
+                .map(u -> u.getFullName())
+                .orElse(review.getUserId());
         return new ReviewResponse(
                 review.getId(),
                 review.getTechnicianId(),
                 review.getUserId(),
                 review.getRating(),
-                review.getComment()
+                review.getComment(),
+                reviewerName
         );
     }
 }
