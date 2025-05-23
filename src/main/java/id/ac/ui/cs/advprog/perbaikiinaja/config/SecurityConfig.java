@@ -30,8 +30,9 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/users/**",
                                 "/api/orders/**",
-                                "api/repair/**",
-                                "api/report/**"
+                                "/api/repair/**",
+                                "/api/report/**",
+                                "/api/coupons/**"
                         )
                 )
 
