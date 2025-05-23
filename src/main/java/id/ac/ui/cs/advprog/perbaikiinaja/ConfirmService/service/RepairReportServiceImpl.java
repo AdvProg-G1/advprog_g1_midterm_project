@@ -31,7 +31,7 @@ public class RepairReportServiceImpl implements RepairReportService {
     public RepairReport createRepairReport(String orderId, String details) {
         ServiceOrder order = orderRepo.findById(UUID.fromString(orderId)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         String technicianId = order.getTechnicianId();
-        if (!"completed".equals(order.getStatus()))
+        if (!"completed".equalsIgnoreCase(order.getStatus()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in COMPLETED state.");
 
         RepairReport rpt = RepairReport.builder()
@@ -41,6 +41,7 @@ public class RepairReportServiceImpl implements RepairReportService {
                 .createdAt(new Date())
                 .build();
 
+        order.setStatus("completed");
         return reportRepo.save(rpt);
     }
 }
