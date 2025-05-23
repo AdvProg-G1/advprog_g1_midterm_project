@@ -8,6 +8,7 @@ import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.service.ServiceOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -28,26 +29,23 @@ public class ServiceOrderController {
 
     @PostMapping
     public ResponseEntity<ServiceOrder> createOrder(
-            @Valid @RequestBody CreateServiceOrderRequest req
+            @Valid @RequestBody CreateServiceOrderRequest req,
+            @AuthenticationPrincipal User user
     ) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (!(principal instanceof User)) {
-            return ResponseEntity.status(401).build(); // Unauthorized
+        if (user == null) {
+            return ResponseEntity.status(401).build();
         }
-
-        String userId = ((User) principal).getId();
 
         ServiceOrder order = ServiceOrder.builder()
                 .itemName(req.getItemName())
                 .condition(req.getCondition())
                 .problemDescription(req.getProblemDescription())
                 .technicianId(req.getTechnicianId())
-                .userId(userId)
+                .userId(user.getId())
                 .serviceDate(req.getServiceDate())
                 .paymentMethod(req.getPaymentMethod())
                 .couponApplied(req.isCouponApplied())
-                .status("WAITING_CONFIRMATION") // Default status on creation
+                .status("WAITING_CONFIRMATION")
                 .build();
 
         ServiceOrder created = service.createOrder(order);
