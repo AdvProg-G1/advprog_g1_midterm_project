@@ -1,6 +1,9 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
+import id.ac.ui.cs.advprog.perbaikiinaja.TestSecurityConfig;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.util.JwtUtil;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairReportRepository;
@@ -10,6 +13,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
@@ -20,7 +26,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@TestPropertySource(properties = {
+        "jwt.secret=TEST_SECRET_12345678901234567890123456789012",
+        "jwt.expiration-ms=3600000"
+})
+@Import(TestSecurityConfig.class)
 class RepairReportServiceTest {
+	@MockBean
+    private UserRepository userRepository;
+
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Mock
     private RepairOrderRepository orderRepo;
