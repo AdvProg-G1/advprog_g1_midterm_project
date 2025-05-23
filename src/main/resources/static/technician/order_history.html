@@ -42,6 +42,8 @@
 
         orders.forEach(o => {
           const tr = document.createElement('tr');
+          const st = o.status.toLowerCase();
+
           tr.innerHTML = `
           <td>${o.itemName.charAt(0).toUpperCase() + o.itemName.slice(1)}</td>
           <td>${ o.condition.charAt(0).toUpperCase() + o.condition.slice(1) }</td>
@@ -49,12 +51,16 @@
           <td>${new Date(o.serviceDate).toLocaleDateString()}</td>
           <td>${o.status.replace(/_/g, ' ').toUpperCase()}</td>
           <td>
-            ${ o.status.toLowerCase() === 'completed' ? `<a
-              href="/technician/create_report.html?orderId=${encodeURIComponent(o.id)}"
-              class="write-report">Write report</a>` : '-' }
+            ${
+                st === 'in_progress'
+                    ? `<a href="/technician/create_report.html?orderId=${encodeURIComponent(o.id)}" class="btn write-report">WRITE REPORT</a>`
+                : st === 'completed'
+                    ? `<button class="btn submitted-btn" disabled>REPORT SUBMITTED</button>`
+                    : '-'
+              }
           </td>
           <td>
-            <a href="/technician/service_details.html" class="details-link">Details</a>
+            <a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="details-link">Details</a>
           </td>
         `;
           tbody.appendChild(tr);

@@ -45,29 +45,11 @@
       <td class="px-4 py-2">${o.condition}</td>
       <td class="px-4 py-2">${o.problemDescription||''}</td>
       <td class="px-4 py-2">${o.serviceDate||''}</td>
-      <td><a href="/technician/service_details.html" class="details-link">Details</a></td>
-      <td><button onclick="onConfirm(${o.id})" class="reject-btn"><img src="/assets/images/refuse.png" alt="Reject" /></button></td>
-      <td><button onclick="onReject(${o.id})" class="accept-btn"><img src="/assets/images/accept.png" alt="Accept" /></button></td>
+      <td><a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="details-link">Details</a></td>
+      <td><a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="accept-btn"><img src="/assets/images/accept.png" alt="Accept" /></a></td>
     `;
       tbody.appendChild(tr);
     });
-  }
-
-  async function onConfirm(id) {
-    const dur = prompt("Estimated duration (days):");
-    const cost = prompt("Estimated cost ($):");
-    if (!dur || !cost) return;
-    await fetch(
-            `/api/repair/confirm/${id}?duration=${encodeURIComponent(dur)}&cost=${encodeURIComponent(cost)}`,
-            { method: 'POST' }
-    );
-    fetchOrders();
-  }
-
-  async function onReject(id) {
-    if (!confirm("Reject this order?")) return;
-    await fetch(`/api/repair/reject/${id}`, { method: 'POST' });
-    fetchOrders();
   }
 
   document.addEventListener('DOMContentLoaded', fetchOrders);

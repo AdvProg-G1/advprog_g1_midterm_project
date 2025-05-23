@@ -2,12 +2,17 @@ package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
+import id.ac.ui.cs.advprog.perbaikiinaja.TestSecurityConfig;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.util.JwtUtil;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service.RepairOrderService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -19,6 +24,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(RepairOrderController.class)
+@TestPropertySource(properties = {
+        "jwt.secret=TEST_SECRET_12345678901234567890123456789012",
+        "jwt.expiration-ms=3600000"
+})
+@Import(TestSecurityConfig.class)
 class RepairOrderControllerTest {
 
     @Autowired
@@ -26,6 +36,12 @@ class RepairOrderControllerTest {
 
     @MockBean
     private RepairOrderService repairOrderService;
+    
+    @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Autowired
     private ObjectMapper objectMapper;
