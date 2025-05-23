@@ -81,7 +81,7 @@ public class AuthPageController {
             String target = switch (user.getRoleEnum()) {
                 case USER -> "/user/home.html";
                 case TECHNICIAN -> "/technician/home.html";
-                case ADMIN -> "/admin/dashboard.html";
+                case ADMIN -> "/admin/home.html";
             };
             return "redirect:" + target;
 
