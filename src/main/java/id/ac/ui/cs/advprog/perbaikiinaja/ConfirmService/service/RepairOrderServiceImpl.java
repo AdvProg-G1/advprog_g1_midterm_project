@@ -46,12 +46,6 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
-    public void deleteById(String id) {
-        ServiceOrder toDelete = findById(id);
-        repo.delete(toDelete);
-    }
-
-    @Override
     public List<ServiceOrder> findAll() {
         return repo.findAll();
     }
@@ -70,7 +64,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
 
         if (!"TECHNICIAN_ACCEPTED".equals(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in technician_accepted state");
         }
 
         order.setStatus("CANCELLED");
@@ -83,7 +77,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
 
         if (!"TECHNICIAN_ACCEPTED".equals(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in technician_accepted state");
         }
 
         order.setStatus("IN_PROGRESS");

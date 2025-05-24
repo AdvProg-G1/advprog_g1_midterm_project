@@ -9,7 +9,6 @@ public interface RepairOrderService {
     void userRejectOrder(String id);
     void userAcceptOrder(String id);
     ServiceOrder findById(String id);
-    void deleteById(String id);
     List<ServiceOrder> findAll();
     List<ServiceOrder> findByStatus(List<String> status);
 }

@@ -38,7 +38,7 @@ public class RepairReportServiceImpl implements RepairReportService {
         String technicianId = order.getTechnicianId();
 
         if (!"IN_PROGRESS".equals(order.getStatus()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in IN PROGRESS state.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in IN_PROGRESS state.");
 
         RepairReport rpt = RepairReport.builder()
                 .orderId(orderId)
