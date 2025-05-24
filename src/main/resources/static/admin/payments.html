@@ -9,61 +9,116 @@
 </head>
 <body>
 
-  <div id="navbar"></div>
-  <script src="../assets/js/navbar_admin.js"></script>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_admin.js"></script>
 
-  <section class="payment-management">
-    <h1>PAYMENT <span class="highlight-black">METHODS</span></h1>
+<section class="payment-management">
 
-    <form class="payment-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="method-name">Method Name</label>
-          <input type="text" id="method-name" required />
-        </div>
-        <div class="form-group">
-          <label for="method-type">Payment Type</label>
-          <select id="method-type">
-            <option>Bank</option>
-            <option>E-Wallet</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="account-number">Payment Info</label>
-          <input type="text" id="account-number" required />
-        </div>
+  <h1>PAYMENT <span class="highlight-black">METHODS</span></h1>
+
+  <form class="payment-form">
+    <div class="form-row">
+
+      <div class="form-group">
+        <label for="method-name">Method Name</label>
+        <input type="text" id="method-name" required />
       </div>
-      <div class="form-actions">
-        <button type="submit">Add Payment Method</button>
-      </div>
-    </form>
 
-    <table class="payment-table">
-      <thead>
+      <div class="form-group">
+        <label for="bank-number">Bank Number</label>
+        <input type="text" id="bank-number" required />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit">Add Payment Method</button>
+    </div>
+  </form>
+
+  <table class="payment-table">
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Bank Number</th>
+      <th colspan="2">Actions</th>
+    </tr>
+    </thead>
+    <tbody id="payment-table-body">
+    </tbody>
+  </table>
+
+</section>
+
+
+<script>
+  function formatPayment(payment) {
+    return `
         <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Payment Info (Destination)</th>
-          <th></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Bank A</td>
-          <td>Bank</td>
-          <td>1234567890</td>
+          <td>${payment.paymentName}</td>
+          <td>${payment.bankNumber}</td>
           <td>
-            <button class="btn edit">Edit</button>
-            <button class="btn delete">Delete</button>
+            <button class="btn edit" data-id="${payment.paymentId}">Edit</button>
+            <button class="btn delete" data-id="${payment.paymentId}">Delete</button>
           </td>
         </tr>
-        <tr><td colspan="5"></td></tr>
-        <tr><td colspan="5"></td></tr>
-      </tbody>
-    </table>
-  </section>
+      `;
+  }
+
+  function refreshPaymentTable() {
+    fetch('/api/payments')
+            .then(res => res.json())
+            .then(data => {
+              const tbody = document.getElementById('payment-table-body');
+              tbody.innerHTML = '';
+              data.forEach(payment => {
+                tbody.innerHTML += formatPayment(payment);
+              });
+            })
+            .catch(err => {
+              console.error("Error loading payments:", err);
+            });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch('/api/payments')
+    refreshPaymentTable();
+  });
+
+
+  // Table functions
+  document.addEventListener("click", function (e) {
+    const id = e.target.getAttribute("data-id");
+
+    if (e.target.classList.contains("edit")) {
+      window.location.href = `edit_payment.html?id=${id}`;
+    }
+
+    if (e.target.classList.contains("delete")) {
+      const confirmDelete = confirm("Delete this payment?");
+      if (!confirmDelete) return;
+
+      fetch(`/api/payments/${id}`, {
+        method: "DELETE"
+      })
+              .then(res => {
+                if (!res.ok) throw new Error("Delete failed.");
+                return fetch('/api/payments');
+              })
+              .then(res => res.json())
+              .then(data => {
+                const tbody = document.getElementById('payment-table-body');
+                tbody.innerHTML = '';
+                data.forEach(payment => {
+                  tbody.innerHTML += formatPayment(payment);
+                });
+              })
+              .catch(err => {
+                console.error("Delete failed:", err);
+                alert("Delete failed.");
+              });
+    }
+  });
+</script>
 
 </body>
 </html>
