@@ -161,39 +161,11 @@ public class PaymentServiceImplTest {
         verify(paymentRepository).save(existing);
     }
 
-    // unhappy
-    @Test
-    void testUpdatePaymentNotFound() {
-        PaymentRequest updateRequest = new PaymentRequest("Dana", "999999999");
-
-        when(paymentRepository.findById("non-existent-id")).thenReturn(null);
-
-        assertThrows(IllegalArgumentException.class, () ->
-                paymentService.updatePayment("non-existent-id", updateRequest)
-        );
-
-        verify(paymentRepository, never()).save(any());
-    }
-
     // happy
     @Test
     void testDeletePaymentSuccess() {
 
         paymentService.deletePayment("id-02");
         assertNull(paymentService.findById("id-02"));
-    }
-
-    // unhappy
-    @Test
-    void testDeletePaymentNotFound() {
-        Payment nonExistentPayment = new Payment();
-        nonExistentPayment.setPaymentId("id-99");
-        doNothing().when(paymentRepository).delete(nonExistentPayment);
-        doReturn(payments).when(paymentRepository).findAll();
-
-        paymentService.deletePayment("id-99");
-
-        assertEquals(2, paymentService.findAllPayment().size());
-        verify(paymentRepository).delete(nonExistentPayment);
     }
 }

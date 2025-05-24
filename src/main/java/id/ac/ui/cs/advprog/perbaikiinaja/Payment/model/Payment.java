@@ -1,16 +1,27 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import lombok.Data;
 
 import java.util.UUID;
 
 @Entity
+@Table(name = "payment")
+@Data
 public class Payment {
 
     @Id
+    @Column(name = "id")
     private String paymentId;
+
+    @Column(name = "name")
     private String paymentName;
+
+    @Column(name = "bank_number")
     private String paymentBankNumber;
 
     public Payment() {
