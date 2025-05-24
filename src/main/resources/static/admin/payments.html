@@ -17,7 +17,7 @@
   <h1>PAYMENT <span class="highlight-black">METHODS</span></h1>
 
   <div class="payment-actions">
-    <a href="edit_coupon.html"><button class="btn add">Edit Payment</button></a>
+    <a href="create_payment.html"><button class="btn add">+ Create Payment</button></a>
   </div>
 
   <table class="payment-table">
@@ -68,7 +68,6 @@
     fetch('/api/payments')
     refreshPaymentTable();
   });
-
 
   // Table functions
   document.addEventListener("click", function (e) {

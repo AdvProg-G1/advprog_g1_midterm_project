@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Create Payment</title>
+    <link rel="stylesheet" href="../assets/css/main.css" />
+    <link rel="stylesheet" href="../assets/css/navbar.css" />
+    <link rel="stylesheet" href="../assets/css/admin/payments.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_admin.js"></script>
+
+<section class="payment-management">
+
+    <h1>CREATE <span class="highlight-black">PAYMENT</span></h1>
+
+    <div class="payment-form">
+        <form id="creation-form">
+            <h2>Create Payment Method</h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="method-name">Method Name</label>
+                    <input type="text" id="method-name" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="bank-number">Bank Number</label>
+                    <input type="text" id="bank-number" required />
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+<script>
+    document.getElementById("creation-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        const paymentName = form.methodName.value.trim();
+        const paymentBankNumber = form.bankNumber.value.trim();
+
+        // Validation
+        if (!paymentName) {
+            alert("Method name cannot be empty.");
+            return;
+        }
+        if (!paymentBankNumber) {
+            alert("Bank number cannot be empty.");
+            return;
+        }
+
+        // Build the DTO payload
+        const newPayment = {
+            paymentName,
+            paymentBankNumber
+        };
+
+        try {
+            const res = await fetch('/api/payments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newPayment)
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || 'Create payment failed');
+            }
+
+            const created = await res.json();
+            alert(`Payment created with ID ${created.paymentId}`);
+
+            // Redirect to payments page
+            window.location.href = 'payments.html';
+        } catch (err) {
+            console.error('Create failed:', err);
+            alert(`Error: ${err.message}`);
+        }
+    });
+</script>
+
+</body>
+</html>
