@@ -15,4 +15,8 @@ public class PaymentResponse {
         this.paymentName = paymentName;
         this.paymentBankNumber = paymentBankNumber;
     }
+
+    public PaymentResponse() {
+        // Default constructor for serialization/deserialization
+    }
 }
