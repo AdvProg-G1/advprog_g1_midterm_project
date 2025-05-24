@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.controller;
 import lombok.RequiredArgsConstructor;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.service.PaymentService;
 
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/payments")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 

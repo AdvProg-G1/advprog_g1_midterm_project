@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Payment {
+public class PaymentResponse {
     private String paymentId;
     private String paymentName;
     private String paymentBankNumber;

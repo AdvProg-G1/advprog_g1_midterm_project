@@ -12,22 +12,24 @@
 <div id="navbar"></div>
 <script src="../assets/js/navbar_admin.js"></script>
 
-<section class="edit-payment">
+<section class="payment-management">
 
   <h1>EDIT <span class="highlight-black">PAYMENT</span></h1>
 
-  <div class="container">
-    <form class="payment-form" id="edit-form">
+  <div class="payment-form">
+    <form id="edit-form">
       <h2>Edit Payment Method</h2>
 
-      <div class="form-group">
-        <label for="method-name">Method Name</label>
-        <input type="text" id="method-name" required />
-      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="method-name">Method Name</label>
+          <input type="text" id="method-name" required />
+        </div>
 
-      <div class="form-group">
-        <label for="bank-number">Bank Number</label>
-        <input type="text" id="bank-number" required />
+        <div class="form-group">
+          <label for="bank-number">Bank Number</label>
+          <input type="text" id="bank-number" required />
+        </div>
       </div>
 
       <div class="form-actions">

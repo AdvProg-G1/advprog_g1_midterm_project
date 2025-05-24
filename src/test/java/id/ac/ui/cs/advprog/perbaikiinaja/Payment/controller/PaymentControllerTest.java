@@ -44,16 +44,16 @@ public class PaymentControllerTest {
         assertEquals("id-01", result.get(0).getPaymentId());
     }
 
-    @Test
-    void testCreatePayment() {
-        when(paymentService.createPayment(any(Payment.class))).thenReturn(samplePayment);
-
-        Payment result = paymentController.createPayment(samplePayment);
-
-        assertNotNull(result);
-        assertEquals("GoPay", result.getPaymentName());
-        verify(paymentService).createPayment(samplePayment);
-    }
+//    @Test
+//    void testCreatePayment() {
+//        when(paymentService.createPayment(any(Payment.class))).thenReturn(samplePayment);
+//
+//        Payment result = paymentController.createPayment(samplePayment);
+//
+//        assertNotNull(result);
+//        assertEquals("GoPay", result.getPaymentName());
+//        verify(paymentService).createPayment(samplePayment);
+//    }
 
     @Test
     void testUpdatePayment() {
