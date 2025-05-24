@@ -1,6 +1,10 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Coupon.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import id.ac.ui.cs.advprog.perbaikiinaja.TestSecurityConfig;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.util.JwtUtil;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.dto.CouponResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.service.CouponService;
@@ -8,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -20,6 +26,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CouponController.class)
+@TestPropertySource(properties = {
+        "jwt.secret=TEST_SECRET_12345678901234567890123456789012",
+        "jwt.expiration-ms=3600000"
+})
+@Import(TestSecurityConfig.class)
 public class CouponControllerTest {
 
     @Autowired
@@ -27,10 +38,16 @@ public class CouponControllerTest {
 
     @MockBean
     private CouponService couponService;
+    
+    @MockBean
+    private UserRepository userRepository;
 
+    @MockBean
+    private JwtUtil jwtUtil;
+    
     @Autowired
     private ObjectMapper objectMapper;
-
+    
     @Test
     void testCreateCouponReturns201() throws Exception {
         CouponRequest request = new CouponRequest();
@@ -43,7 +60,7 @@ public class CouponControllerTest {
         );
 
         when(couponService.createCoupon(request)).thenReturn(response);
-
+        System.out.println(response);
         mockMvc.perform(post("/api/coupons")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

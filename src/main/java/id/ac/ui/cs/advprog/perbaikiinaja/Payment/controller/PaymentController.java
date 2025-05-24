@@ -2,70 +2,53 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.controller;
 
 import lombok.RequiredArgsConstructor;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.service.PaymentService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/payments")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/create")
-    public Payment createPayment(@RequestBody Payment payment) {
-        paymentService.createPayment(payment);
-        return payment;
+    @PostMapping
+    public ResponseEntity<PaymentResponse> createPayment(@RequestBody PaymentRequest request) {
+        return ResponseEntity.status(201).body(paymentService.createPayment(request));
     }
 
-    @GetMapping("/history/id/{paymentId}")
-    public ResponseEntity<Payment> getById(@PathVariable String paymentId) {
-        return Optional.ofNullable(paymentService.findById(paymentId))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/{paymentId}")
+    public ResponseEntity<PaymentResponse> getById(@PathVariable ("paymentId") String paymentId) {
+        return ResponseEntity.ok(paymentService.findById(paymentId));
     }
 
-    @GetMapping("/history/name/{paymentName}")
-    public ResponseEntity<Payment> getByName(@PathVariable String paymentName) {
-        return Optional.ofNullable(paymentService.findByName(paymentName))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/history/bankNumber/{bankNumber}")
-    public ResponseEntity<Payment> getByBankNumber(@PathVariable String bankNumber) {
-        return Optional.ofNullable(paymentService.findByBankNumber(bankNumber))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/update/{paymentId}")
-    public ResponseEntity<Payment> updatePayment(
+    @PutMapping("/{paymentId}")
+    public ResponseEntity<PaymentResponse> updatePayment(
             @PathVariable String paymentId,
-            @RequestBody Payment payment
+            @RequestBody PaymentRequest paymentRequest
     ) {
         try {
-            Payment updated = paymentService.updatePayment(paymentId, payment);
+            PaymentResponse updated = paymentService.updatePayment(paymentId, paymentRequest);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @DeleteMapping("/delete/{paymentId}")
+    @DeleteMapping("/{paymentId}")
     public ResponseEntity<Void> deletePayment(@PathVariable String paymentId) {
         paymentService.deletePayment(paymentId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/history")
-    public List<Payment> getAllPayments() {
+    @GetMapping
+    public List<PaymentResponse> getAllPayments() {
         return paymentService.findAllPayment();
     }
 }

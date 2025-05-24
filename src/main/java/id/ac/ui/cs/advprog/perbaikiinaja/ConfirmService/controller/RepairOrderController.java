@@ -26,21 +26,23 @@ public class RepairOrderController {
         return ResponseEntity.ok(confirmed);
     }
 
-    @DeleteMapping("/reject/{id}")
-    public ResponseEntity<Void> rejectOrder(@PathVariable("id") String orderId) {
-        repairOrderService.rejectRepairOrder(orderId);
-        return ResponseEntity.noContent().build();
+    @PostMapping("/reject/{id}")
+    public ResponseEntity<ServiceOrder> rejectOrder(
+            @PathVariable("id") String orderId
+    ) {
+        ServiceOrder rejected = repairOrderService.rejectRepairOrder(orderId);
+        return ResponseEntity.ok(rejected);
     }
 
     @GetMapping("/list")
     public ResponseEntity<List<ServiceOrder>> incomingOrderList() {
-        List<ServiceOrder> waiting = repairOrderService.findByStatus(List.of("waiting_confirmation"));
+        List<ServiceOrder> waiting = repairOrderService.findByStatus(List.of("WAITING_CONFIRMATION"));
         return ResponseEntity.ok(waiting);
     }
 
     @GetMapping("/history")
     public ResponseEntity<List<ServiceOrder>> orderHistory() {
-        List<ServiceOrder> allOrders = repairOrderService.findByStatus(List.of("in_progress", "completed"));
+        List<ServiceOrder> allOrders = repairOrderService.findByStatus(List.of("IN_PROGRESS", "COMPLETED"));
         return ResponseEntity.ok(allOrders);
     }
 
@@ -51,6 +53,18 @@ public class RepairOrderController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/user/reject/{id}")
+    public ResponseEntity<Void> userRejectOrder(@PathVariable("id") String orderId) {
+        repairOrderService.userRejectOrder(orderId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/user/accept/{id}")
+    public ResponseEntity<Void> userAcceptOrder(@PathVariable("id") String orderId) {
+        repairOrderService.userAcceptOrder(orderId);
+        return ResponseEntity.noContent().build();
     }
 }
 

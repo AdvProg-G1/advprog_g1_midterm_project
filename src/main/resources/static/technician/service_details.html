@@ -12,12 +12,14 @@
   <div id="navbar"></div>
   <script src="../assets/js/navbar_technician.js"></script>
 
-  <section class="service-order">
+  <section id="service-order" class="service-order">
     <div class="order-header">
-      <h1>SERVICE <span class="highlight-black">ORDER</span> DETAILS</h1>
-      <a href="create_report.html"><button type="button" class="btn report-btn">WRITE / VIEW REPORT</button></a>
+      <h1>
+        SERVICE <span class="highlight-black">ORDER</span> DETAILS
+      </h1>
     </div>
-    <form class="order-form">
+
+    <form id="order-form" class="order-form">
       <div class="form-column">
         <div class="form-group">
           <label for="item-name">Item Name</label>
@@ -62,11 +64,90 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn reject-btn">REJECT</button>
-        <button type="submit" class="btn accept-btn">ACCEPT / UPDATE</button>
       </div>
+
     </form>
   </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params        = new URLSearchParams(location.search);
+      const orderId       = params.get('orderId');
+      const actionsDiv    = document.querySelector('.form-actions');
+      const statusInp     = document.getElementById('status');
+      const completionInp = document.getElementById('completion-time');
+      const priceInp      = document.getElementById('price');
+
+      let localStatus;
+
+      if (!orderId) {
+        alert('Missing orderId');
+        return;
+      }
+
+      function renderActions() {
+        const st = (localStatus || '')
+        let html = '';
+
+        if (st === 'WAITING_CONFIRMATION') {
+          html = `<button type="button" class="btn accept-btn">ACCEPT</button>`;
+        }
+        else if (st === 'IN_PROGRESS') {
+          html = `<button type="button" class="btn report-btn">WRITE REPORT</button>`;
+        }
+        else if (st === 'COMPLETED') {
+          html = `<button type="button" class="btn submitted-btn" disabled>REPORT SUBMITTED</button>`;
+        }
+
+        actionsDiv.innerHTML = html;
+      }
+
+      fetch(`/api/repair/${encodeURIComponent(orderId)}`, {
+        credentials: 'same-origin'
+      })
+              .then(r => r.ok ? r.json() : Promise.reject(`Load failed: ${r.status}`))
+              .then(order => {
+                const cap = s => s? s.charAt(0).toUpperCase()+s.slice(1): '';
+                document.getElementById('item-name').value      = order.itemName || '';
+                document.getElementById('service-date').value   = order.serviceDate
+                        ? new Date(order.serviceDate).toISOString().slice(0,10) : '';
+                completionInp.value                              = order.estimatedCompletionTime || '';
+                priceInp.value                                  = order.estimatedPrice ?? '';
+                statusInp.value                                 = order.status.replace(/_/g,' ').toUpperCase();
+
+                document.getElementById('item-condition').innerHTML = order.condition
+                        ? `<option>${cap(order.condition)}</option>` : `<option></option>`;
+                document.getElementById('repair-type').innerHTML    = order.paymentMethod
+                        ? `<option>${cap(order.paymentMethod.replace(/_/g,' '))}</option>` : `<option></option>`;
+
+                localStatus = order.status;
+                renderActions();
+              })
+              .catch(err => {
+                console.error(err);
+                alert(err);
+              });
+
+      actionsDiv.addEventListener('click', e => {
+        if (e.target.matches('.accept-btn')) {
+          const d = parseInt(completionInp.value, 10);
+          const c = parseInt(priceInp.value, 10);
+
+          fetch(`/api/repair/confirm/${orderId}?duration=${d}&cost=${c}`, {
+            method: 'POST',
+          })
+                  .then(r => r.ok ? r.json() : Promise.reject(`Confirm failed: ${r.status}`))
+                  .then(() => window.location.reload())
+                  .catch(alert);
+        }
+
+        if (e.target.matches('.report-btn')) {
+          window.location.href = `create_report.html?orderId=${encodeURIComponent(orderId)}`;
+        }
+      });
+
+    });
+  </script>
 
 </body>
 </html>

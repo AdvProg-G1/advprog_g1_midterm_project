@@ -1,17 +1,19 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.controller;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.service.PaymentService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class PaymentControllerTest {
@@ -22,83 +24,77 @@ public class PaymentControllerTest {
     @InjectMocks
     private PaymentController paymentController;
 
-    private Payment samplePayment;
+    private PaymentRequest sampleRequest;
+    private PaymentResponse sampleResponse;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        samplePayment = new Payment();
-        samplePayment.setPaymentId("id-01");
-        samplePayment.setPaymentName("GoPay");
-        samplePayment.setPaymentBankNumber("1234567890");
+        sampleRequest = new PaymentRequest();
+        sampleRequest.setPaymentName("GoPay");
+        sampleRequest.setPaymentBankNumber("1234567890");
+
+        sampleResponse = new PaymentResponse();
+        sampleResponse.setPaymentId("id-01");
+        sampleResponse.setPaymentName("GoPay");
+        sampleResponse.setPaymentBankNumber("1234567890");
     }
 
     @Test
     void testGetAllPayments() {
-        when(paymentService.findAllPayment()).thenReturn(List.of(samplePayment));
+        when(paymentService.findAllPayment()).thenReturn(List.of(sampleResponse));
 
-        List<Payment> result = paymentController.getAllPayments();
+        List<PaymentResponse> result = paymentController.getAllPayments();
 
         assertEquals(1, result.size());
         assertEquals("id-01", result.get(0).getPaymentId());
+        assertEquals("GoPay", result.get(0).getPaymentName());
     }
 
     @Test
     void testCreatePayment() {
-        when(paymentService.createPayment(any(Payment.class))).thenReturn(samplePayment);
+        when(paymentService.createPayment(any(PaymentRequest.class))).thenReturn(sampleResponse);
 
-        Payment result = paymentController.createPayment(samplePayment);
+        PaymentResponse result = paymentController.createPayment(sampleRequest).getBody();
 
         assertNotNull(result);
+        assertEquals("id-01", result.getPaymentId());
         assertEquals("GoPay", result.getPaymentName());
-        verify(paymentService).createPayment(samplePayment);
     }
 
     @Test
     void testUpdatePayment() {
-        when(paymentService.updatePayment(eq("id-01"), any(Payment.class))).thenReturn(samplePayment);
+        when(paymentService.updatePayment(eq("id-01"), any(PaymentRequest.class))).thenReturn(sampleResponse);
 
-        Payment result = paymentController.updatePayment("id-01", samplePayment).getBody();
+        PaymentRequest updateRequest = new PaymentRequest();
+        updateRequest.setPaymentName("DANA");
+        updateRequest.setPaymentBankNumber("999999999");
 
-        assertEquals("id-01", result.getPaymentId());
-        verify(paymentService).updatePayment("id-01", samplePayment);
-    }
-
-    @Test
-    void testDeletePayment() {
-        doNothing().when(paymentService).deletePayment("id-01");
-
-        ResponseEntity<Void> response = paymentController.deletePayment("id-01");
-
-        assertEquals(204, response.getStatusCodeValue());
-        verify(paymentService).deletePayment("id-01");
-    }
-
-    @Test
-    void testGetPaymentById() {
-        when(paymentService.findById("id-01")).thenReturn(samplePayment);
-
-        Payment result = paymentController.getById("id-01").getBody();
+        PaymentResponse result = paymentController.updatePayment("id-01", updateRequest).getBody();
 
         assertEquals("id-01", result.getPaymentId());
+        assertEquals("GoPay", result.getPaymentName()); // Assuming mock returns unchanged name
+        assertEquals("1234567890", result.getPaymentBankNumber()); // Assuming mock returns unchanged bank number
     }
 
     @Test
-    void testGetPaymentByName() {
-        when(paymentService.findByName("GoPay")).thenReturn(samplePayment);
+    void testFindById() {
+        when(paymentService.findById("id-01")).thenReturn(sampleResponse);
 
-        Payment result = paymentController.getByName("GoPay").getBody();
+        PaymentResponse result = paymentController.getById("id-01").getBody();
 
+        assertEquals("id-01", result.getPaymentId());
         assertEquals("GoPay", result.getPaymentName());
     }
 
     @Test
-    void testGetPaymentByBankNumber() {
-        when(paymentService.findByBankNumber("1234567890")).thenReturn(samplePayment);
+    void testDeletePayment() {
+        // no return value to check, just verify call
+        doNothing().when(paymentService).deletePayment("id-01");
 
-        Payment result = paymentController.getByBankNumber("1234567890").getBody();
+        paymentController.deletePayment("id-01");
 
-        assertEquals("1234567890", result.getPaymentBankNumber());
+        verify(paymentService).deletePayment("id-01");
     }
 }

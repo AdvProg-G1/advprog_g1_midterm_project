@@ -124,7 +124,7 @@
 
     let currentUserId = null;
 
-    // 1) Determine current user (if any)
+    // 1) Determine current user
     fetch('/api/auth/current', { credentials: 'same-origin' })
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(u => {
@@ -139,9 +139,10 @@
       loadTechnician();
       loadReviews();
       setupAddForm();
+      setupWebSocket();
     }
 
-    // 2) Load technician info
+    // 2) Load technician info via AJAX
     function loadTechnician() {
       fetch(`/api/users/${techId}`)
               .then(r => r.json())
@@ -157,79 +158,79 @@
               });
     }
 
-    // 3) Load & render reviews
+    // 3) Load & render reviews via AJAX
     function loadReviews() {
       fetch(`/api/reviews/technician/${techId}`)
               .then(r => r.json())
-              .then(revs => {
-                const c = document.getElementById('reviews-container');
-                c.innerHTML = '';
-                if (!revs.length) {
-                  c.innerHTML = '<p>No reviews yet.</p>';
-                  return;
-                }
-                // update overall
-                const avg = revs.reduce((s, r) => s + r.rating, 0) / revs.length;
-                document.getElementById('tech-stars').textContent =
-                        '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
-
-                revs.forEach(r => {
-                  const card = document.createElement('div');
-                  card.className = 'review-card';
-
-                  // build inner HTML
-                  const dateStr = r.createdAt
-                          ? new Date(r.createdAt).toLocaleDateString('en-GB')
-                          : 'Unknown date';
-
-                  let html = `
-              <div class="review-header">
-                <strong>${r.reviewerName}</strong>
-                <div class="stars_review">${
-                          '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)
-                  }</div>
-              </div>
-              <p class="review-text">${r.comment || ''}</p>
-              <div class="review-date">Posted: ${dateStr}</div>
-            `;
-
-                  // append edit/delete under the date if this is the user's review
-                  if (r.userId === currentUserId) {
-                    html += `
-                <div class="review-actions">
-                  <button class="btn btn-edit" data-id="${r.id}">Edit</button>
-                  <button class="btn btn-delete" data-id="${r.id}">Delete</button>
-                </div>
-              `;
-                  }
-
-                  card.innerHTML = html;
-                  c.appendChild(card);
-                });
-
-                // wire delete
-                c.querySelectorAll('.btn-delete').forEach(btn => {
-                  btn.onclick = () => {
-                    if (!confirm('Delete this review?')) return;
-                    fetch(`/api/reviews/${btn.dataset.id}?userId=${currentUserId}`, {
-                      method: 'DELETE'
-                    }).then(_ => loadReviews());
-                  };
-                });
-                // wire edit
-                c.querySelectorAll('.btn-edit').forEach(btn => {
-                  btn.onclick = () => {
-                    window.location.href =
-                            `/user/review_edit.html?reviewId=${btn.dataset.id}&techId=${techId}`;
-                  };
-                });
-              })
+              .then(renderReviews)
               .catch(() => {
                 document.getElementById('reviews-container').innerHTML = '<p>Error loading reviews.</p>';
               });
     }
 
-    // 4) Setup new-review form
+    // renderReviews is used by both AJAX and WebSocket
+    function renderReviews(revs) {
+      const c = document.getElementById('reviews-container');
+      c.innerHTML = '';
+      if (!revs.length) {
+        c.innerHTML = '<p>No reviews yet.</p>';
+        document.getElementById('tech-stars').textContent = '☆☆☆☆☆';
+        return;
+      }
+      // update overall rating
+      const avg = revs.reduce((s, r) => s + r.rating, 0) / revs.length;
+      document.getElementById('tech-stars').textContent =
+              '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+
+      revs.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        const dateStr = r.createdAt
+                ? new Date(r.createdAt).toLocaleDateString('en-GB')
+                : 'Unknown date';
+
+        let html = `
+          <div class="review-header">
+            <strong>${r.reviewerName}</strong>
+            <div class="stars_review">
+              ${'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}
+            </div>
+          </div>
+          <p class="review-text">${r.comment || ''}</p>
+          <div class="review-date">Posted: ${dateStr}</div>
+        `;
+
+        if (r.userId === currentUserId) {
+          html += `
+            <div class="review-actions">
+              <button class="btn btn-edit" data-id="${r.id}">Edit</button>
+              <button class="btn btn-delete" data-id="${r.id}">Delete</button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = html;
+        c.appendChild(card);
+      });
+
+      // wire delete/edit buttons
+      c.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.onclick = () => {
+          if (!confirm('Delete this review?')) return;
+          fetch(`/api/reviews/${btn.dataset.id}?userId=${currentUserId}`, {
+            method: 'DELETE'
+          }).then(loadReviews);
+        };
+      });
+      c.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.onclick = () => {
+          window.location.href =
+                  `/user/review_edit.html?reviewId=${btn.dataset.id}&techId=${techId}`;
+        };
+      });
+    }
+
+    // 4) Setup new-review form via AJAX
     function setupAddForm() {
       document.getElementById('technician-id').value = techId;
       document.getElementById('review-form').onsubmit = e => {
@@ -253,6 +254,21 @@
                 })
                 .catch(() => alert('Failed to submit review'));
       };
+    }
+
+    // 5) Real-time updates via WebSocket
+    function setupWebSocket() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${proto}//${location.host}/ws/reviews/${techId}`);
+      socket.onmessage = event => {
+        try {
+          const updatedRevs = JSON.parse(event.data);
+          renderReviews(updatedRevs);
+        } catch (e) {
+          console.error('Invalid WS payload', e);
+        }
+      };
+      socket.onerror = err => console.error('WebSocket error', err);
     }
   });
 </script>

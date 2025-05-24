@@ -52,9 +52,9 @@
     color: white;
   }
   .btn.add:hover {
-    background-color: #45a049;
+    background-color: #2c7145;
+    color: white;
   }
-  
   .btn.edit {
     background-color: #ffc107;
     color: black;

@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>Book Service</title>
-  <link rel="stylesheet" href="/assets/css/main.css" />
-  <link rel="stylesheet" href="/assets/css/navbar.css" />
-  <link rel="stylesheet" href="/assets/css/user/book_service.css" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/user/book_service.css" />
 </head>
 <body>
 
 <div id="navbar"></div>
-<!-- Load navbar_user.js asynchronously, after parsing the HTML -->
-<script defer src="/assets/js/navbar_user.js"></script>
+<script src="../assets/js/navbar_user.js"></script>
 
 <section class="book-service">
   <h1>BOOK SERVICE <span class="highlight-black">ORDER</span></h1>
@@ -48,6 +47,7 @@
           <input id="serviceDate" name="serviceDate" type="date" required />
         </div>
 
+
         <div class="form-right">
           <label for="paymentMethod">Payment Method</label>
           <select id="paymentMethod" name="paymentMethod" required>
@@ -71,77 +71,70 @@
   </div>
 </section>
 
-<!-- Inline script deferred until DOM is ready -->
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Populate dropdowns asynchronously
-    async function loadDropdownData() {
-      try {
-        const [couponRes, techRes] = await Promise.all([
-          fetch('/api/coupons'),
-          fetch('/api/technicians')
-        ]);
+  async function loadDropdownData() {
+    try {
+      // Load Coupons
+      const couponRes = await fetch('/api/coupons');
+      const coupons = await couponRes.json();
+      const couponSelect = document.getElementById('coupon');
+      couponSelect.innerHTML = '<option value="">Choose an Available Coupon</option>';
+      coupons.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = `${c.code} - ${c.description} (${c.discountValue}${c.type === 'percentage' ? '%' : ''} off)`;
+        couponSelect.appendChild(option);
+      });
 
-        // Coupons
-        const coupons = await couponRes.json();
-        const couponSelect = document.getElementById('coupon');
-        couponSelect.innerHTML = '<option value="">Choose a Coupon</option>';
-        coupons.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = `${c.code} - ${c.description} (${c.discountValue}${c.type === 'percentage' ? '%' : ''} off)`;
-          couponSelect.appendChild(opt);
-        });
+      // Load Technicians
+      const techRes = await fetch('/api/technicians');
+      const technicians = await techRes.json();
+      const techSelect = document.getElementById('technicianId');
+      techSelect.innerHTML = '<option value="">Choose a Technician</option>';
+      technicians.forEach(t => {
+        const option = document.createElement('option');
+        option.value = t.id;
+        option.textContent = t.fullName;
+        techSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Failed to load dropdown data:', error);
+    }
+  }
 
-        // Technicians
-        const techs = await techRes.json();
-        const techSelect = document.getElementById('technicianId');
-        techSelect.innerHTML = '<option value="">Choose a Technician</option>';
-        techs.forEach(t => {
-          const opt = document.createElement('option');
-          opt.value = t.id;
-          opt.textContent = t.fullName;
-          techSelect.appendChild(opt);
-        });
-      } catch (err) {
-        console.error('Failed to load dropdown data:', err);
-      }
+  loadDropdownData();
+
+  document.getElementById('submitBtn').addEventListener('click', async () => {
+    const form = document.getElementById('orderForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
     }
 
-    loadDropdownData();
+    const payload = {
+      itemName: form.itemName.value,
+      condition: form.condition.value,
+      problemDescription: form.problemDescription.value,
+      technicianId: form.technicianId.value,
+      serviceDate: form.serviceDate.value,
+      paymentMethod: form.paymentMethod.value,
+      couponApplied: form.couponApplied.value !== '',
+    };
 
-    // Handle form submission asynchronously
-    document.getElementById('submitBtn').addEventListener('click', async () => {
-      const form = document.getElementById('orderForm');
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
-
-      const payload = {
-        itemName: form.itemName.value,
-        condition: form.condition.value,
-        problemDescription: form.problemDescription.value,
-        technicianId: form.technicianId.value,
-        serviceDate: form.serviceDate.value,
-        paymentMethod: form.paymentMethod.value,
-        couponApplied: form.couponApplied.value !== '',
-      };
-
-      try {
-        const res = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error('Failed to create order');
-        alert('Order created successfully!');
-        form.reset();
-      } catch (err) {
-        alert(err.message);
-      }
-    });
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to create order');
+      alert('Order created successfully!');
+      form.reset();
+    } catch (err) {
+      alert(err.message);
+    }
   });
 </script>
+
 </body>
 </html>
