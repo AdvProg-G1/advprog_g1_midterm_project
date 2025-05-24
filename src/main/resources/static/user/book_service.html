@@ -91,7 +91,7 @@
       payments.forEach(p => {
         const option = document.createElement('option');
         option.value = p.paymentId;
-        option.textContent = `${p.paymentName} (${p.bankNumber})`;
+        option.textContent = `${p.paymentName} - ${p.paymentBankNumber}`;
         paymentSelect.appendChild(option);
       });
 
