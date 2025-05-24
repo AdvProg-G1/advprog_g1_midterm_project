@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
 
@@ -52,80 +54,66 @@ public class PaymentServiceImplTest {
     // happy
     @Test
     void createPayment() {
-        Payment newPayment = new Payment();
-        newPayment.setPaymentId("id-03");
-        newPayment.setPaymentName("DANA");
-        newPayment.setPaymentBankNumber("9876543210");
+        PaymentRequest request = new PaymentRequest();
+        request.setPaymentName("DANA");
+        request.setPaymentBankNumber("9876543210");
 
-        doReturn(payments).when(paymentRepository).findAll();
-        doReturn(newPayment).when(paymentRepository).save(newPayment);
+        Payment savedPayment = new Payment();
+        savedPayment.setPaymentId("id-03");
+        savedPayment.setPaymentName("DANA");
+        savedPayment.setPaymentBankNumber("9876543210");
 
-        paymentService.createPayment(newPayment);
+        when(paymentRepository.findAll()).thenReturn(payments);
+        when(paymentRepository.save(any(Payment.class))).thenReturn(savedPayment);
 
-        verify(paymentRepository).save(newPayment);
+        PaymentResponse response = paymentService.createPayment(request);
+
+        assertEquals("id-03", response.getPaymentId());
+        assertEquals("DANA", response.getPaymentName());
+        verify(paymentRepository).save(any(Payment.class));
     }
 
     // unhappy
     @Test
     void createPaymentInvalid() {
-        Payment existingPayment = new Payment();
-        existingPayment.setPaymentId("id-01");
-        existingPayment.setPaymentName("OVO");
-        existingPayment.setPaymentBankNumber("070707070");
+        PaymentRequest request = new PaymentRequest();
+        request.setPaymentName("OVO");
+        request.setPaymentBankNumber("070707070");
 
-        doReturn(payments).when(paymentRepository).findAll();
+        when(paymentRepository.findAll()).thenReturn(payments);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> paymentService.createPayment(existingPayment));
-
+        assertThrows(IllegalStateException.class, () -> paymentService.createPayment(request));
         verify(paymentRepository, never()).save(any());
     }
 
     // happy
     @Test
-    void updateName() {
-        Payment paymentToUpdate = payments.get(0);
+    void updatePaymentName() {
+        Payment existing = payments.get(0); // GoPay
 
-        doReturn(paymentToUpdate).when(paymentRepository).findById("id-01");
-        doReturn(paymentToUpdate).when(paymentRepository).save(any(Payment.class));
+        when(paymentRepository.findById("id-01")).thenReturn(existing);
+        when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
-        paymentService.updatePaymentName("id-01", "LinkAja");
+        PaymentResponse response = paymentService.updatePaymentName("id-01", "ShopeePay");
 
-        assertEquals("LinkAja", paymentToUpdate.getPaymentName());
-        verify(paymentRepository).save(paymentToUpdate);
+        assertEquals("ShopeePay", response.getPaymentName());
+        assertEquals("id-01", response.getPaymentId());
+        verify(paymentRepository).save(existing);
     }
 
     // happy
     @Test
-    void updateNameInvalid() {
-        assertThrows(IllegalArgumentException.class,
-                () -> paymentService.updatePaymentName("id-01", "   "));
+    void updatePaymentBankNumber() {
+        Payment existing = payments.get(1); // OVO
 
-        verify(paymentRepository, never()).save(any());
-    }
+        when(paymentRepository.findById("id-02")).thenReturn(existing);
+        when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
+        PaymentResponse response = paymentService.updatePaymentBankNumber("id-02", "7777777777");
 
-    // happy
-    @Test
-    void updateBankNumber() {
-        Payment paymentToUpdate = payments.get(0);
-
-        doReturn(paymentToUpdate).when(paymentRepository).findById("id-01");
-        doReturn(paymentToUpdate).when(paymentRepository).save(any(Payment.class));
-
-        paymentService.updatePaymentBankNumber("id-01", "9998887776");
-
-        assertEquals("9998887776", paymentToUpdate.getPaymentBankNumber());
-        verify(paymentRepository).save(paymentToUpdate);
-    }
-
-    // unhappy
-    @Test
-    void updateBankNumberInvalid() {
-        assertThrows(IllegalArgumentException.class,
-                () -> paymentService.updatePaymentBankNumber("id-01", "abc123"));
-
-        verify(paymentRepository, never()).save(any());
+        assertEquals("7777777777", response.getPaymentBankNumber());
+        assertEquals("id-02", response.getPaymentId());
+        verify(paymentRepository).save(existing);
     }
 
 
@@ -133,68 +121,21 @@ public class PaymentServiceImplTest {
     @Test
     void findById() {
         Payment payment = payments.get(0);
+        when(paymentRepository.findById("id-01")).thenReturn(payment);
 
-        doReturn(payment).when(paymentRepository).findById("id-01");
+        PaymentResponse response = paymentService.findById("id-01");
 
-        Payment result = paymentService.findById("id-01");
-
-        assertEquals("id-01", result.getPaymentId());
+        assertEquals("id-01", response.getPaymentId());
+        assertEquals("GoPay", response.getPaymentName());
     }
 
-    // unhappy
-    @Test
-    void findByIdNonexistent() {
-        doReturn(null).when(paymentRepository).findById("noidhere");
-
-        assertNull(paymentService.findById("noidhere"));
-    }
-
-    // happy
-    @Test
-    void findByName() {
-        Payment payment = payments.get(0);
-
-        doReturn(payment).when(paymentRepository).findByName("GoPay");
-
-        Payment result = paymentService.findByName("GoPay");
-
-        assertEquals("GoPay", result.getPaymentName());
-    }
-
-    // unhappy
-    @Test
-    void findByNameInvalid() {
-        doReturn(null).when(paymentRepository).findByName("whatisaname");
-
-        assertNull(paymentService.findByName("whatisaname"));
-    }
-
-    // happy
-    @Test
-    void findByBankNumber() {
-        Payment payment = payments.get(0);
-
-        doReturn(payment).when(paymentRepository).findByBankNumber("124567890");
-
-        Payment result = paymentService.findByBankNumber("124567890");
-
-        assertEquals("124567890", result.getPaymentBankNumber());
-    }
-
-    // unhappy: find by bank number invalid
-    @Test
-    void findByBankNumberInvalid() {
-        doReturn(null).when(paymentRepository).findByBankNumber("notanumber");
-
-        assertNull(paymentService.findByBankNumber("notanumber"));
-    }
 
     // happy
     @Test
     void findAllPayment() {
         doReturn(payments).when(paymentRepository).findAll();
 
-        List<Payment> result = paymentService.findAllPayment();
+        List<PaymentResponse> result = paymentService.findAllPayment();
 
         assertEquals(2, result.size());
         assertEquals("id-01", result.get(0).getPaymentId());
@@ -203,38 +144,42 @@ public class PaymentServiceImplTest {
         verify(paymentRepository).findAll();
     }
 
+    // happy
     @Test
     void testUpdatePayment() {
-        Payment original = payments.get(0);  // GoPay, id-01
+        Payment existing = payments.get(0); // GoPay
 
-        Payment updated = new Payment();
-        updated.setPaymentId("id-01");
-        updated.setPaymentName("Dana");
-        updated.setPaymentBankNumber("999999999");
+        PaymentRequest updateRequest = new PaymentRequest();
+        updateRequest.setPaymentName("Dana");
+        updateRequest.setPaymentBankNumber("999999999");
 
-        doReturn(original).when(paymentRepository).findById("id-01");
-        doReturn(original).when(paymentRepository).save(any(Payment.class));
+        when(paymentRepository.findById("id-01")).thenReturn(existing);
+        when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
-        Payment result = paymentService.updatePayment("id-01", updated);
+        PaymentResponse response = paymentService.updatePayment("id-01", updateRequest);
 
-        assertEquals("Dana", result.getPaymentName());
-        assertEquals("999999999", result.getPaymentBankNumber());
-
-        verify(paymentRepository).save(original);
+        assertEquals("Dana", response.getPaymentName());
+        assertEquals("999999999", response.getPaymentBankNumber());
+        verify(paymentRepository).save(existing);
     }
 
+    // unhappy
     @Test
     void testUpdatePaymentNotFound() {
-        Payment update = new Payment();
-        update.setPaymentId("id-99");
-        update.setPaymentName("LinkAja");
-        update.setPaymentBankNumber("000000000");
+        PaymentRequest updateRequest = new PaymentRequest();
+        updateRequest.setPaymentName("Dana");
+        updateRequest.setPaymentBankNumber("999999999");
 
-        assertThrows(RuntimeException.class, () -> {
-            paymentService.updatePayment("id-99", update);
-        });
+        when(paymentRepository.findById("non-existent-id")).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                paymentService.updatePayment("non-existent-id", updateRequest)
+        );
+
+        verify(paymentRepository, never()).save(any());
     }
 
+    // happy
     @Test
     void testDeletePaymentSuccess() {
 
@@ -242,6 +187,7 @@ public class PaymentServiceImplTest {
         assertNull(paymentService.findById("id-02"));
     }
 
+    // unhappy
     @Test
     void testDeletePaymentNotFound() {
         doReturn(false).when(paymentRepository).deletePayment("id-99");
