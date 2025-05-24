@@ -78,15 +78,17 @@
   .payment-table th {
     text-align: left;
   }
-  
-  .btn.edit {
-    background-color: #ffc107;
-    color: black;
+
+  .btn.add {
+    background-color: #4CAF50;
+    color: white;
   }
-  .btn.edit:hover {
-    background-color: #e0a800;
+
+  .btn.add:hover {
+    background-color: #2c7145;
+    color: white;
   }
-  
+
   .btn.delete {
     background-color: #dc3545;
     color: white;
