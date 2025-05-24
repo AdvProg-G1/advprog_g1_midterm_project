@@ -69,19 +69,19 @@ class RepairOrderControllerTest {
     @Test
     void rejectOrder_returnsNoContent() throws Exception {
         UUID orderId = UUID.randomUUID();
-        doNothing().when(repairOrderService).rejectRepairOrder(orderId.toString());
+        doNothing().when(repairOrderService).userRejectOrder(orderId.toString());
 
-        mockMvc.perform(delete("/api/repair/reject/{id}", orderId))
+        mockMvc.perform(post("/api/repair/user/reject/{id}", orderId))
                 .andExpect(status().isNoContent());
 
-        verify(repairOrderService).rejectRepairOrder(orderId.toString());
+        verify(repairOrderService).userRejectOrder(orderId.toString());
     }
 
     @Test
     void incomingOrderList() throws Exception {
         ServiceOrder o1 = new ServiceOrder(); o1.setId(UUID.randomUUID());
         ServiceOrder o2 = new ServiceOrder(); o2.setId(UUID.randomUUID());
-        when(repairOrderService.findByStatus(List.of("waiting_confirmation")))
+        when(repairOrderService.findByStatus(List.of("WAITING_CONFIRMATION")))
                 .thenReturn(List.of(o1, o2));
 
         mockMvc.perform(get("/api/repair/list")
@@ -90,13 +90,13 @@ class RepairOrderControllerTest {
                 .andExpect(jsonPath("$[0].id").value(o1.getId().toString()))
                 .andExpect(jsonPath("$[1].id").value(o2.getId().toString()));
 
-        verify(repairOrderService).findByStatus(List.of("waiting_confirmation"));
+        verify(repairOrderService).findByStatus(List.of("WAITING_CONFIRMATION"));
     }
 
     @Test
     void orderHistory() throws Exception {
         ServiceOrder h = new ServiceOrder(); h.setId(UUID.randomUUID());
-        when(repairOrderService.findByStatus(List.of("in_progress", "completed")))
+        when(repairOrderService.findByStatus(List.of("IN_PROGRESS", "COMPLETED")))
                 .thenReturn(Collections.singletonList(h));
 
         mockMvc.perform(get("/api/repair/history")
@@ -104,7 +104,7 @@ class RepairOrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(h.getId().toString()));
 
-        verify(repairOrderService).findByStatus(List.of("in_progress", "completed"));
+        verify(repairOrderService).findByStatus(List.of("IN_PROGRESS", "COMPLETED"));
     }
 
     @Test
