@@ -10,7 +10,7 @@
 <body>
 
 <div id="navbar"></div>
-<script src="../assets/js/navbar_user.js"></script>
+<script src="../assets/js/navbar_user.js" defer></script>
 
 <section class="book-service">
   <h1>BOOK SERVICE <span class="highlight-black">ORDER</span></h1>
@@ -46,7 +46,6 @@
           <label for="serviceDate">Date of Service</label>
           <input id="serviceDate" name="serviceDate" type="date" required />
         </div>
-
 
         <div class="form-right">
           <label for="paymentMethod">Payment Method</label>
@@ -96,7 +95,8 @@
       });
 
       // Load Technicians
-      const techRes = await fetch('/api/technicians');
+      // <-- updated to use the orders-based endpoint
+      const techRes = await fetch('/api/orders/technicians');
       const technicians = await techRes.json();
       const techSelect = document.getElementById('technicianId');
       techSelect.innerHTML = '<option value="">Choose a Technician</option>';
