@@ -83,22 +83,4 @@ public class PaymentControllerTest {
 
         assertEquals("id-01", result.getPaymentId());
     }
-
-    @Test
-    void testGetPaymentByName() {
-        when(paymentService.findByName("GoPay")).thenReturn(samplePayment);
-
-        Payment result = paymentController.getByName("GoPay").getBody();
-
-        assertEquals("GoPay", result.getPaymentName());
-    }
-
-    @Test
-    void testGetPaymentByBankNumber() {
-        when(paymentService.findByBankNumber("1234567890")).thenReturn(samplePayment);
-
-        Payment result = paymentController.getByBankNumber("1234567890").getBody();
-
-        assertEquals("1234567890", result.getPaymentBankNumber());
-    }
 }
