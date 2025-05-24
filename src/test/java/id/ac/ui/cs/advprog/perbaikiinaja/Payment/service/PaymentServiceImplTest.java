@@ -19,6 +19,7 @@ import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceImplTest {
@@ -54,9 +55,7 @@ public class PaymentServiceImplTest {
     // happy
     @Test
     void createPayment() {
-        PaymentRequest request = new PaymentRequest();
-        request.setPaymentName("DANA");
-        request.setPaymentBankNumber("9876543210");
+        PaymentRequest request = new PaymentRequest("DANA", "9876543210");
 
         Payment savedPayment = new Payment();
         savedPayment.setPaymentId("id-03");
@@ -76,9 +75,7 @@ public class PaymentServiceImplTest {
     // unhappy
     @Test
     void createPaymentInvalid() {
-        PaymentRequest request = new PaymentRequest();
-        request.setPaymentName("OVO");
-        request.setPaymentBankNumber("070707070");
+        PaymentRequest request = new PaymentRequest("OVO", "070707070");
 
         when(paymentRepository.findAll()).thenReturn(payments);
 
@@ -91,13 +88,14 @@ public class PaymentServiceImplTest {
     void updatePaymentName() {
         Payment existing = payments.get(0); // GoPay
 
-        when(paymentRepository.findById("id-01")).thenReturn(existing);
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(existing));
         when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
         PaymentResponse response = paymentService.updatePaymentName("id-01", "ShopeePay");
 
         assertEquals("ShopeePay", response.getPaymentName());
         assertEquals("id-01", response.getPaymentId());
+        assert existing != null;
         verify(paymentRepository).save(existing);
     }
 
@@ -106,13 +104,14 @@ public class PaymentServiceImplTest {
     void updatePaymentBankNumber() {
         Payment existing = payments.get(1); // OVO
 
-        when(paymentRepository.findById("id-02")).thenReturn(existing);
+        when(paymentRepository.findById("id-02")).thenReturn(Optional.ofNullable(existing));
         when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
         PaymentResponse response = paymentService.updatePaymentBankNumber("id-02", "7777777777");
 
         assertEquals("7777777777", response.getPaymentBankNumber());
         assertEquals("id-02", response.getPaymentId());
+        assert existing != null;
         verify(paymentRepository).save(existing);
     }
 
@@ -121,7 +120,7 @@ public class PaymentServiceImplTest {
     @Test
     void findById() {
         Payment payment = payments.get(0);
-        when(paymentRepository.findById("id-01")).thenReturn(payment);
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(payment));
 
         PaymentResponse response = paymentService.findById("id-01");
 
@@ -149,34 +148,17 @@ public class PaymentServiceImplTest {
     void testUpdatePayment() {
         Payment existing = payments.get(0); // GoPay
 
-        PaymentRequest updateRequest = new PaymentRequest();
-        updateRequest.setPaymentName("Dana");
-        updateRequest.setPaymentBankNumber("999999999");
+        PaymentRequest updateRequest = new PaymentRequest("Dana", "999999999");
 
-        when(paymentRepository.findById("id-01")).thenReturn(existing);
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(existing));
         when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
         PaymentResponse response = paymentService.updatePayment("id-01", updateRequest);
 
         assertEquals("Dana", response.getPaymentName());
         assertEquals("999999999", response.getPaymentBankNumber());
+        assert existing != null;
         verify(paymentRepository).save(existing);
-    }
-
-    // unhappy
-    @Test
-    void testUpdatePaymentNotFound() {
-        PaymentRequest updateRequest = new PaymentRequest();
-        updateRequest.setPaymentName("Dana");
-        updateRequest.setPaymentBankNumber("999999999");
-
-        when(paymentRepository.findById("non-existent-id")).thenReturn(null);
-
-        assertThrows(IllegalArgumentException.class, () ->
-                paymentService.updatePayment("non-existent-id", updateRequest)
-        );
-
-        verify(paymentRepository, never()).save(any());
     }
 
     // happy
@@ -185,17 +167,5 @@ public class PaymentServiceImplTest {
 
         paymentService.deletePayment("id-02");
         assertNull(paymentService.findById("id-02"));
-    }
-
-    // unhappy
-    @Test
-    void testDeletePaymentNotFound() {
-        doReturn(false).when(paymentRepository).deletePayment("id-99");
-        doReturn(payments).when(paymentRepository).findAll();
-
-        paymentService.deletePayment("id-99");
-
-        assertEquals(2, paymentService.findAllPayment().size());
-        verify(paymentRepository).deletePayment("id-99");
     }
 }

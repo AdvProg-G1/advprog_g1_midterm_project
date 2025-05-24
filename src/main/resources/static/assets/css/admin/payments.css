@@ -16,8 +16,7 @@
     color: white;
     padding: 0 12px;
   }
-  
-  /* Formulaire */
+
   .payment-form {
     background: #f9f9f9;
     padding: 24px;
@@ -48,6 +47,12 @@
   .form-actions {
     text-align: right;
     margin-top: 20px;
+  }
+
+  .payment-actions {
+    text-align: right;
+    margin-top: 20px;
+    margin-bottom: 10px;
   }
   
   button[type="submit"] {
@@ -93,8 +98,17 @@
     background-color: #dc3545;
     color: white;
   }
+
   .btn.delete:hover {
     background-color: #c82333;
   }
-  
-  
+
+.btn.edit {
+  background-color: #ffc107;
+  color: black;
+}
+.btn.edit:hover {
+  background-color: #e0a800;
+}
+
+/* Animations */

@@ -1,22 +1,15 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto;
 
 import lombok.Builder;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 @Builder
 public class PaymentResponse {
     private String paymentId;
     private String paymentName;
     private String paymentBankNumber;
-
-    public PaymentResponse(String paymentId, String paymentName, String paymentBankNumber) {
-        this.paymentId = paymentId;
-        this.paymentName = paymentName;
-        this.paymentBankNumber = paymentBankNumber;
-    }
-
-    public PaymentResponse() {
-        // Default constructor for serialization/deserialization
-    }
 }
