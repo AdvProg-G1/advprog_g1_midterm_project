@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.controller;
 
 import lombok.RequiredArgsConstructor;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.service.PaymentService;
@@ -20,24 +19,22 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public Payment createPayment(@RequestBody Payment payment) {
-        paymentService.createPayment(payment);
-        return payment;
+    public ResponseEntity<PaymentResponse> createPayment(@RequestBody PaymentRequest request) {
+        return ResponseEntity.status(201).body(paymentService.createPayment(request));
     }
 
     @GetMapping("/{paymentId}")
-    public ResponseEntity<Payment> getById(@PathVariable ("paymentId") String paymentId) {
+    public ResponseEntity<PaymentResponse> getById(@PathVariable ("paymentId") String paymentId) {
         return ResponseEntity.ok(paymentService.findById(paymentId));
     }
 
-
     @PutMapping("/{paymentId}")
-    public ResponseEntity<Payment> updatePayment(
+    public ResponseEntity<PaymentResponse> updatePayment(
             @PathVariable String paymentId,
-            @RequestBody Payment payment
+            @RequestBody PaymentRequest paymentRequest
     ) {
         try {
-            Payment updated = paymentService.updatePayment(paymentId, payment);
+            PaymentResponse updated = paymentService.updatePayment(paymentId, paymentRequest);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -51,7 +48,7 @@ public class PaymentController {
     }
 
     @GetMapping
-    public List<Payment> getAllPayments() {
+    public List<PaymentResponse> getAllPayments() {
         return paymentService.findAllPayment();
     }
 }

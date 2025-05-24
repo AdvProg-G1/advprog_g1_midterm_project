@@ -56,34 +56,9 @@ public class PaymentControllerTest {
     void testCreatePayment() {
         when(paymentService.createPayment(any(PaymentRequest.class))).thenReturn(sampleResponse);
 
-        PaymentResponse result = paymentController.createPayment(sampleRequest);
+        PaymentResponse result = paymentController.createPayment(sampleRequest).getBody();
 
         assertNotNull(result);
-        assertEquals("id-01", result.getPaymentId());
-        assertEquals("GoPay", result.getPaymentName());
-    }
-
-@Test
-void testUpdatePayment() {
-    when(paymentService.updatePayment(eq("id-01"), any(PaymentRequest.class))).thenReturn(sampleResponse);
-
-    PaymentRequest updateRequest = new PaymentRequest();
-    updateRequest.setPaymentName("DANA");
-    updateRequest.setPaymentBankNumber("999999999");
-
-    PaymentResponse result = paymentController.updatePayment("id-01", updateRequest);
-
-    assertEquals("id-01", result.getPaymentId());
-    assertEquals("GoPay", result.getPaymentName()); // Assuming mock returns unchanged name
-    assertEquals("1234567890", result.getPaymentBankNumber()); // Assuming mock returns unchanged bank number
-}
-
-    @Test
-    void testFindById() {
-        when(paymentService.findById("id-01")).thenReturn(sampleResponse);
-
-        PaymentResponse result = paymentController.getPaymentById("id-01");
-
         assertEquals("id-01", result.getPaymentId());
         assertEquals("GoPay", result.getPaymentName());
     }
@@ -92,7 +67,22 @@ void testUpdatePayment() {
     void testUpdatePayment() {
         when(paymentService.updatePayment(eq("id-01"), any(PaymentRequest.class))).thenReturn(sampleResponse);
 
-        PaymentResponse result = paymentController.updatePayment("id-01", sampleRequest);
+        PaymentRequest updateRequest = new PaymentRequest();
+        updateRequest.setPaymentName("DANA");
+        updateRequest.setPaymentBankNumber("999999999");
+
+        PaymentResponse result = paymentController.updatePayment("id-01", updateRequest).getBody();
+
+        assertEquals("id-01", result.getPaymentId());
+        assertEquals("GoPay", result.getPaymentName()); // Assuming mock returns unchanged name
+        assertEquals("1234567890", result.getPaymentBankNumber()); // Assuming mock returns unchanged bank number
+    }
+
+    @Test
+    void testFindById() {
+        when(paymentService.findById("id-01")).thenReturn(sampleResponse);
+
+        PaymentResponse result = paymentController.getById("id-01").getBody();
 
         assertEquals("id-01", result.getPaymentId());
         assertEquals("GoPay", result.getPaymentName());
