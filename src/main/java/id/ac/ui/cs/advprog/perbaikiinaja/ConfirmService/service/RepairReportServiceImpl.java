@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.repository.RepairOrderRepository;
@@ -31,7 +32,7 @@ public class RepairReportServiceImpl implements RepairReportService {
     public RepairReport createRepairReport(String orderId, String details) {
         ServiceOrder order = orderRepo.findById(UUID.fromString(orderId)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         String technicianId = order.getTechnicianId();
-        if (!"in_progress".equals(order.getStatus()))
+        if (!"IN_PROGRESS".equals(order.getStatus()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in IN PROGRESS state.");
 
         RepairReport rpt = RepairReport.builder()
@@ -41,7 +42,7 @@ public class RepairReportServiceImpl implements RepairReportService {
                 .createdAt(new Date())
                 .build();
 
-        order.setStatus("completed");
+        order.setStatus("COMPLETED");
         return reportRepo.save(rpt);
     }
 }

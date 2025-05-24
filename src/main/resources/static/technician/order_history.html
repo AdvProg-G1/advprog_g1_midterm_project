@@ -42,7 +42,7 @@
 
         orders.forEach(o => {
           const tr = document.createElement('tr');
-          const st = o.status.toLowerCase();
+          const st = o.status
 
           tr.innerHTML = `
           <td>${o.itemName.charAt(0).toUpperCase() + o.itemName.slice(1)}</td>
@@ -52,9 +52,9 @@
           <td>${o.status.replace(/_/g, ' ').toUpperCase()}</td>
           <td>
             ${
-                st === 'in_progress'
-                    ? `<a href="/technician/create_report.html?orderId=${encodeURIComponent(o.id)}" class="btn write-report">WRITE REPORT</a>`
-                : st === 'completed'
+                st === 'IN_PROGRESS'
+                    ? `<a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="btn write-report">WRITE REPORT</a>`
+                : st === 'COMPLETED'
                     ? `<button class="btn submitted-btn" disabled>REPORT SUBMITTED</button>`
                     : '-'
               }

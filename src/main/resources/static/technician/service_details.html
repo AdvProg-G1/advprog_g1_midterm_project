@@ -86,19 +86,16 @@
       }
 
       function renderActions() {
-        const st = (localStatus || '').toLowerCase();
+        const st = (localStatus || '')
         let html = '';
 
-        if (st === 'waiting_confirmation') {
+        if (st === 'WAITING_CONFIRMATION') {
           html = `<button type="button" class="btn accept-btn">ACCEPT</button>`;
         }
-        else if (st === 'in_progress') {
-          html = `<button type="button" class="btn done-btn">DONE</button>`;
-        }
-        else if (st === 'pending_report') {
+        else if (st === 'IN_PROGRESS') {
           html = `<button type="button" class="btn report-btn">WRITE REPORT</button>`;
         }
-        else if (st === 'completed') {
+        else if (st === 'COMPLETED') {
           html = `<button type="button" class="btn submitted-btn" disabled>REPORT SUBMITTED</button>`;
         }
 
@@ -142,11 +139,6 @@
                   .then(r => r.ok ? r.json() : Promise.reject(`Confirm failed: ${r.status}`))
                   .then(() => window.location.reload())
                   .catch(alert);
-        }
-
-        if (e.target.matches('.done-btn')) {
-          localStatus = 'pending_report';
-          renderActions();
         }
 
         if (e.target.matches('.report-btn')) {
