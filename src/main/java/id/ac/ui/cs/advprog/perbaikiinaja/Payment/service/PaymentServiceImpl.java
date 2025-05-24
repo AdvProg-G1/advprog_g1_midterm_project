@@ -4,7 +4,9 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,36 +21,37 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
 
-@Override
-public PaymentResponse createPayment(PaymentRequest request) {
-    List<Payment> existingPayments = paymentRepository.findAll();
+    @Override
+    public PaymentResponse createPayment(PaymentRequest request) {
+        List<Payment> existingPayments = paymentRepository.findAll();
 
-    // Check if payment with the same name exists, if yes, cancel creation
-    boolean exists = existingPayments.stream().anyMatch(payment ->
-        payment.getPaymentName().equals(request.getPaymentName())
-    );
-    if (exists) {
-        throw new IllegalStateException("The payment already exists. Creation cancelled.");
+        // Check if payment with the same name exists, if yes, cancel creation
+        boolean exists = existingPayments.stream().anyMatch(payment ->
+            payment.getPaymentName().equals(request.getPaymentName())
+        );
+        if (exists) {
+            throw new IllegalStateException("The payment already exists. Creation cancelled.");
+        }
+
+        Payment payment = new Payment();
+        payment.setPaymentId(java.util.UUID.randomUUID().toString());
+        payment.setPaymentName(request.getPaymentName());
+        payment.setPaymentBankNumber(String.valueOf(request.getPaymentBankNumber()));
+
+        Payment saved = paymentRepository.save(payment);
+        return mapToResponse(saved);
     }
-
-    Payment payment = new Payment();
-    payment.setPaymentId(java.util.UUID.randomUUID().toString());
-    payment.setPaymentName(request.getPaymentName());
-    payment.setPaymentBankNumber(String.valueOf(request.getPaymentBankNumber()));
-
-    Payment saved = paymentRepository.save(payment);
-    return mapToResponse(saved);
-}
 
     @Override
     public PaymentResponse updatePaymentName(String id, String newName) {
         if (newName == null || newName.trim().isEmpty()) {
             throw new IllegalArgumentException("Payment name cannot be empty.");
         }
-        Payment payment = paymentRepository.findById(id);
-        if (payment == null) {
+        Optional<Payment> paymentOpt = paymentRepository.findById(id);
+        if (!paymentOpt.isPresent()) {
             throw new IllegalArgumentException("Payment not found.");
         }
+        Payment payment = paymentOpt.get();
         payment.setPaymentName(newName);
         Payment updated = paymentRepository.save(payment);
         return mapToResponse(updated);
@@ -59,10 +62,11 @@ public PaymentResponse createPayment(PaymentRequest request) {
         if (!newBankNumber.matches("\\d+")) {
             throw new IllegalArgumentException("Bank number must contain only digits.");
         }
-        Payment payment = paymentRepository.findById(id);
-        if (payment == null) {
+        Optional<Payment> paymentOpt = paymentRepository.findById(id);
+        if (!paymentOpt.isPresent()) {
             throw new IllegalArgumentException("Payment not found.");
         }
+        Payment payment = paymentOpt.get();
         payment.setPaymentBankNumber(newBankNumber);
         Payment updated = paymentRepository.save(payment);
         return mapToResponse(updated);
@@ -70,9 +74,9 @@ public PaymentResponse createPayment(PaymentRequest request) {
 
     @Override
     public PaymentResponse findById(String id) {
-        Payment payment = paymentRepository.findById(id);
-        if (payment == null) return null;
-        return mapToResponse(payment);
+        Optional<Payment> paymentOpt = paymentRepository.findById(id);
+        if (!paymentOpt.isPresent()) return null;
+        return mapToResponse(paymentOpt.get());
     }
 
     @Override
@@ -84,11 +88,11 @@ public PaymentResponse createPayment(PaymentRequest request) {
 
     @Override
     public PaymentResponse updatePayment(String paymentId, PaymentRequest request) {
-        Optional<Payment> existing = paymentRepository.findById(paymentId);
-        if (existing == null) {
+        Optional<Payment> existingOpt = paymentRepository.findById(paymentId);
+        if (!existingOpt.isPresent()) {
             throw new IllegalArgumentException("Payment not found.");
         }
-
+        Payment existing = existingOpt.get();
         existing.setPaymentName(request.getPaymentName());
         existing.setPaymentBankNumber(String.valueOf(request.getPaymentBankNumber()));
         Payment updated = paymentRepository.save(existing);
@@ -97,7 +101,7 @@ public PaymentResponse createPayment(PaymentRequest request) {
 
     @Override
     public void deletePayment(String paymentId) {
-        paymentRepository.deletePayment(paymentId);
+        paymentRepository.deleteById(paymentId);
     }
 
     private PaymentResponse mapToResponse(Payment payment) {

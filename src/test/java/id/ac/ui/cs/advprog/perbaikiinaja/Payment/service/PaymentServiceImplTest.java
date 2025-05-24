@@ -19,6 +19,7 @@ import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceImplTest {
@@ -87,13 +88,14 @@ public class PaymentServiceImplTest {
     void updatePaymentName() {
         Payment existing = payments.get(0); // GoPay
 
-        when(paymentRepository.findById("id-01")).thenReturn(existing);
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(existing));
         when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
         PaymentResponse response = paymentService.updatePaymentName("id-01", "ShopeePay");
 
         assertEquals("ShopeePay", response.getPaymentName());
         assertEquals("id-01", response.getPaymentId());
+        assert existing != null;
         verify(paymentRepository).save(existing);
     }
 
@@ -102,13 +104,14 @@ public class PaymentServiceImplTest {
     void updatePaymentBankNumber() {
         Payment existing = payments.get(1); // OVO
 
-        when(paymentRepository.findById("id-02")).thenReturn(existing);
+        when(paymentRepository.findById("id-02")).thenReturn(Optional.ofNullable(existing));
         when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
         PaymentResponse response = paymentService.updatePaymentBankNumber("id-02", "7777777777");
 
         assertEquals("7777777777", response.getPaymentBankNumber());
         assertEquals("id-02", response.getPaymentId());
+        assert existing != null;
         verify(paymentRepository).save(existing);
     }
 
@@ -117,7 +120,7 @@ public class PaymentServiceImplTest {
     @Test
     void findById() {
         Payment payment = payments.get(0);
-        when(paymentRepository.findById("id-01")).thenReturn(payment);
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(payment));
 
         PaymentResponse response = paymentService.findById("id-01");
 
@@ -147,13 +150,14 @@ public class PaymentServiceImplTest {
 
         PaymentRequest updateRequest = new PaymentRequest("Dana", "999999999");
 
-        when(paymentRepository.findById("id-01")).thenReturn(existing);
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(existing));
         when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
 
         PaymentResponse response = paymentService.updatePayment("id-01", updateRequest);
 
         assertEquals("Dana", response.getPaymentName());
         assertEquals("999999999", response.getPaymentBankNumber());
+        assert existing != null;
         verify(paymentRepository).save(existing);
     }
 
@@ -182,12 +186,14 @@ public class PaymentServiceImplTest {
     // unhappy
     @Test
     void testDeletePaymentNotFound() {
-        doReturn(false).when(paymentRepository).deletePayment("id-99");
+        Payment nonExistentPayment = new Payment();
+        nonExistentPayment.setPaymentId("id-99");
+        doNothing().when(paymentRepository).delete(nonExistentPayment);
         doReturn(payments).when(paymentRepository).findAll();
 
         paymentService.deletePayment("id-99");
 
         assertEquals(2, paymentService.findAllPayment().size());
-        verify(paymentRepository).deletePayment("id-99");
+        verify(paymentRepository).delete(nonExistentPayment);
     }
 }
