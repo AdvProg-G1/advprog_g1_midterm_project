@@ -49,7 +49,9 @@ class MethodAuthorizationConfigTest {
                 "ILoveShop123",
                 "012345679",
                 "Shop Town",
-                "CUSTOMER"
+                "CUSTOMER",
+                null,
+                null
         );
         User admin = new User(
                 "id-01",
@@ -59,7 +61,9 @@ class MethodAuthorizationConfigTest {
                 "admintime123",
                 "0666777888",
                 "Admin Place",
-                "ADMIN"
+                "ADMIN",
+                null,
+                null
         );
 
         assertEquals(List.of(new SimpleGrantedAuthority("CUSTOMER")), customer.getAuthorities());
@@ -69,7 +73,7 @@ class MethodAuthorizationConfigTest {
     @Test
     void nullRoleUserHasNoAuthorities() {
         User nobody = new User(
-                "x", "anon", "Nobody", "no@body", "pw", "-", "-", null);
+                "x", "anon", "Nobody", "no@body", "pw", "-", "-", null, null, null);
         assertTrue(nobody.getAuthorities().isEmpty());
     }
 
