@@ -47,9 +47,16 @@
       <td class="px-4 py-2">${o.serviceDate||''}</td>
       <td><a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="details-link">Details</a></td>
       <td><a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="accept-btn"><img src="/assets/images/accept.png" alt="Accept" /></a></td>
+      <td><button onclick="onReject('${o.id}')" class="reject-btn"><img src="/assets/images/refuse.png" alt="Reject" /></button></td>
     `;
       tbody.appendChild(tr);
     });
+  }
+
+  async function onReject(id) {
+    if (!confirm("Reject this order?")) return;
+    await fetch(`/api/repair/reject/${id}`, { method: 'POST' });
+    fetchOrders();
   }
 
   document.addEventListener('DOMContentLoaded', fetchOrders);

@@ -37,6 +37,12 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String role; // "CUSTOMER", etc.
 
+    @Column(nullable = true, name = "total_salary")
+    private Integer totalSalary;
+
+    @Column(nullable = true, name = "total_work")
+    private Integer totalWork;
+
     // Role helpers
     public Role getRoleEnum()           { return Role.fromAuthority(this.role); }
     public void setRoleEnum(Role role ) { this.role = role.getAuthority(); }
