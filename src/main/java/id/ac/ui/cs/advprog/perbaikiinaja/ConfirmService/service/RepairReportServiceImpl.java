@@ -36,6 +36,7 @@ public class RepairReportServiceImpl implements RepairReportService {
     public RepairReport createRepairReport(String orderId, String details) {
         ServiceOrder order = orderRepo.findById(UUID.fromString(orderId)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         String technicianId = order.getTechnicianId();
+
         if (!"IN_PROGRESS".equals(order.getStatus()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in IN PROGRESS state.");
 

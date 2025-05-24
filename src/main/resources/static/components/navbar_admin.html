@@ -1,25 +1,39 @@
+<!-- src/main/resources/static/components/navbar_admin.html -->
 <div class="nav">
-    <div>
-      <span class="brand">Perbaikiin<span class="aja">Aja</span></span>
-    </div>
-    <div class="nav-links">
-      <a href="/admin/home.html" class="home">Home</a>
-      <a href="/admin/technicians.html">Technicians</a>
-      <a href="/admin/coupons.html">Coupons</a>
-      <a href="/admin/payments.html">Payments</a>
-      <a href="/admin/reports.html">Reports</a>
-      <a href="/admin/notifications.html" class="notification-icon" title="Notifications">
-        <img src="../assets/images/bell.png" alt="Notifications" /><span class="badge">4</span>
-      </a>
-      <div class="user-menu">
-      <div class="user-toggle">
-        <img src="../assets/images/user.png" class="icon-user" alt="User" />
-        <img src="../assets/images/arrow.png" class="icon-arrow" alt="Arrow" />
-      </div>
+  <div>
+    <span class="brand">Perbaikiin<span class="aja">Aja</span></span>
+  </div>
+  <div class="nav-links">
+    <a href="/admin/home.html" class="home">Home</a>
+    <a href="/admin/technicians.html">Technicians</a>
+    <a href="/admin/coupons.html">Coupons</a>
+    <a href="/admin/payments.html">Payments</a>
+    <a href="/admin/reports.html">Reports</a>
+    <a href="/admin/notifications.html" class="notification-icon" title="Notifications">
+      <img src="/assets/images/bell.png" alt="Notifications" />
+      <span class="badge">4</span>
+    </a>
 
+    <div class="user-menu">
+      <div class="user-toggle" onclick="toggleMenu()">
+        <img src="/assets/images/user.png" class="icon-user" alt="User" />
+        <img src="/assets/images/arrow.png" class="icon-arrow" alt="Arrow" />
+      </div>
       <div class="dropdown" id="dropdownMenu">
         <a href="/admin/profile.html">Profile</a>
-        <a href="#">Logout</a>
+        <a href="/auth/logout">Logout</a>
       </div>
     </div>
   </div>
+</div>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('dropdownMenu').classList.toggle('show');
+  }
+  window.addEventListener('click', e => {
+    if (!e.target.closest('.user-menu')) {
+      document.getElementById('dropdownMenu').classList.remove('show');
+    }
+  });
+</script>

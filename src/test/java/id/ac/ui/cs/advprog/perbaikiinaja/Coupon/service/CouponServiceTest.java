@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Coupon.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.controller.CouponNotificationController;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.dto.CouponRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.dto.CouponResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Coupon.model.FixedDiscountCoupon;
@@ -19,11 +20,13 @@ public class CouponServiceTest {
 
     private CouponRepository couponRepository;
     private CouponService couponService;
+    private CouponNotificationController notificationController;
 
     @BeforeEach
     void setUp() {
         couponRepository = Mockito.mock(CouponRepository.class);
-        couponService = new CouponServiceImpl(couponRepository);
+        notificationController = Mockito.mock(CouponNotificationController.class);
+        couponService = new CouponServiceImpl(couponRepository, notificationController);
     }
 
     @Test
