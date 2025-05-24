@@ -26,6 +26,14 @@ public class RepairOrderController {
         return ResponseEntity.ok(confirmed);
     }
 
+    @PostMapping("/reject/{id}")
+    public ResponseEntity<ServiceOrder> rejectOrder(
+            @PathVariable("id") String orderId
+    ) {
+        ServiceOrder rejected = repairOrderService.rejectRepairOrder(orderId);
+        return ResponseEntity.ok(rejected);
+    }
+
     @GetMapping("/list")
     public ResponseEntity<List<ServiceOrder>> incomingOrderList() {
         List<ServiceOrder> waiting = repairOrderService.findByStatus(List.of("WAITING_CONFIRMATION"));
@@ -57,7 +65,8 @@ public class RepairOrderController {
     public ResponseEntity<Void> userAcceptOrder(@PathVariable("id") String orderId) {
         repairOrderService.userAcceptOrder(orderId);
         return ResponseEntity.noContent().build();
-    }}
+    }
+}
 
 
 

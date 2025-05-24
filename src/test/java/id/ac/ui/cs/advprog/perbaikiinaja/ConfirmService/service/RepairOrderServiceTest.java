@@ -33,7 +33,7 @@ class RepairOrderServiceTest {
     }
 
     @Test
-    void testConfirmOrderNotFound() {
+    void testTechnicianConfirmOrderNotFound() {
         UUID missingId = UUID.randomUUID();
         when(repairOrderRepo.findById(missingId)).thenReturn(Optional.empty());
 
@@ -82,6 +82,53 @@ class RepairOrderServiceTest {
         assertEquals(100, result.getEstimatedPrice());
         assertNotNull(result.getServiceDate());
         assertEquals(LocalDate.now(), result.getServiceDate());
+    }
+
+    @Test
+    void testTechnicianRejectOrderNotFound() {
+        UUID missingId = UUID.randomUUID();
+        when(repairOrderRepo.findById(missingId)).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.rejectRepairOrder(missingId.toString())
+        );
+
+        assertTrue(ex.getMessage().contains("404 NOT_FOUND"));
+        assertEquals("RepairOrder not found with ID: " + missingId, ex.getReason());
+    }
+
+    @Test
+    void testTechnicianRejectOrderInvalidStatus() {
+        ServiceOrder ord = ServiceOrder.builder()
+                .id(VALID_ID)
+                .status("TECHNICIAN_ACCEPTED")
+                .build();
+        when(repairOrderRepo.findById(VALID_ID)).thenReturn(Optional.of(ord));
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.rejectRepairOrder(VALID_ID.toString())
+        );
+
+        assertFalse(ex.getMessage().contains("404 NOT_FOUND"));
+        assertEquals(
+                "Cannot confirm an order that is not in waiting_confirmation state",
+                ex.getReason()
+        );
+    }
+
+    @Test
+    void testTechnicianRejectOrderSuccess() {
+        ServiceOrder ord = ServiceOrder.builder()
+                .id(VALID_ID)
+                .status("WAITING_CONFIRMATION")
+                .build();
+        when(repairOrderRepo.findById(VALID_ID)).thenReturn(Optional.of(ord));
+        when(repairOrderRepo.save(any(ServiceOrder.class))).thenAnswer(i -> i.getArgument(0));
+
+        ServiceOrder result = service.rejectRepairOrder(VALID_ID.toString());
+        assertEquals("TECHNICIAN_REJECTED", result.getStatus());
     }
 
     @Test

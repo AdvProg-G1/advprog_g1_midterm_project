@@ -47,7 +47,7 @@ class RepairOrderControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void confirmOrder_Success() throws Exception {
+    void technicianConfirmOrder_Success() throws Exception {
         UUID orderId = UUID.randomUUID();
         ServiceOrder stub = new ServiceOrder();
         stub.setId(orderId);
@@ -67,7 +67,39 @@ class RepairOrderControllerTest {
     }
 
     @Test
-    void rejectOrder_returnsNoContent() throws Exception {
+    void technicianRejectOrder_Success() throws Exception {
+        String orderId = UUID.randomUUID().toString();
+        ServiceOrder stub = new ServiceOrder();
+        stub.setId(UUID.fromString(orderId));
+
+        when(repairOrderService.rejectRepairOrder(orderId))
+                .thenReturn(stub);
+
+        mockMvc.perform(post("/api/repair/reject/{id}", orderId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(orderId));
+
+        verify(repairOrderService).rejectRepairOrder(orderId);
+    }
+
+    @Test
+    void userAcceptOrder() throws Exception {
+        String orderId = UUID.randomUUID().toString();
+
+        doNothing()
+                .when(repairOrderService)
+                .userAcceptOrder(orderId);
+
+        mockMvc.perform(post("/api/repair/user/accept/{id}", orderId))
+                .andExpect(status().isNoContent());
+
+        verify(repairOrderService).userAcceptOrder(orderId);
+    }
+
+    @Test
+    void UserRejectOrder() throws Exception {
         UUID orderId = UUID.randomUUID();
         doNothing().when(repairOrderService).userRejectOrder(orderId.toString());
 

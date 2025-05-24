@@ -40,6 +40,19 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
+    public ServiceOrder rejectRepairOrder(String id) {
+        ServiceOrder order = repo.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
+
+        if (!"WAITING_CONFIRMATION".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
+        }
+
+        order.setStatus("TECHNICIAN_REJECTED");
+        return repo.save(order);
+    }
+
+    @Override
     public ServiceOrder findById(String id) {
         return repo.findById(UUID.fromString(id))
                 .orElse(null);
