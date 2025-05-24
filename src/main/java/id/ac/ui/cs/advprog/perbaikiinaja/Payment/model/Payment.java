@@ -1,13 +1,14 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 import java.util.UUID;
 
-@Getter @Setter
+@Entity
 public class Payment {
 
+    @Id
     private String paymentId;
     private String paymentName;
     private String paymentBankNumber;

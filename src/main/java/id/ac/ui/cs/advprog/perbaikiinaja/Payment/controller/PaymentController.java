@@ -19,8 +19,13 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(@RequestBody PaymentRequest request) {
+    public ResponseEntity<PaymentResponse> create(@RequestBody PaymentRequest request) {
         return ResponseEntity.status(201).body(paymentService.createPayment(request));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PaymentResponse>> getAll() {
+        return ResponseEntity.ok(paymentService.findAllPayment());
     }
 
     @GetMapping("/{paymentId}")
@@ -29,7 +34,7 @@ public class PaymentController {
     }
 
     @PutMapping("/{paymentId}")
-    public ResponseEntity<PaymentResponse> updatePayment(
+    public ResponseEntity<PaymentResponse> update(
             @PathVariable String paymentId,
             @RequestBody PaymentRequest paymentRequest
     ) {
@@ -42,13 +47,8 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{paymentId}")
-    public ResponseEntity<Void> deletePayment(@PathVariable String paymentId) {
+    public ResponseEntity<Void> delete(@PathVariable String paymentId) {
         paymentService.deletePayment(paymentId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping
-    public List<PaymentResponse> getAllPayments() {
-        return paymentService.findAllPayment();
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,7 +84,7 @@ public PaymentResponse createPayment(PaymentRequest request) {
 
     @Override
     public PaymentResponse updatePayment(String paymentId, PaymentRequest request) {
-        Payment existing = paymentRepository.findById(paymentId);
+        Optional<Payment> existing = paymentRepository.findById(paymentId);
         if (existing == null) {
             throw new IllegalArgumentException("Payment not found.");
         }
@@ -98,6 +99,7 @@ public PaymentResponse createPayment(PaymentRequest request) {
     public void deletePayment(String paymentId) {
         paymentRepository.deletePayment(paymentId);
     }
+
     private PaymentResponse mapToResponse(Payment payment) {
         return new PaymentResponse(
                 payment.getPaymentId(),

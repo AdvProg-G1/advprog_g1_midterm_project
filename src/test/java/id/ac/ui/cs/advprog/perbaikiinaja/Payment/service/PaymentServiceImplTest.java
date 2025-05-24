@@ -54,9 +54,7 @@ public class PaymentServiceImplTest {
     // happy
     @Test
     void createPayment() {
-        PaymentRequest request = new PaymentRequest();
-        request.setPaymentName("DANA");
-        request.setPaymentBankNumber("9876543210");
+        PaymentRequest request = new PaymentRequest("DANA", "9876543210");
 
         Payment savedPayment = new Payment();
         savedPayment.setPaymentId("id-03");
@@ -76,9 +74,7 @@ public class PaymentServiceImplTest {
     // unhappy
     @Test
     void createPaymentInvalid() {
-        PaymentRequest request = new PaymentRequest();
-        request.setPaymentName("OVO");
-        request.setPaymentBankNumber("070707070");
+        PaymentRequest request = new PaymentRequest("OVO", "070707070");
 
         when(paymentRepository.findAll()).thenReturn(payments);
 
@@ -149,9 +145,7 @@ public class PaymentServiceImplTest {
     void testUpdatePayment() {
         Payment existing = payments.get(0); // GoPay
 
-        PaymentRequest updateRequest = new PaymentRequest();
-        updateRequest.setPaymentName("Dana");
-        updateRequest.setPaymentBankNumber("999999999");
+        PaymentRequest updateRequest = new PaymentRequest("Dana", "999999999");
 
         when(paymentRepository.findById("id-01")).thenReturn(existing);
         when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
@@ -166,9 +160,7 @@ public class PaymentServiceImplTest {
     // unhappy
     @Test
     void testUpdatePaymentNotFound() {
-        PaymentRequest updateRequest = new PaymentRequest();
-        updateRequest.setPaymentName("Dana");
-        updateRequest.setPaymentBankNumber("999999999");
+        PaymentRequest updateRequest = new PaymentRequest("Dana", "999999999");
 
         when(paymentRepository.findById("non-existent-id")).thenReturn(null);
 
