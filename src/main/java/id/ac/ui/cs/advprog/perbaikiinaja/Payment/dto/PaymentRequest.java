@@ -9,5 +9,5 @@ public class PaymentRequest {
     private String paymentName;
 
     @NotNull(message = "Bank Number is required")
-    private Double paymentBankNumber;
+    private String paymentBankNumber;
 }

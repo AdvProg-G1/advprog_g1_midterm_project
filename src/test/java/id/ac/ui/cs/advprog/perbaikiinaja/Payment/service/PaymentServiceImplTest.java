@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
 
@@ -80,7 +82,7 @@ public class PaymentServiceImplTest {
 
         when(paymentRepository.findAll()).thenReturn(payments);
 
-        assertThrows(IllegalArgumentException.class, () -> paymentService.createPayment(request));
+        assertThrows(IllegalStateException.class, () -> paymentService.createPayment(request));
         verify(paymentRepository, never()).save(any());
     }
 
@@ -133,7 +135,7 @@ public class PaymentServiceImplTest {
     void findAllPayment() {
         doReturn(payments).when(paymentRepository).findAll();
 
-        List<Payment> result = paymentService.findAllPayment();
+        List<PaymentResponse> result = paymentService.findAllPayment();
 
         assertEquals(2, result.size());
         assertEquals("id-01", result.get(0).getPaymentId());
