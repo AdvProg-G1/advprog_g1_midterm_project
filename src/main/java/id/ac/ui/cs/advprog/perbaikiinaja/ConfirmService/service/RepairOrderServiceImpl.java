@@ -28,27 +28,15 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         ServiceOrder order = repo.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
 
-        if (!"waiting_confirmation".equals(order.getStatus())) {
+        if (!"WAITING_CONFIRMATION".equals(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
         }
 
-        order.setStatus("technician_accepted");
+        order.setStatus("TECHNICIAN_ACCEPTED");
         order.setEstimatedCompletionTime(String.valueOf(duration));
         order.setEstimatedPrice(cost);
         order.setServiceDate(LocalDate.now());
         return repo.save(order);
-    }
-
-    @Override
-    public void rejectRepairOrder(String id) {
-        ServiceOrder order = repo.findById(UUID.fromString(id))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
-
-        if (!"waiting_confirmation".equals(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
-        }
-
-        repo.deleteById(UUID.fromString(id));
     }
 
     @Override
@@ -71,8 +59,34 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     @Override
     public List<ServiceOrder> findByStatus(List<String> statuses) {
         List<String> upper = statuses.stream()
-                .map(String::toLowerCase)
+                .map(String::toUpperCase)
                 .collect(Collectors.toList());
         return repo.findByStatusIn(upper);
+    }
+
+    @Override
+    public void userRejectOrder(String id) {
+        ServiceOrder order = repo.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
+
+        if (!"TECHNICIAN_ACCEPTED".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
+        }
+
+        order.setStatus("CANCELLED");
+        repo.save(order);
+    }
+
+    @Override
+    public void userAcceptOrder(String id) {
+        ServiceOrder order = repo.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RepairOrder not found with ID: " + id));
+
+        if (!"TECHNICIAN_ACCEPTED".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm an order that is not in waiting_confirmation state");
+        }
+
+        order.setStatus("IN_PROGRESS");
+        repo.save(order);
     }
 }
