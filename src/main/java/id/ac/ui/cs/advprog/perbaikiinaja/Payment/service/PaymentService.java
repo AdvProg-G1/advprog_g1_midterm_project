@@ -1,26 +1,24 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 
 import java.util.List;
 
 public interface PaymentService {
 
-    Payment createPayment(Payment payment);
+    PaymentResponse createPayment(PaymentRequest request);
 
     void updatePaymentName(String paymentId, String newName);
 
     void updatePaymentBankNumber(String paymentId, String newBankNumber);
 
-    Payment findById(String paymentId);
+    PaymentResponse findById(String paymentId);
 
-    Payment findByName(String paymentName);
+    List<PaymentResponse> findAllPayment();
 
-    Payment findByBankNumber(String accountNumber);
-
-    List<Payment> findAllPayment();
-
-    Payment updatePayment(String paymentId, Payment payment);
+    Payment updatePayment(String paymentId, PaymentRequest request);
 
     void deletePayment(String paymentId);
 }
