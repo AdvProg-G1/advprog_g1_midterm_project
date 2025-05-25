@@ -9,12 +9,11 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
@@ -48,32 +47,48 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<PaymentResponse> findAllPayment() {
-        return paymentRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        List<Payment> payments = paymentRepository.findAll();
+        List<PaymentResponse> responses = new ArrayList<>(payments.size());
+
+        for (Payment payment : payments) {
+            responses.add(mapToResponse(payment));
+        }
+
+        return responses;
     }
 
     @Override
     public PaymentResponse updatePayment(String paymentId, PaymentRequest request) {
-        Optional<Payment> existingOpt = paymentRepository.findById(paymentId);
+        Payment existing = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment not found."));
 
-        if (!existingOpt.isPresent()) {
-            throw new IllegalArgumentException("Payment not found.");
-        }
-
-        // format input name for validation
         String newName = request.getPaymentName().trim();
+        String newBankNumber = request.getPaymentBankNumber().trim();
 
-        boolean nameExists = paymentRepository.existsByPaymentNameIgnoreCaseAndPaymentIdNot(newName, paymentId);
-        if (nameExists) {
-            throw new IllegalStateException("Payment method with this name already exists.");
+        if (!existing.getPaymentName().equalsIgnoreCase(newName)) {
+            boolean nameExists = paymentRepository.existsByPaymentNameIgnoreCaseAndPaymentIdNot(newName, paymentId);
+            if (nameExists) {
+                throw new IllegalStateException("Payment method with this name already exists.");
+            }
         }
 
-        Payment existing = existingOpt.get();
-        existing.setPaymentName(newName);
-        existing.setPaymentBankNumber(request.getPaymentBankNumber().trim());
-        Payment updated = paymentRepository.save(existing);
-        return mapToResponse(updated);
+        boolean changed = false;
+
+        if (!existing.getPaymentName().equals(newName)) {
+            existing.setPaymentName(newName);
+            changed = true;
+        }
+
+        if (!existing.getPaymentBankNumber().equals(newBankNumber)) {
+            existing.setPaymentBankNumber(newBankNumber);
+            changed = true;
+        }
+
+        if (changed) {
+            existing = paymentRepository.save(existing);
+        }
+
+        return mapToResponse(existing);
     }
 
     @Override
