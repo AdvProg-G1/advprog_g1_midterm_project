@@ -2,6 +2,10 @@ package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.controller;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service.RepairReportServiceImpl;
+
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,5 +26,10 @@ public class RepairReportController {
     ) {
         RepairReport created = service.createRepairReport(orderId, details);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+    
+    @GetMapping("/all")
+    public ResponseEntity<List<Map<String, Object>>> getAllReports() {
+        return ResponseEntity.ok(service.getAllReports());
     }
 }

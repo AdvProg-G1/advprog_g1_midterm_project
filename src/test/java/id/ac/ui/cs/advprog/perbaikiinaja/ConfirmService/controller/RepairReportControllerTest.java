@@ -17,14 +17,18 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.when;
-
+import static org.hamcrest.Matchers.is;
 @WebMvcTest(RepairReportController.class)
 @TestPropertySource(properties = {
         "jwt.secret=TEST_SECRET_12345678901234567890123456789012",
@@ -89,4 +93,37 @@ class RepairReportControllerTest {
                         .contentType(MediaType.TEXT_PLAIN))
                 .andExpect(status().isNotFound());
     }
+    
+    @Test
+    void getAllReports_Success() throws Exception {
+        Map<String, Object> report1 = new HashMap<>();
+        report1.put("technicianName", "Alice Cooper");
+        report1.put("itemName", "Laptop");
+        report1.put("details", "Fixed screen");
+        report1.put("createdAt", new Date());
+
+        Map<String, Object> report2 = new HashMap<>();
+        report2.put("technicianName", "Bob Dylan");
+        report2.put("itemName", "Washing Machine");
+        report2.put("details", "Replaced belt");
+        report2.put("createdAt", new Date());
+
+        List<Map<String, Object>> reports = Arrays.asList(report1, report2);
+
+        when(service.getAllReports()).thenReturn(reports);
+
+        mockMvc.perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .get("/api/report/all")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()", is(2)))
+                .andExpect(jsonPath("$[0].technicianName", is("Alice Cooper")))
+                .andExpect(jsonPath("$[1].itemName", is("Washing Machine")))
+                .andExpect(jsonPath("$[1].details", is("Replaced belt")));
+    }
+
+
+    
 }

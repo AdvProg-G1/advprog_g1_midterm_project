@@ -19,7 +19,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -168,4 +171,72 @@ class RepairReportServiceTest {
         assertSame(rpt, actual);
         verify(reportRepo).getReportsByOrderId(ORDER_ID);
     }
+    
+    @Test
+    void testGetAllReports() {
+        RepairReport r1 = RepairReport.builder()
+                .id("1")
+                .orderId("00000000-0000-0000-0000-000000000001")
+                .technicianId("tech-1")
+                .details("Fixed screen")
+                .createdAt(new Date())
+                .build();
+
+        RepairReport r2 = RepairReport.builder()
+                .id("2")
+                .orderId("00000000-0000-0000-0000-000000000002")
+                .technicianId("tech-2")
+                .details("Replaced battery")
+                .createdAt(new Date())
+                .build();
+
+        when(reportRepo.findAll()).thenReturn(Arrays.asList(r1, r2));
+
+        User tech1 = new User();
+        tech1.setId("tech-1");
+        tech1.setFullName("Alice Cooper");
+
+        User tech2 = new User();
+        tech2.setId("tech-2");
+        tech2.setFullName("Bob Dylan");
+
+        when(userRepo.findById("tech-1")).thenReturn(Optional.of(tech1));
+        when(userRepo.findById("tech-2")).thenReturn(Optional.of(tech2));
+
+        ServiceOrder order1 = new ServiceOrder();
+        order1.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+        order1.setItemName("Laptop");
+
+        ServiceOrder order2 = new ServiceOrder();
+        order2.setId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
+        order2.setItemName("Phone");
+
+        when(orderRepo.findById(order1.getId())).thenReturn(Optional.of(order1));
+        when(orderRepo.findById(order2.getId())).thenReturn(Optional.of(order2));
+
+        List<Map<String, Object>> result = service.getAllReports();
+
+        assertEquals(2, result.size());
+
+        Map<String, Object> report1 = result.get(0);
+        assertEquals("Alice Cooper", report1.get("technicianName"));
+        assertEquals("Laptop", report1.get("itemName"));
+        assertEquals("Fixed screen", report1.get("details"));
+        assertTrue(report1.containsKey("createdAt"));
+
+        Map<String, Object> report2 = result.get(1);
+        assertEquals("Bob Dylan", report2.get("technicianName"));
+        assertEquals("Phone", report2.get("itemName"));
+        assertEquals("Replaced battery", report2.get("details"));
+        assertTrue(report2.containsKey("createdAt"));
+
+        verify(reportRepo).findAll();
+        verify(userRepo).findById("tech-1");
+        verify(userRepo).findById("tech-2");
+        verify(orderRepo).findById(order1.getId());
+        verify(orderRepo).findById(order2.getId());
+    }
+
+    
+    
 }

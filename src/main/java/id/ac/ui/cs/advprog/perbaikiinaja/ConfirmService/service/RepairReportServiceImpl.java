@@ -10,7 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -62,4 +66,33 @@ public class RepairReportServiceImpl implements RepairReportService {
         userRepo.save(tech);
         return reportRepo.save(rpt);
     }
+    
+    @Override
+    public List<Map<String, Object>> getAllReports() {
+        List<RepairReport> reports = reportRepo.findAll();
+
+        List<Map<String, Object>> enrichedReports = new ArrayList<>();
+
+        for (RepairReport report : reports) {
+            Map<String, Object> data = new HashMap<>();
+
+            String techName = userRepo.findById(report.getTechnicianId())
+                    .map(User::getFullName)
+                    .orElse("Unknown Technician");
+
+            String itemName = orderRepo.findById(UUID.fromString(report.getOrderId()))
+                    .map(ServiceOrder::getItemName)
+                    .orElse("Unknown Item");
+
+            data.put("technicianName", techName);
+            data.put("itemName", itemName);
+            data.put("createdAt", report.getCreatedAt());
+            data.put("details", report.getDetails());
+
+            enrichedReports.add(data);
+        }
+
+        return enrichedReports;
+    }
+
 }
