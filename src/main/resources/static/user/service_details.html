@@ -118,7 +118,7 @@
       await loadDropdownData(order);
 
       // Control editability based on status
-      const editable = order.status === 'WAITING CONFIRMATION';
+      const editable = order.status === 'WAITING_CONFIRMATION';
       const fieldsToToggle = [
         'item-name', 'item-condition', 'problem-description', 'service-date',
         'use-coupon', 'paymentMethod', 'completion-time', 'price'
@@ -129,7 +129,7 @@
       });
 
       // Disable editability
-      const isWaiting = order.status === 'WAITING CONFIRMATION';
+      const isWaiting = order.status === 'WAITING_CONFIRMATION';
       document.getElementById('completion-time').disabled = isWaiting;
       document.getElementById('price').disabled = isWaiting;
 
@@ -137,7 +137,7 @@
       document.querySelector('.submit-btn').style.display = editable ? 'inline-block' : 'none';
 
       const actionsDiv = document.querySelector('.form-actions');
-      if (order.status === 'TECHNICIAN ACCEPTED') {
+      if (order.status === 'TECHNICIAN_ACCEPTED') {
         actionsDiv.innerHTML = `
           <button type="button" id="btn-user-accept" class="btn accept-btn">ACCEPT</button>
           <button type="button" id="btn-user-reject" class="btn reject-btn">REJECT</button>

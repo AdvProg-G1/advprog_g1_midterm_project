@@ -2,6 +2,9 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.controller;
 
 import lombok.RequiredArgsConstructor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.service.PaymentService;
@@ -15,6 +18,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+
+// Loggers here
 
 @RestController
 @RequestMapping("/api/payments")
