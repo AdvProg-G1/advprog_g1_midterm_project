@@ -1,0 +1,101 @@
+<!-- src/main/resources/static/user/review_edit.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Edit Review</title>
+  <link rel="stylesheet" href="../assets/css/main.css"/>
+  <link rel="stylesheet" href="../assets/css/navbar.css"/>
+</head>
+<body>
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
+
+<div class="edit-form" style="max-width:600px;margin:2rem auto;padding:1rem;background:#f9f9f9;border-radius:8px;">
+  <h2>Edit Review</h2>
+  <input type="hidden" id="review-id"/>
+  <input type="hidden" id="technician-id"/>
+  <input type="hidden" id="user-id"/>
+  <label>Rating:</label>
+  <select id="rating">
+    <option value="5">★★★★★</option>
+    <option value="4">★★★★☆</option>
+    <option value="3">★★★☆☆</option>
+    <option value="2">★★☆☆☆</option>
+    <option value="1">★☆☆☆☆</option>
+  </select>
+  <label>Comment:</label>
+  <textarea id="comment" rows="4"></textarea>
+  <button id="save-btn">Save</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const qp = new URLSearchParams(location.search);
+    const rid = qp.get('reviewId'), tid = qp.get('techId');
+    let uid = null;
+
+    // 1) Determine current user via AJAX
+    fetch('/api/auth/current', { credentials: 'same-origin' })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(u => {
+              uid = u.id;
+              document.getElementById('user-id').value = uid;
+            })
+            .catch(() => {})
+            .finally(initPage);
+
+    function initPage() {
+      // 2) Load existing review via AJAX
+      fetch(`/api/reviews/${rid}`)
+              .then(r => r.json())
+              .then(rdata => {
+                document.getElementById('review-id').value = rid;
+                document.getElementById('technician-id').value = tid;
+                document.getElementById('rating').value = rdata.rating;
+                document.getElementById('comment').value = rdata.comment;
+              })
+              .catch(() => alert('Failed to load review'));
+
+      // 3) Save changes via AJAX
+      document.getElementById('save-btn').onclick = () => {
+        const payload = {
+          technicianId: tid,
+          userId: uid,
+          rating: +document.getElementById('rating').value,
+          comment: document.getElementById('comment').value
+        };
+        fetch(`/api/reviews/${rid}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        })
+                .then(r => {
+                  if (!r.ok) throw '';
+                  location.href = `/user/technician_profile.html?id=${tid}`;
+                })
+                .catch(() => alert('Failed to save review'));
+      };
+
+      // 4) Real-time sync via WebSocket
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${proto}//${location.host}/ws/reviews/${tid}`);
+      socket.onmessage = event => {
+        try {
+          const reviews = JSON.parse(event.data);
+          const updated = reviews.find(r => r.id === rid);
+          if (updated) {
+            document.getElementById('rating').value = updated.rating;
+            document.getElementById('comment').value = updated.comment;
+          }
+        } catch (e) {
+          console.error('WS parse error', e);
+        }
+      };
+      socket.onerror = e => console.error('WebSocket error', e);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Order History</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/technician/order_history.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_technician.js"></script>
+
+<section class="order-history">
+  <h1>ORDER <span class="highlight-black">HISTORY</span></h1>
+
+  <table class="order-table">
+    <thead>
+    <tr>
+      <th>Item Name</th>
+      <th>Condition</th>
+      <th>Description</th>
+      <th>Date of Service</th>
+      <th>Status</th>
+      <th></th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody id="orders-table">
+    </tbody>
+  </table>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/repair/history')
+      .then(res => res.json())
+      .then(orders => {
+        const tbody = document.getElementById('orders-table');
+        tbody.innerHTML = '';
+
+        orders.forEach(o => {
+          const tr = document.createElement('tr');
+          const st = o.status
+
+          tr.innerHTML = `
+          <td>${o.itemName.charAt(0).toUpperCase() + o.itemName.slice(1)}</td>
+          <td>${ o.condition.charAt(0).toUpperCase() + o.condition.slice(1) }</td>
+          <td>${o.problemDescription || ''}</td>
+          <td>${new Date(o.serviceDate).toLocaleDateString()}</td>
+          <td>${o.status.replace(/_/g, ' ').toUpperCase()}</td>
+          <td>
+            ${
+                st === 'IN_PROGRESS'
+                    ? `<a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="btn write-report">WRITE REPORT</a>`
+                : st === 'COMPLETED'
+                    ? `<button class="btn submitted-btn" disabled>REPORT SUBMITTED</button>`
+                    : '-'
+              }
+          </td>
+          <td>
+            <a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="details-link">Details</a>
+          </td>
+        `;
+          tbody.appendChild(tr);
+        });
+      })
+    .catch(err => console.error('Could not load order history:', err));
+  });
+</script>
+
+</body>
+</html>

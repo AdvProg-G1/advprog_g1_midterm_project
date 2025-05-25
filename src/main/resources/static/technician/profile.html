@@ -1,0 +1,193 @@
+<!-- src/main/resources/static/technician/profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Technician Profile</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/technician/profile.css" />
+  <style>
+    .stars { font-size: 1.5rem; margin-top: 0.25rem; }
+    .details-rating { display: flex; gap: 2rem; align-items: flex-start; margin: 1.5rem; }
+    .details { flex: 1; }
+    .detail-item { margin-bottom: 0.5rem; }
+    .detail-item strong { width: 100px; display: inline-block; }
+    .reviews-section { max-width: 800px; margin: 2rem auto; }
+    .review-card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .stars_review { font-size: 1.25rem; }
+    .review-text { margin-bottom: 0.5rem; }
+    .review-date {
+      font-size: 0.85rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_technician.js"></script>
+
+<div class="yellow-banner">
+  <div class="white-box">
+    <div class="profile-header">
+      <img src="../assets/images/user_black.png" class="profile-icon" />
+      <h1 class="technician-name">Loading…</h1>
+    </div>
+  </div>
+</div>
+
+<div class="details-rating">
+  <div class="details">
+    <h2>Technician Details</h2>
+    <div class="detail-item">
+      <strong>Email:</strong>
+      <a id="tech-email">—</a>
+    </div>
+    <div class="detail-item">
+      <strong>Phone:</strong>
+      <span id="tech-phone">—</span>
+    </div>
+    <div class="detail-item">
+      <strong>Address:</strong>
+      <span id="tech-address">—</span>
+    </div>
+  </div>
+  <div class="rating">
+    <h3>Average Rating</h3>
+    <div class="stars" id="tech-stars">☆☆☆☆☆</div>
+  </div>
+  <!-- Only show edit link if viewing your own profile -->
+  <a id="edit-link" href="edit_profile.html" style="display:none">
+    <img src="../assets/images/edit.png" class="edit-icon" alt="Edit Profile" />
+  </a>
+</div>
+
+<div class="reviews-section">
+  <h2>All Reviews</h2>
+  <div id="reviews-container">Loading reviews…</div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const techId = params.get('id');
+    if (!techId) {
+      alert('No technician specified');
+      return;
+    }
+
+    let currentUserId = null;
+
+    // 1) Determine logged-in user via AJAX
+    fetch('/api/auth/current', { credentials: 'same-origin' })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(u => {
+              currentUserId = u.id;
+              if (u.id === techId) {
+                document.getElementById('edit-link').style.display = 'block';
+              }
+            })
+            .catch(() => {
+              // not logged in or error
+            })
+            .finally(() => {
+              loadTechnician();
+              loadReviews();
+              setupWebSocket();
+            });
+
+    // 2) Load technician info via AJAX
+    function loadTechnician() {
+      fetch(`/api/users/${techId}`)
+              .then(r => r.ok ? r.json() : Promise.reject())
+              .then(u => {
+                document.querySelector('.technician-name').textContent = u.fullName;
+                const emailA = document.getElementById('tech-email');
+                emailA.textContent = u.email;
+                emailA.href = `mailto:${u.email}`;
+                document.getElementById('tech-phone').textContent = u.phone || '—';
+                document.getElementById('tech-address').textContent = u.address || '—';
+              })
+              .catch(() => {
+                document.querySelector('.technician-name').textContent = 'Unknown Technician';
+              });
+    }
+
+    // 3) Load & render all reviews via AJAX
+    function loadReviews() {
+      fetch(`/api/reviews/technician/${techId}`)
+              .then(r => r.ok ? r.json() : Promise.reject())
+              .then(renderReviews)
+              .catch(() => {
+                document.getElementById('reviews-container').innerHTML = '<p>Error loading reviews.</p>';
+              });
+    }
+
+    function renderReviews(revs) {
+      revs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const container = document.getElementById('reviews-container');
+      container.innerHTML = '';
+
+      if (!revs.length) {
+        container.innerHTML = '<p>No reviews yet.</p>';
+        document.getElementById('tech-stars').textContent = '☆☆☆☆☆';
+        return;
+      }
+
+      // compute average
+      const avg = revs.reduce((sum, r) => sum + r.rating, 0) / revs.length;
+      document.getElementById('tech-stars').textContent =
+              '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+
+      revs.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        const date = r.createdAt
+                ? new Date(r.createdAt).toLocaleDateString('en-GB')
+                : 'Unknown date';
+
+        card.innerHTML = `
+          <div class="review-header">
+            <strong>${r.reviewerName}</strong>
+            <div class="stars_review">
+              ${'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}
+            </div>
+          </div>
+          <div class="review-text">${r.comment || ''}</div>
+          <div class="review-date">Posted: ${date}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 4) Real-time updates via WebSocket
+    function setupWebSocket() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${proto}//${location.host}/ws/reviews/${techId}`);
+      socket.onmessage = event => {
+        try {
+          const updatedRevs = JSON.parse(event.data);
+          renderReviews(updatedRevs);
+        } catch (e) {
+          console.error('Invalid WS payload', e);
+        }
+      };
+      socket.onerror = err => console.error('WebSocket error', err);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/user/profile.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js" defer></script>
+
+<section class="profile">
+  <div class="banner"></div>
+
+  <div class="profile-info">
+    <div class="profile-avatar">
+      <!-- you could also load an <img> here if you store avatars -->
+    </div>
+    <div class="top-row">
+      <h1 class="profile-name" id="profile-name">Loading…</h1>
+      <a href="edit_profile.html" class="edit-btn">
+        <img src="../assets/images/edit.png" alt="Edit" class="edit-icon">
+      </a>
+    </div>
+
+    <div class="account-details">
+      <h2>Account Details</h2>
+      <div class="detail-row">
+        <span class="label">Username</span>
+        <span class="value" id="profile-username">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Email</span>
+        <a href="#" class="value link" id="profile-email">—</a>
+      </div>
+      <div class="detail-row">
+        <span class="label">Phone number</span>
+        <span class="value" id="profile-phone">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Address</span>
+        <span class="value" id="profile-address">—</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch('/api/auth/current', {
+        credentials: 'same-origin'
+      });
+      if (!res.ok) {
+        // not logged in
+        window.location.href = '/auth/login';
+        return;
+      }
+      const user = await res.json();
+      // Fill in the DOM
+      document.getElementById('profile-name').textContent     = user.fullName;
+      document.getElementById('profile-username').textContent = user.username;
+      const emailLink = document.getElementById('profile-email');
+      emailLink.textContent = user.email;
+      emailLink.href        = `mailto:${user.email}`;
+      document.getElementById('profile-phone').textContent    = user.phone || '—';
+      document.getElementById('profile-address').textContent  = user.address || '—';
+    } catch (err) {
+      console.error('Failed to load current user', err);
+      alert('Could not load your profile. Please try again.');
+    }
+  });
+</script>
+
+</body>
+</html>

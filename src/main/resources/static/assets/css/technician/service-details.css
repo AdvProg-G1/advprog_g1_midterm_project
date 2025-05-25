@@ -1,0 +1,111 @@
+.service-order {
+  max-width: 1800px;
+  margin: 70px auto 0;
+  padding: 0 40px;
+  }
+  
+  .order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+  .order-header h1 {
+    font-size: 90px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  
+  .highlight-black {
+    background-color: #000;
+    color: #fff;
+    padding: 0 12px;
+  }
+  
+  .order-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 70px;
+    align-items: flex-start;
+    position: relative;
+  }
+  
+  .form-column {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group label {
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 10px;
+    font-size: 20px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  .form-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    margin-top: 30px;
+  }
+  
+  .btn {
+    font-size: 24px;
+    padding: 20px 50px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .report-btn {
+    background-color: black;
+    color: white;
+    font-size: 18px;
+    padding: 20px 50px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    position: static;
+    right: -150px;
+  }
+  
+  .accept-btn {
+    background-color: #f3cb14;
+    color: black;
+    padding: 20px 50px;
+    border-radius: 5px;
+    border: none;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .done-btn {
+    background-color: #f5ac23;
+    color: white;
+    padding: 20px 50px;
+    border-radius: 5px;
+    border: none;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  

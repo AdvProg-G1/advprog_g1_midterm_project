@@ -1,0 +1,49 @@
+<!-- src/main/resources/static/auth/strategy/register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register - PerbaikiinAja</title>
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/auth/register.css" />
+</head>
+<body>
+<header class="navbar">
+  <a href="/"><span class="Perbaikiin">Perbaikiin<span class="aja">Aja</span></span></a>
+</header>
+
+<main class="auth-container">
+  <div class="auth-left">
+    <img src="/assets/images/AuthBG.png" alt="Auth Background" />
+    <div class="slogan"><h1>We fix,<br />we care<br />and we deliver</h1></div>
+  </div>
+
+  <div class="auth-right">
+    <h2>Get Started Fixing</h2>
+    <form class="register-form" action="/auth/register" method="post">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Choose a unique username" required />
+
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" name="fullName" placeholder="Type your full name here" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Type your email here" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Type your password here" required />
+
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" name="phone" placeholder="Type your phone number here" />
+
+      <label for="address">Address</label>
+      <input type="text" id="address" name="address" placeholder="Type your address here" />
+
+      <button type="submit" class="btn yellow">REGISTER</button>
+    </form>
+
+    <p class="login-link">Already have an account? <a href="/auth/login"><strong>Login</strong></a></p>
+  </div>
+</main>
+</body>
+</html>

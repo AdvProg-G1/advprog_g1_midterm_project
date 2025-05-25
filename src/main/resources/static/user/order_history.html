@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Order History</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/user/order_history.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
+
+<section class="order-history">
+  <h1>ORDER <span class="highlight-black">HISTORY</span></h1>
+
+  <table class="order-table">
+    <thead>
+    <tr>
+      <th>Item Name</th>
+      <th>Problem Description</th>
+      <th>Date of Service</th>
+      <th>Technician</th>
+      <th>Status</th>
+      <th></th> <!-- Details Button column -->
+    </tr>
+    </thead>
+    <tbody id="orders-tbody">
+    <!-- JS will populate orders here -->
+    </tbody>
+  </table>
+</section>
+
+<script>
+  async function fetchOrderHistory() {
+    try {
+      const response = await fetch('/api/orders/user/history', {
+        credentials: 'include'  // important for cookies/session
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch order history');
+      }
+
+      const orders = await response.json();
+      const tbody = document.getElementById('orders-tbody');
+
+      tbody.innerHTML = '';
+
+      for (const order of orders) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${order.itemName}</td>
+            <td>${order.problemDescription}</td>
+            <td>${new Date(order.serviceDate).toLocaleDateString()}</td>
+            <td>${order.technicianName}</td>
+            <td>${order.status || 'N/A'}</td>
+            <td><a href="service_details.html?orderId=${order.id}" class="details-link">Details</a></td>
+          `;
+        tbody.appendChild(tr);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Could not load order history.');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchOrderHistory);
+</script>
+
+</body>
+</html>

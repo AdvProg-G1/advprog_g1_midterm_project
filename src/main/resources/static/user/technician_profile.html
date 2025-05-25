@@ -1,0 +1,276 @@
+<!-- src/main/resources/static/user/technician_profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Technician Profile</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/technician/profile.css" />
+  <style>
+    .stars { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+    .add-review {
+      max-width: 800px;
+      margin: 1rem auto;
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+    .add-review form { display: grid; gap: 0.5rem; }
+    .add-review label { font-weight: bold; }
+    .add-review button {
+      padding: 0.5rem 1rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .review-card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .stars_review { font-size: 1.25rem; }
+
+    .review-date {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .review-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .review-actions .btn {
+      padding: 0.25rem 0.75rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-edit { background: #28a745; color: white; }
+    .btn-delete { background: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
+
+<div class="yellow-banner">
+  <div class="white-box">
+    <div class="profile-header">
+      <img src="../assets/images/user_black.png" class="profile-icon" />
+      <h1 class="technician-name">Loading…</h1>
+    </div>
+  </div>
+</div>
+
+<div class="details-rating">
+  <div class="details">
+    <h2>Technician Details</h2>
+    <div class="detail-item"><strong>Email:</strong> <a id="tech-email">—</a></div>
+    <div class="detail-item"><strong>Phone:</strong> <span id="tech-phone">—</span></div>
+    <div class="detail-item"><strong>Address:</strong> <span id="tech-address">—</span></div>
+  </div>
+  <div class="rating">
+    <h3>Overall Rating</h3>
+    <div class="stars" id="tech-stars">☆☆☆☆☆</div>
+  </div>
+</div>
+
+<section class="add-review" id="add-review-section">
+  <h3>Add Your Review</h3>
+  <form id="review-form">
+    <input type="hidden" id="technician-id" />
+    <input type="hidden" id="user-id" />
+    <label for="rating">Rating:</label>
+    <select id="rating" required>
+      <option value="5">★★★★★</option>
+      <option value="4">★★★★☆</option>
+      <option value="3">★★★☆☆</option>
+      <option value="2">★★☆☆☆</option>
+      <option value="1">★☆☆☆☆</option>
+    </select>
+    <label for="comment">Comment:</label>
+    <textarea id="comment" rows="3"></textarea>
+    <button type="submit">Submit Review</button>
+  </form>
+</section>
+
+<div class="reviews-section">
+  <h2>Reviews</h2>
+  <div id="reviews-container">Loading reviews…</div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const techId = new URLSearchParams(location.search).get('id');
+    if (!techId) return alert('No technician ID provided');
+
+    let currentUserId = null;
+
+    // 1) Determine current user
+    fetch('/api/auth/current', { credentials: 'same-origin' })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(u => {
+              currentUserId = u.id;
+              document.getElementById('user-id').value = u.id;
+              document.getElementById('add-review-section').style.display = 'block';
+            })
+            .catch(() => {})
+            .finally(initPage);
+
+    function initPage() {
+      loadTechnician();
+      loadReviews();
+      setupAddForm();
+      setupWebSocket();
+    }
+
+    // 2) Load technician info via AJAX
+    function loadTechnician() {
+      fetch(`/api/users/${techId}`)
+              .then(r => r.json())
+              .then(u => {
+                document.querySelector('.technician-name').textContent = u.fullName;
+                const e = document.getElementById('tech-email');
+                e.textContent = u.email; e.href = `mailto:${u.email}`;
+                document.getElementById('tech-phone').textContent = u.phone || '—';
+                document.getElementById('tech-address').textContent = u.address || '—';
+              })
+              .catch(() => {
+                document.querySelector('.technician-name').textContent = 'Unknown Technician';
+              });
+    }
+
+    // 3) Load & render reviews via AJAX
+    function loadReviews() {
+      fetch(`/api/reviews/technician/${techId}`)
+              .then(r => r.json())
+              .then(renderReviews)
+              .catch(() => {
+                document.getElementById('reviews-container').innerHTML = '<p>Error loading reviews.</p>';
+              });
+    }
+
+    // renderReviews is used by both AJAX and WebSocket
+    function renderReviews(revs) {
+      const c = document.getElementById('reviews-container');
+      c.innerHTML = '';
+      if (!revs.length) {
+        c.innerHTML = '<p>No reviews yet.</p>';
+        document.getElementById('tech-stars').textContent = '☆☆☆☆☆';
+        return;
+      }
+      // update overall rating
+      const avg = revs.reduce((s, r) => s + r.rating, 0) / revs.length;
+      document.getElementById('tech-stars').textContent =
+              '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+
+      revs.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        const dateStr = r.createdAt
+                ? new Date(r.createdAt).toLocaleDateString('en-GB')
+                : 'Unknown date';
+
+        let html = `
+          <div class="review-header">
+            <strong>${r.reviewerName}</strong>
+            <div class="stars_review">
+              ${'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}
+            </div>
+          </div>
+          <p class="review-text">${r.comment || ''}</p>
+          <div class="review-date">Posted: ${dateStr}</div>
+        `;
+
+        if (r.userId === currentUserId) {
+          html += `
+            <div class="review-actions">
+              <button class="btn btn-edit" data-id="${r.id}">Edit</button>
+              <button class="btn btn-delete" data-id="${r.id}">Delete</button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = html;
+        c.appendChild(card);
+      });
+
+      // wire delete/edit buttons
+      c.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.onclick = () => {
+          if (!confirm('Delete this review?')) return;
+          fetch(`/api/reviews/${btn.dataset.id}?userId=${currentUserId}`, {
+            method: 'DELETE'
+          }).then(loadReviews);
+        };
+      });
+      c.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.onclick = () => {
+          window.location.href =
+                  `/user/review_edit.html?reviewId=${btn.dataset.id}&techId=${techId}`;
+        };
+      });
+    }
+
+    // 4) Setup new-review form via AJAX
+    function setupAddForm() {
+      document.getElementById('technician-id').value = techId;
+      document.getElementById('review-form').onsubmit = e => {
+        e.preventDefault();
+        const payload = {
+          technicianId: techId,
+          userId: currentUserId,
+          rating: +document.getElementById('rating').value,
+          comment: document.getElementById('comment').value
+        };
+        fetch('/api/reviews', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+                .then(r => {
+                  if (!r.ok) throw '';
+                  document.getElementById('comment').value = '';
+                  loadReviews();
+                })
+                .catch(() => alert('Failed to submit review'));
+      };
+    }
+
+    // 5) Real-time updates via WebSocket
+    function setupWebSocket() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${proto}//${location.host}/ws/reviews/${techId}`);
+      socket.onmessage = event => {
+        try {
+          const updatedRevs = JSON.parse(event.data);
+          renderReviews(updatedRevs);
+        } catch (e) {
+          console.error('Invalid WS payload', e);
+        }
+      };
+      socket.onerror = err => console.error('WebSocket error', err);
+    }
+  });
+</script>
+</body>
+</html>

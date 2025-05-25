@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Incoming Orders</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/technician/incoming_orders.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_technician.js"></script>
+
+<section class="incoming-orders">
+  <h1>INCOMING <span class="highlight-black">ORDERS</span></h1>
+
+  <table class="order-table">
+    <thead>
+    <tr>
+      <th>Item Name</th>
+      <th>Condition</th>
+      <th>Description</th>
+      <th>Date of Service</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody id="orders-body">
+    </tbody>
+  </table>
+</section>
+<script>
+  async function fetchOrders() {
+    const res = await fetch('/api/repair/list');
+    const orders = await res.json();
+    const tbody = document.getElementById('orders-body');
+    tbody.innerHTML = '';
+    orders.forEach(o => {
+      const tr = document.createElement('tr');
+      tr.className = 'border-b';
+      tr.innerHTML = `
+      <td class="px-4 py-2">${o.itemName}</td>
+      <td class="px-4 py-2">${o.condition}</td>
+      <td class="px-4 py-2">${o.problemDescription||''}</td>
+      <td class="px-4 py-2">${o.serviceDate||''}</td>
+      <td><a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="details-link">Details</a></td>
+      <td><a href="/technician/service_details.html?orderId=${encodeURIComponent(o.id)}" class="accept-btn"><img src="/assets/images/accept.png" alt="Accept" /></a></td>
+      <td><button onclick="onReject('${o.id}')" class="reject-btn"><img src="/assets/images/refuse.png" alt="Reject" /></button></td>
+    `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function onReject(id) {
+    if (!confirm("Reject this order?")) return;
+    await fetch(`/api/repair/reject/${id}`, { method: 'POST' });
+    fetchOrders();
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchOrders);
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Payment Methods</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/admin/payments.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_admin.js"></script>
+
+<section class="payment-management">
+
+  <h1>PAYMENT <span class="highlight-black">METHODS</span></h1>
+
+  <div class="payment-actions">
+    <a href="create_payment.html"><button class="btn add">+ Create Payment</button></a>
+  </div>
+
+  <table class="payment-table">
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Bank Number</th>
+      <th colspan="2">Actions</th>
+    </tr>
+    </thead>
+    <tbody id="payment-table-body">
+    </tbody>
+  </table>
+
+</section>
+
+
+<script>
+  function formatPayment(payment) {
+    return `
+        <tr>
+          <td>${payment.paymentName}</td>
+          <td>${payment.paymentBankNumber}</td>
+          <td>
+            <button class="btn edit" data-id="${payment.paymentId}">Edit</button>
+            <button class="btn delete" data-id="${payment.paymentId}">Delete</button>
+          </td>
+        </tr>
+      `;
+  }
+
+  function refreshPaymentTable() {
+    fetch('/api/payments')
+            .then(res => res.json())
+            .then(data => {
+              const tbody = document.getElementById('payment-table-body');
+              tbody.innerHTML = '';
+              data.forEach(payment => {
+                tbody.innerHTML += formatPayment(payment);
+              });
+            })
+            .catch(err => {
+              console.error("Error loading payments:", err);
+            });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch('/api/payments')
+    refreshPaymentTable();
+  });
+
+  // Table functions
+  document.addEventListener("click", function (e) {
+    const id = e.target.getAttribute("data-id");
+
+    if (e.target.classList.contains("edit")) {
+      window.location.href = `edit_payment.html?paymentId=${id}`;
+    }
+
+    if (e.target.classList.contains("delete")) {
+      const confirmDelete = confirm("Delete this payment?");
+      if (!confirmDelete) return;
+
+      fetch(`/api/payments/${id}`, {
+        method: "DELETE"
+      })
+              .then(async res => {
+                if (!res.ok) {
+                  const error = await res.text();
+                  throw new Error(error || "Delete failed.");
+                }
+                alert("Payment deleted successfully.");
+                return fetch('/api/payments');
+              })
+              .then(res => res.json())
+              .then(data => {
+                const tbody = document.getElementById('payment-table-body');
+                tbody.innerHTML = '';
+                data.forEach(payment => {
+                  tbody.innerHTML += formatPayment(payment);
+                });
+              })
+              .catch(err => {
+                console.error("Delete failed:", err);
+                alert("Delete failed: " + err.message);
+              });
+    }
+  });
+</script>
+
+</body>
+</html>

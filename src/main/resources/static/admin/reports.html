@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Reports</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/reports.css" />
+</head>
+<body>
+
+  <div id="navbar"></div>
+  <script src="../assets/js/navbar_admin.js"></script>
+
+  <section class="admin-reports">
+    <h1>TECHNICIAN <span class="highlight-black">REPORTS</span></h1>
+
+    <table class="reports-table">
+      <thead>
+        <tr>
+          <th>Technician</th>
+          <th>Item</th>
+          <th>Date</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Content injected by JavaScript -->
+      </tbody>
+    </table>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetch("/api/report/all")
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch reports");
+          }
+          return response.json();
+        })
+        .then(data => renderReports(data))
+        .catch(error => {
+          console.error("Error:", error);
+        });
+
+      function renderReports(reports) {
+        const tbody = document.querySelector(".reports-table tbody");
+        tbody.innerHTML = "";
+
+        if (reports.length === 0) {
+          const emptyRow = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 4;
+          cell.textContent = "No reports available.";
+          cell.style.textAlign = "center";
+          emptyRow.appendChild(cell);
+          tbody.appendChild(emptyRow);
+          return;
+        }
+
+        reports.forEach(report => {
+          const row = document.createElement("tr");
+
+          const technicianCell = document.createElement("td");
+          technicianCell.textContent = report.technicianName;
+
+          const itemCell = document.createElement("td");
+          itemCell.textContent = report.itemName;
+
+          const dateCell = document.createElement("td");
+          const date = new Date(report.createdAt);
+          dateCell.textContent = date.toISOString().split("T")[0];
+
+          const detailsCell = document.createElement("td");
+          detailsCell.textContent = report.details;
+
+          row.appendChild(technicianCell);
+          row.appendChild(itemCell);
+          row.appendChild(dateCell);
+          row.appendChild(detailsCell);
+
+          tbody.appendChild(row);
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Service Order Details</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/navbar.css" />
+  <link rel="stylesheet" href="../assets/css/user/service-detail.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_user.js"></script>
+
+<section class="create-report">
+  <h1>SERVICE ORDER <span class="highlight-black">DETAILS</span></h1>
+
+  <form id="serviceOrderForm" class="report-form">
+
+    <div class="form-column">
+      <div class="form-group">
+        <label for="item-name">Item Name</label>
+        <input type="text" id="item-name" name="itemName" placeholder="e.g. Laptop, Phone" />
+      </div>
+
+      <div class="form-group">
+        <label for="item-condition">Item Condition</label>
+        <select id="item-condition" name="condition">
+          <option value="">Select item condition</option>
+          <option value="New">New</option>
+          <option value="Used">Used</option>
+          <option value="Broken">Broken</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="problem-description">Problem Description</label>
+        <input type="text" id="problem-description" name="problemDescription" placeholder="Describe the problem" />
+      </div>
+
+      <div class="form-group">
+        <label for="service-date">Service Date</label>
+        <input type="date" id="service-date" name="serviceDate" />
+      </div>
+    </div>
+
+    <div class="form-column">
+      <div class="form-group">
+        <label for="use-coupon">Use a Coupon?</label>
+        <input type="text" id="use-coupon" name="couponCode" placeholder="e.g. COUPON2025" />
+      </div>
+
+      <div class="form-group">
+        <label for="payment-method">Choose a Payment Method</label>
+        <select id="payment-method" name="paymentMethod">
+          <option value="">Select payment method</option>
+          <option value="Credit Card">Credit Card</option>
+          <option value="Cash">Cash</option>
+          <option value="Transfer">Transfer</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="technician">Choose a Technician</label>
+        <select id="technician" name="technicianId">
+          <option value="">Select a Technician</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Order Status</label>
+        <input type="text" id="status" name="status" readonly />
+      </div>
+    </div>
+
+    <div class="fixing-column">
+      <div class="form-group">
+        <label for="completion-time">Estimated Completion Time</label>
+        <input type="text" id="completion-time" name="estimatedCompletionTime" />
+      </div>
+
+      <div class="form-group">
+        <label for="price">Total Price</label>
+        <input type="text" id="price" name="totalPrice"/>
+      </div>
+
+      <div class="form-button">
+        <button type="submit" class="btn submit-btn">SUBMIT</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="form-actions">
+  </div>
+</section>
+
+<script>
+  // Helper to get query param from URL
+  function getQueryParam(param) {
+    return new URLSearchParams(window.location.search).get(param);
+  }
+
+  async function loadTechnicians() {
+    try {
+      const res = await fetch('/api/technicians');
+      const technicians = await res.json();
+      const techSelect = document.getElementById('technician');
+      technicians.forEach(t => {
+        const option = document.createElement('option');
+        option.value = t.id;
+        option.textContent = t.fullName;
+        techSelect.appendChild(option);
+      });
+    } catch (err) {
+      console.error('Failed to load technicians', err);
+    }
+  }
+
+  async function loadOrder(orderId) {
+    try {
+      const res = await fetch(`/api/orders/${orderId}`);
+      if (!res.ok) throw new Error('Failed to fetch order details');
+      const order = await res.json();
+
+      // Populate fields
+      document.getElementById('item-name').value = order.itemName || '';
+      document.getElementById('item-condition').value = order.condition || '';
+      document.getElementById('problem-description').value = order.problemDescription || '';
+      document.getElementById('service-date').value = order.serviceDate || '';
+      document.getElementById('use-coupon').value = order.couponApplied ? 'Applied' : '';
+      document.getElementById('payment-method').value = order.paymentMethod || '';
+      document.getElementById('technician').value = order.technicianId || '';
+      document.getElementById('status').value = order.status.replace(/_/g,' ').toUpperCase() || '';
+      document.getElementById('completion-time').value = order.estimatedCompletionTime || '';
+      document.getElementById('price').value = order.estimatedPrice || '';
+
+      // Control editability based on status
+      const editable = order.status === 'WAITING CONFIRMATION';
+      const fieldsToToggle = [
+        'item-name', 'item-condition', 'problem-description', 'service-date',
+        'use-coupon', 'payment-method', 'technician', 'completion-time', 'price'
+      ];
+
+      fieldsToToggle.forEach(id => {
+        document.getElementById(id).disabled = !editable;
+      });
+
+      // Show or hide submit button
+      document.querySelector('.submit-btn').style.display = editable ? 'inline-block' : 'none';
+
+      const actionsDiv = document.querySelector('.form-actions');
+      if (order.status === 'TECHNICIAN_ACCEPTED') {
+        actionsDiv.innerHTML = `
+          <button type="button" id="btn-user-accept" class="btn accept-btn">
+            ACCEPT
+          </button>
+          <button type="button" id="btn-user-reject" class="btn reject-btn">
+            REJECT
+          </button>
+        `;
+
+        const csrfToken = (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1];
+
+        document
+                .getElementById('btn-user-accept')
+                .addEventListener('click', () => {
+                  fetch(`/api/repair/user/accept/${encodeURIComponent(orderId)}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'X-CSRF-TOKEN': csrfToken }
+                  })
+                  .then(r => {
+                    console.log('ACCEPT response', r.status, r.statusText, r);
+                    if (!r.ok) throw new Error(`Accept failed: ${r.status}`);
+                    window.location.href = '/user/order_history.html';
+                  })
+                  .catch(err => alert(err.message));
+                });
+
+        document
+                .getElementById('btn-user-reject')
+                .addEventListener('click', () => {
+                  fetch(`/api/repair/user/reject/${encodeURIComponent(orderId)}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'X-CSRF-TOKEN': csrfToken }
+                  })
+                  .then(r => {
+                    if (!r.ok) throw new Error('Reject failed');
+                    alert("You’ll need to create a new order if you reject this");
+                    window.location.href = '/user/book_service.html';
+                  })
+                  .catch(err => alert(err.message));
+                });
+              }
+
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  document.getElementById('serviceOrderForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const orderId = getQueryParam('orderId');
+    if (!orderId) {
+      alert('Order ID missing');
+      return;
+    }
+
+    const payload = {
+      itemName: document.getElementById('item-name').value,
+      condition: document.getElementById('item-condition').value,
+      problemDescription: document.getElementById('problem-description').value,
+      serviceDate: document.getElementById('service-date').value,
+      couponApplied: document.getElementById('use-coupon').value !== '',
+      paymentMethod: document.getElementById('payment-method').value,
+      technicianId: document.getElementById('technician').value,
+      estimatedCompletionTime: document.getElementById('completion-time').value,
+      totalPrice: document.getElementById('price').value,
+      status: document.getElementById('status').value
+    };
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Failed to update order');
+
+      alert('Order updated successfully');
+      window.location.href = '/user/order_history.html';
+
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  // Initialize page
+  window.onload = async () => {
+    await loadTechnicians();
+    const orderId = getQueryParam('orderId');
+    if (orderId) {
+      await loadOrder(orderId);
+    } else {
+      alert('No orderId specified');
+    }
+  };
+</script>
+
+</body>
+</html>
