@@ -5,14 +5,15 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
-/**
- * Smoke test: can Spring start the whole application context?
- *
- * Two @MockBean declarations shadow real beans; we therefore allow
- * bean-definition overriding via a test-only property.
- */
-@SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
+@SpringBootTest(properties = {
+	    "spring.main.allow-bean-definition-overriding=true"
+})
+@TestPropertySource(properties = {
+	    "jwt.secret=TEST_SECRET_12345678901234567890123456789012",
+	    "jwt.expiration-ms=3600000"
+})
 class PerbaikiinAjaApplicationTests {
 
     @MockBean
@@ -23,6 +24,5 @@ class PerbaikiinAjaApplicationTests {
 
     @Test
     void contextLoads() {
-        // if we reach this line the context started successfully
     }
 }
