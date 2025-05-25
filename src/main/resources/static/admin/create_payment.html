@@ -41,48 +41,44 @@
 </section>
 
 <script>
+    const nameInput = document.getElementById("method-name");
+    const bankInput = document.getElementById("bank-number");
+
     document.getElementById("creation-form").addEventListener("submit", async function (e) {
         e.preventDefault();
-        const form = e.target;
-        const paymentName = form.methodName.value.trim();
-        const paymentBankNumber = form.bankNumber.value.trim();
+
+        const paymentName = nameInput.value.trim();
+        const paymentBankNumber = bankInput.value.trim();
 
         // Validation
-        if (!paymentName) {
-            alert("Method name cannot be empty.");
-            return;
-        }
-        if (!paymentBankNumber) {
-            alert("Bank number cannot be empty.");
+        if (!paymentName || !paymentBankNumber) {
+            alert("All fields must be filled out.");
             return;
         }
 
-        // Build the DTO payload
         const newPayment = {
             paymentName,
             paymentBankNumber
         };
 
         try {
-            const res = await fetch('/api/payments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch("/api/payments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newPayment)
             });
 
-            if (!res.ok) {
-                const errText = await res.text();
-                throw new Error(errText || 'Create payment failed');
+            if (!response.ok) {
+                const errorMsg = await response.text();
+                throw new Error(errorMsg || "Failed to create payment");
             }
 
-            const created = await res.json();
-            alert(`Payment created with ID ${created.paymentId}`);
-
-            // Redirect to payments page
-            window.location.href = 'payments.html';
-        } catch (err) {
-            console.error('Create failed:', err);
-            alert(`Error: ${err.message}`);
+            const created = await response.json();
+            alert(`Payment created successfully with ID: ${created.paymentId}`);
+            window.location.href = "payments.html"; // Redirect to list page
+        } catch (error) {
+            console.error("Create failed:", error);
+            alert("Error creating payment: " + error.message);
         }
     });
 </script>

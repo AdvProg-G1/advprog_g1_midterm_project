@@ -41,11 +41,10 @@
 </section>
 
 <script>
-
   const urlParams = new URLSearchParams(window.location.search);
   const paymentId = urlParams.get("paymentId");
 
-  if (!couponId) {
+  if (!paymentId) {
     alert("No payment ID found.");
     window.location.href = "payments.html";
   }
@@ -55,48 +54,35 @@
 
   // Fetch data and populate form
   fetch(`/api/payments/${paymentId}`)
-          .then(response => {
-            if (!response.ok) throw new Error("Payment not found");
-            return response.json();
-          })
-
-          .then(data => {
-            nameInput.value = data.paymentName;
-            bankInput.value = data.bankNumber;
-          })
-
-          .catch(err => {
-            console.error("Error loading payment:", err);
-            alert("Failed to load payment data.");
-          });
-
+    .then(response => {
+      if (!response.ok) throw new Error("Payment not found");
+      return response.json();
+    })
+    .then(data => {
+      nameInput.value = data.paymentName;
+      bankInput.value = data.paymentBankNumber;
+    })
+    .catch(err => {
+      console.error("Error loading payment:", err);
+      alert("Failed to load payment data.");
+    });
 
   document.getElementById("edit-form").addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const form = e.target;
+    const methodName = nameInput.value.trim();
+    const bankNumber = bankInput.value.trim();
 
-    const methodName = form.methodName.value.trim();
-    const bankNumber = form.bankNumber.value;
-
-    // Validation
-    if (!methodName) {
-      alert("Method name cannot be empty.");
+    if (!methodName || !bankNumber) {
+      alert("Both fields are required.");
       return;
     }
 
-    if (!bankNumber) {
-      alert("Bank number cannot be empty.");
-      return;
-    }
-
-    // New data
     const updatedPayment = {
-      paymentName: nameInput.value,
-      bankNumber: bankInput.value
+      paymentName: methodName,
+      paymentBankNumber: bankNumber
     };
 
-    // Send request
     fetch(`/api/payments/${paymentId}`, {
       method: "PUT",
       headers: {
@@ -104,20 +90,24 @@
       },
       body: JSON.stringify(updatedPayment)
     })
-            .then(response => {
-              if (!response.ok) throw new Error("Update failed");
-              return response.json();
-            })
-            .then(res => {
-              if (!res.ok) throw new Error("Failed to update payment.");
-              alert("Payment updated successfully.");
-              window.location.href = "payment.html";
-            })
-            .catch(err => {
-              console.error("Update failed:", err);
-              alert("Failed to update payment.");
-            });
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => {
+            throw new Error(err.message || "Failed to update.");
+          });
+        }
+        return response.json();
+      })
+      .then(() => {
+        alert("Payment updated successfully.");
+        window.location.href = "payments.html";
+      })
+      .catch(err => {
+        console.error("Update failed:", err);
+        alert("Failed to update payment: " + err.message);
+      });
   });
+
 </script>
 
 </body>
