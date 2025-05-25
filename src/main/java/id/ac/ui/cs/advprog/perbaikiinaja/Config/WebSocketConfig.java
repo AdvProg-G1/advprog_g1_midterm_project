@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.perbaikiinaja.config;
+package id.ac.ui.cs.advprog.perbaikiinaja.Config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
