@@ -1,5 +1,5 @@
 // src/main/java/id/ac/ui/cs/advprog/perbaikiinaja/config/SecurityConfig.java
-package id.ac.ui.cs.advprog.perbaikiinaja.config;
+package id.ac.ui.cs.advprog.perbaikiinaja.Config;
 
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
