@@ -60,38 +60,32 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public CouponResponse getCouponById(String id) {
-    	Coupon coupon = (Coupon) couponRepository.findById(id)
-    		    .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
+    	Coupon coupon = getCouponOrThrow(id);
     	return mapToResponse(coupon);
 
     }
 
     @Override
     public void deleteCoupon(String id) {
-    	Coupon coupon = couponRepository.findById(id)
-    	        .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
-    	    couponRepository.deleteById(id);
-    	   
+    	Coupon coupon = getCouponOrThrow(id);
+    	couponRepository.deleteById(id);   
     	notificationController.notifyCouponListChanged();
     }
 
     @Override
     public CouponResponse updateCoupon(String id, CouponRequest request) {
-    	Coupon coupon = couponRepository.findById(id)
-    	        .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
+    	Coupon coupon = getCouponOrThrow(id);
 
-    	    coupon.setDiscountValue(request.getDiscountValue());
-    	    coupon.setMaxUsage(request.getMaxUsage());
+    	coupon.setDiscountValue(request.getDiscountValue());
+    	coupon.setMaxUsage(request.getMaxUsage());
 
-    	    Coupon updated = couponRepository.save(coupon);  
-    	    notificationController.notifyCouponListChanged();
-    	    return mapToResponse(updated);
-    	    
-
+    	Coupon updated = couponRepository.save(coupon);  
+    	notificationController.notifyCouponListChanged();
+    	return mapToResponse(updated);
     }
 
     private CouponResponse mapToResponse(Coupon coupon) {
-        String type = coupon instanceof FixedDiscountCoupon ? "fixed" : "percentage";
+        String type = coupon.getType();
         return new CouponResponse(
                 coupon.getId(),
                 coupon.getCode(),
@@ -101,4 +95,10 @@ public class CouponServiceImpl implements CouponService {
                 coupon.getUsageCount()
         );
     }
+    
+    private Coupon getCouponOrThrow(String id) {
+        return couponRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Coupon not found with id: " + id));
+    }
+
 }
