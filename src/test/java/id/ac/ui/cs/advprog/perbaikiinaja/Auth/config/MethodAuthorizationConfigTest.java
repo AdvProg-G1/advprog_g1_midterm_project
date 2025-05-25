@@ -1,87 +1,72 @@
-// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/config/MethodAuthorizationConfigTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.config;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringJUnitConfig(MethodAuthorizationConfig.class)
 class MethodAuthorizationConfigTest {
 
+    @Autowired
     private RoleHierarchyImpl roleHierarchy;
 
-    @BeforeEach
-    void setup() {
-        roleHierarchy = new RoleHierarchyImpl();
-        roleHierarchy.setHierarchy("""
-            ADMIN > TECHNICIAN
-            TECHNICIAN > CUSTOMER
-        """);
+    @Test
+    void roleHierarchyBeanExists() {
+        assertNotNull(roleHierarchy, "RoleHierarchyImpl bean should be present");
     }
 
     @Test
-    void adminHasCustomerAccess() {
-        var authorities = roleHierarchy.getReachableGrantedAuthorities(
-                Collections.singleton(new SimpleGrantedAuthority("ADMIN")));
-        assertTrue(authorities.contains(new SimpleGrantedAuthority("CUSTOMER")));
+    void hierarchyBeanIsRoleHierarchyImpl() {
+        assertTrue(roleHierarchy instanceof RoleHierarchyImpl,
+                "Bean should be instance of RoleHierarchyImpl");
     }
 
     @Test
-    void customerHasNoAdminAccess() {
-        var authorities = roleHierarchy.getReachableGrantedAuthorities(
-                Collections.singleton(new SimpleGrantedAuthority("CUSTOMER")));
-        assertFalse(authorities.contains(new SimpleGrantedAuthority("ADMIN")));
+    void adminCanReachTechnicianAndCustomer() {
+        // Starting from ADMIN
+        Collection<GrantedAuthority> reachable = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ADMIN"))
+        ).stream().collect(Collectors.toSet());
+
+        assertTrue(authoritiesContain(reachable, "ADMIN"),      "Should contain ADMIN");
+        assertTrue(authoritiesContain(reachable, "TECHNICIAN"), "ADMIN should reach TECHNICIAN");
+        assertTrue(authoritiesContain(reachable, "CUSTOMER"),   "ADMIN should reach CUSTOMER");
     }
 
     @Test
-    void userAuthoritiesMatchRole() {
-        User customer = new User(
-                "id-02",        // id
-                "shopper01",    // username
-                "Shopper",      // fullName
-                "iliketoshop@gmail.com",
-                "ILoveShop123",
-                "012345679",
-                "Shop Town",
-                "CUSTOMER",
-                null,
-                null
-        );
-        User admin = new User(
-                "id-01",
-                "admin01",
-                "Admin",
-                "adminisfun@gmail.com",
-                "admintime123",
-                "0666777888",
-                "Admin Place",
-                "ADMIN",
-                null,
-                null
-        );
+    void technicianCanReachCustomerOnly() {
+        Collection<GrantedAuthority> reachable = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("TECHNICIAN"))
+        ).stream().collect(Collectors.toSet());
 
-        assertEquals(List.of(new SimpleGrantedAuthority("CUSTOMER")), customer.getAuthorities());
-        assertEquals(List.of(new SimpleGrantedAuthority("ADMIN")), admin.getAuthorities());
+        assertFalse(authoritiesContain(reachable, "ADMIN"),     "TECHNICIAN should not reach ADMIN");
+        assertTrue(authoritiesContain(reachable, "TECHNICIAN"), "Should contain TECHNICIAN");
+        assertTrue(authoritiesContain(reachable, "CUSTOMER"),   "TECHNICIAN should reach CUSTOMER");
     }
 
     @Test
-    void nullRoleUserHasNoAuthorities() {
-        User nobody = new User(
-                "x", "anon", "Nobody", "no@body", "pw", "-", "-", null, null, null);
-        assertTrue(nobody.getAuthorities().isEmpty());
+    void customerReachesOnlyItself() {
+        Collection<GrantedAuthority> reachable = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("CUSTOMER"))
+        ).stream().collect(Collectors.toSet());
+
+        assertEquals(1, reachable.size(), "CUSTOMER should only reach itself");
+        assertTrue(authoritiesContain(reachable, "CUSTOMER"));
     }
 
-    @Test
-    void invalidAuthorityHasNoAccess() {
-        var authorities = roleHierarchy.getReachableGrantedAuthorities(
-                Collections.singleton(new SimpleGrantedAuthority("HACKER")));
-        assertFalse(authorities.contains(new SimpleGrantedAuthority("ADMIN")));
-        assertFalse(authorities.contains(new SimpleGrantedAuthority("CUSTOMER")));
+    // Helper to check if a collection of GrantedAuthority contains a specific role
+    private boolean authoritiesContain(Collection<GrantedAuthority> auths, String role) {
+        return auths.stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role::equals);
     }
 }
