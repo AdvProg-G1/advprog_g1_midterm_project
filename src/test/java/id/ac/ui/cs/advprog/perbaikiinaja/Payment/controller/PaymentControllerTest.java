@@ -68,7 +68,7 @@ void testGetAllPayments() {
 
         PaymentRequest updateRequest = new PaymentRequest("DANA", "999999999");
 
-        PaymentResponse result = paymentController.update("id-01", updateRequest).getBody();
+        PaymentResponse result = (PaymentResponse) paymentController.update("id-01", updateRequest).getBody();
 
         assertEquals("id-01", result.getPaymentId());
         assertEquals("GoPay", result.getPaymentName()); // Assuming mock returns unchanged name
