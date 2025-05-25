@@ -3,7 +3,6 @@ package id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.controller;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.model.RepairReport;
 import id.ac.ui.cs.advprog.perbaikiinaja.ConfirmService.service.RepairReportServiceImpl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +28,6 @@ public class RepairReportController {
     
     @GetMapping("/all")
     public ResponseEntity<List<Map<String, Object>>> getAllReports() {
-        return ResponseEntity.ok(new ArrayList<>());
+        return ResponseEntity.ok(service.getAllReports());
     }
-
 }
