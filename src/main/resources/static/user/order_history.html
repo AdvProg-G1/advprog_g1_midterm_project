@@ -55,7 +55,7 @@
             <td>${order.problemDescription}</td>
             <td>${new Date(order.serviceDate).toLocaleDateString()}</td>
             <td>${order.technicianName}</td>
-            <td>${order.status.replace(/_/g,' ').toUpperCase() || 'N/A'}</td>
+            <td>${order.status || 'N/A'}</td>
             <td><a href="service_details.html?orderId=${order.id}" class="details-link">Details</a></td>
           `;
         tbody.appendChild(tr);

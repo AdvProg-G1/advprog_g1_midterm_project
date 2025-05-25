@@ -30,4 +30,9 @@ public class FixedDiscountCoupon extends Coupon {
         // Apply fixed discount but make sure the result is not negative
         return Math.max(0, originalPrice - getDiscountValue());
     }
+
+	@Override
+	public String getType() {
+		return "fixed";
+	}
 }

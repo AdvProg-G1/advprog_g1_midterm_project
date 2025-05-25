@@ -84,4 +84,6 @@ public abstract class Coupon {
 
     // Abstract method to apply discount
     public abstract double applyDiscount(double originalPrice);
+    
+    public abstract String getType();
 }

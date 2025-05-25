@@ -40,7 +40,6 @@ public class ServiceOrder {
     @Column(nullable = false)
     private String problemDescription;
 
-    // if you allow auto-assignment, this may be null until a tech picks it up
     private String technicianId;
 
     @Column(nullable = false)

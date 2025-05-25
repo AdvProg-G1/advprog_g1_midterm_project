@@ -2,70 +2,95 @@ package id.ac.ui.cs.advprog.perbaikiinaja.Payment.controller;
 
 import lombok.RequiredArgsConstructor;
 
-import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.service.PaymentService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
-@RequestMapping("/payments")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/create")
-    public Payment createPayment(@RequestBody Payment payment) {
-        paymentService.createPayment(payment);
-        return payment;
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<PaymentResponse> create(@RequestBody PaymentRequest request) {
+        PaymentResponse response = paymentService.createPayment(request);
+
+        URI location = URI.create("/api/payments/" + response.getPaymentId());
+        return ResponseEntity
+                .created(location)
+                .body(response);
     }
 
-    @GetMapping("/history/id/{paymentId}")
-    public ResponseEntity<Payment> getById(@PathVariable String paymentId) {
-        return Optional.ofNullable(paymentService.findById(paymentId))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
+    public ResponseEntity<List<PaymentResponse>> getAll() {
+        return ResponseEntity.ok(paymentService.findAllPayment());
     }
 
-    @GetMapping("/history/name/{paymentName}")
-    public ResponseEntity<Payment> getByName(@PathVariable String paymentName) {
-        return Optional.ofNullable(paymentService.findByName(paymentName))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/{paymentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
+    public ResponseEntity<PaymentResponse> getById(@PathVariable ("paymentId") String paymentId) {
+        return ResponseEntity.ok(paymentService.findById(paymentId));
     }
 
-    @GetMapping("/history/bankNumber/{bankNumber}")
-    public ResponseEntity<Payment> getByBankNumber(@PathVariable String bankNumber) {
-        return Optional.ofNullable(paymentService.findByBankNumber(bankNumber))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/update/{paymentId}")
-    public ResponseEntity<Payment> updatePayment(
+    @PutMapping("/{paymentId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<?> update(
             @PathVariable String paymentId,
-            @RequestBody Payment payment
+            @RequestBody PaymentRequest paymentRequest
     ) {
         try {
-            Payment updated = paymentService.updatePayment(paymentId, payment);
+            PaymentResponse updated = paymentService.updatePayment(paymentId, paymentRequest);
             return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            // Duplicate name validation error
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            // Payment not found
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
-    @DeleteMapping("/delete/{paymentId}")
-    public ResponseEntity<Void> deletePayment(@PathVariable String paymentId) {
+    @DeleteMapping("/{paymentId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable String paymentId) {
         paymentService.deletePayment(paymentId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/history")
-    public List<Payment> getAllPayments() {
-        return paymentService.findAllPayment();
+    // For structured error handling and output on frontend
+    @RestControllerAdvice
+    public static class GlobalExceptionHandler {
+
+        @ExceptionHandler(IllegalStateException.class)
+        public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", ex.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 }

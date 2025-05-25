@@ -1,14 +1,15 @@
-// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/ServiceOrder/controller/ServiceOrderController.java
+// src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/ServiceOrder/controller/ServiceOrderControllerTest.java
 package id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.perbaikiinaja.TestSecurityConfig;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.AuthStrategy;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.util.JwtUtil;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.dto.CreateServiceOrderRequest;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.model.ServiceOrder;
 import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.service.ServiceOrderService;
+import id.ac.ui.cs.advprog.perbaikiinaja.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -20,14 +21,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -51,11 +50,15 @@ class ServiceOrderControllerTest {
     @MockBean
     private JwtUtil jwtUtil;
 
+    @MockBean
+    private AuthStrategy authStrategy;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
     void testCreateOrderReturns201() throws Exception {
+        // Arrange: mock authenticated user in SecurityContext
         User mockUser = new User();
         mockUser.setId("user1");
 
@@ -66,6 +69,7 @@ class ServiceOrderControllerTest {
         Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
+        // Build request payload
         CreateServiceOrderRequest req = CreateServiceOrderRequest.builder()
                 .itemName("Laptop")
                 .condition("Damaged")
@@ -76,6 +80,7 @@ class ServiceOrderControllerTest {
                 .couponApplied(false)
                 .build();
 
+        // Prepare fake returned order
         ServiceOrder fakeOrder = ServiceOrder.builder()
                 .id(UUID.randomUUID())
                 .itemName(req.getItemName())
@@ -93,15 +98,16 @@ class ServiceOrderControllerTest {
                 .when(serviceOrderService)
                 .createOrder(ArgumentMatchers.any(ServiceOrder.class));
 
+        // Act & Assert
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
+                .andExpect(header().string("Location", org.hamcrest.Matchers.endsWith("/api/orders/" + fakeOrder.getId())))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.itemName").value("Laptop"))
                 .andExpect(jsonPath("$.condition").value("Damaged"))
                 .andExpect(jsonPath("$.problemDescription").value("Screen cracked"))
                 .andExpect(jsonPath("$.technicianId").value("tech123"));
     }
-
 }

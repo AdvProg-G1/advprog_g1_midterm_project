@@ -10,7 +10,7 @@
 <body>
 
 <div id="navbar"></div>
-<script src="../assets/js/navbar_user.js"></script>
+<script src="../assets/js/navbar_user.js" defer></script>
 
 <section class="book-service">
   <h1>BOOK SERVICE <span class="highlight-black">ORDER</span></h1>
@@ -47,14 +47,10 @@
           <input id="serviceDate" name="serviceDate" type="date" required />
         </div>
 
-
         <div class="form-right">
           <label for="paymentMethod">Payment Method</label>
           <select id="paymentMethod" name="paymentMethod" required>
-            <option value="">Choose a Payment Method</option>
-            <option value="Credit Card">Credit Card</option>
-            <option value="Cash">Cash</option>
-            <option value="Transfer">Transfer</option>
+            <option value="">Loading payment methods...</option>
           </select>
 
           <label for="technicianId">Select Technician</label>
@@ -86,8 +82,21 @@
         couponSelect.appendChild(option);
       });
 
+      // Load Payment Methods
+      const paymentRes = await fetch('/api/payments');
+      const payments = await paymentRes.json();
+      const paymentSelect = document.getElementById('paymentMethod');
+      paymentSelect.innerHTML = '<option value="">Choose a Payment Method</option>';
+      payments.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.paymentId;
+        option.textContent = `${p.paymentName} - ${p.paymentBankNumber}`;
+        paymentSelect.appendChild(option);
+      });
+
       // Load Technicians
-      const techRes = await fetch('/api/technicians');
+      // <-- updated to use the orders-based endpoint
+      const techRes = await fetch('/api/orders/technicians');
       const technicians = await techRes.json();
       const techSelect = document.getElementById('technicianId');
       techSelect.innerHTML = '<option value="">Choose a Technician</option>';
@@ -97,6 +106,7 @@
         option.textContent = t.fullName;
         techSelect.appendChild(option);
       });
+
     } catch (error) {
       console.error('Failed to load dropdown data:', error);
     }

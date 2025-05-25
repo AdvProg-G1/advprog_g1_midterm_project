@@ -94,7 +94,8 @@ public class AuthPageController {
                 ud.getFullName(),
                 ud.getEmail(),
                 ud.getPhone(),
-                ud.getAddress()
+                ud.getAddress(),
+                ud.getRole()
         );
     }
 
@@ -109,7 +110,8 @@ public class AuthPageController {
                         u.getFullName(),
                         u.getEmail(),
                         u.getPhone(),
-                        u.getAddress()
+                        u.getAddress(),
+                        u.getRole()
                 ))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }

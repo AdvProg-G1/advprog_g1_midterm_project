@@ -1,92 +1,91 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Payment.service;
 
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentRequest;
+import id.ac.ui.cs.advprog.perbaikiinaja.Payment.dto.PaymentResponse;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.model.Payment;
 import id.ac.ui.cs.advprog.perbaikiinaja.Payment.repository.PaymentRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
     @Autowired
     private PaymentRepository paymentRepository;
 
     @Override
-    public Payment createPayment(Payment payment) {
-        List<Payment> existingPayments = paymentRepository.findAll();
-        for (Payment existing : existingPayments) {
-            if (existing.getPaymentId().equals(payment.getPaymentId())) {
-                throw new IllegalArgumentException("Payment with ID already exists.");
-            }
-        }
-        paymentRepository.save(payment);
-
-        return payment;
-    }
-
-    @Override
-    public void updatePaymentName(String id, String newName) {
-        if (newName == null || newName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Payment name cannot be empty.");
-        }
-        Payment payment = paymentRepository.findById(id);
-        if (payment != null) {
-            payment.setPaymentName(newName);
-            paymentRepository.save(payment);
-        }
-    }
-
-    @Override
-    public void updatePaymentBankNumber(String id, String newBankNumber) {
-        if (!newBankNumber.matches("\\d+")) {
-            throw new IllegalArgumentException("Bank number must contain only digits.");
-        }
-        Payment payment = paymentRepository.findById(id);
-        if (payment != null) {
-            payment.setPaymentBankNumber(newBankNumber);
-            paymentRepository.save(payment);
-        }
-    }
-
-    @Override
-    public Payment findById(String id) {
-        return paymentRepository.findById(id);
-    }
-
-    @Override
-    public Payment findByName(String name) {
-        return paymentRepository.findByName(name);
-    }
-
-    @Override
-    public Payment findByBankNumber(String bankNumber) {
-        return paymentRepository.findByBankNumber(bankNumber);
-    }
-
-    @Override
-    public List<Payment> findAllPayment() {
-        return paymentRepository.findAll();
-    }
-
-    @Override
-    public Payment updatePayment(String paymentId, Payment newPayment) {
-        Payment existing = paymentRepository.findById(paymentId);
-        if (existing == null) {
-            throw new RuntimeException("Payment not found: " + paymentId);
+    public PaymentResponse createPayment(PaymentRequest request) {
+        if (paymentRepository.existsByPaymentNameIgnoreCase(request.getPaymentName().trim())) {
+            throw new IllegalStateException("Payment method with this name already exists.");
         }
 
-        existing.setPaymentName(newPayment.getPaymentName());
-        existing.setPaymentBankNumber(newPayment.getPaymentBankNumber());
+        Payment payment = new Payment();
+        payment.setPaymentId(UUID.randomUUID().toString());
+        payment.setPaymentName(request.getPaymentName().trim());
+        payment.setPaymentBankNumber(request.getPaymentBankNumber().trim());
 
-        return paymentRepository.save(existing);
+        Payment saved = paymentRepository.save(payment);
+
+        return mapToResponse(saved);
+    }
+
+
+    @Override
+    public PaymentResponse findById(String id) {
+        Optional<Payment> paymentOpt = paymentRepository.findById(id);
+        if (!paymentOpt.isPresent()) return null;
+        return mapToResponse(paymentOpt.get());
+    }
+
+    @Override
+    public List<PaymentResponse> findAllPayment() {
+        return paymentRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public PaymentResponse updatePayment(String paymentId, PaymentRequest request) {
+        Optional<Payment> existingOpt = paymentRepository.findById(paymentId);
+
+        if (!existingOpt.isPresent()) {
+            throw new IllegalArgumentException("Payment not found.");
+        }
+
+        // format input name for validation
+        String newName = request.getPaymentName().trim();
+
+        boolean nameExists = paymentRepository.existsByPaymentNameIgnoreCaseAndPaymentIdNot(newName, paymentId);
+        if (nameExists) {
+            throw new IllegalStateException("Payment method with this name already exists.");
+        }
+
+        Payment existing = existingOpt.get();
+        existing.setPaymentName(newName);
+        existing.setPaymentBankNumber(request.getPaymentBankNumber().trim());
+        Payment updated = paymentRepository.save(existing);
+        return mapToResponse(updated);
     }
 
     @Override
     public void deletePayment(String paymentId) {
-        boolean deleted = paymentRepository.deletePayment(paymentId);
-        if (!deleted) {
-        }
+        paymentRepository.deleteById(paymentId);
+    }
+
+    private PaymentResponse mapToResponse(Payment payment) {
+        return new PaymentResponse(
+                payment.getPaymentId(),
+                payment.getPaymentName(),
+                payment.getPaymentBankNumber()
+        );
     }
 }

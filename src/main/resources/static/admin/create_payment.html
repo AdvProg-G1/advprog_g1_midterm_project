@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Create Payment</title>
+    <link rel="stylesheet" href="../assets/css/main.css" />
+    <link rel="stylesheet" href="../assets/css/navbar.css" />
+    <link rel="stylesheet" href="../assets/css/admin/payments.css" />
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="../assets/js/navbar_admin.js"></script>
+
+<section class="payment-management">
+
+    <h1>CREATE <span class="highlight-black">PAYMENT</span></h1>
+
+    <div class="payment-form">
+        <form id="creation-form">
+            <h2>Create Payment Method</h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="method-name">Method Name</label>
+                    <input type="text" id="method-name" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="bank-number">Bank Number</label>
+                    <input type="text" id="bank-number" required />
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+
+</section>
+
+<script>
+    const nameInput = document.getElementById("method-name");
+    const bankInput = document.getElementById("bank-number");
+
+    document.getElementById("creation-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const paymentName = nameInput.value.trim();
+        const paymentBankNumber = bankInput.value.trim();
+
+        if (!paymentName || !paymentBankNumber) {
+            alert("All fields must be filled out.");
+            return;
+        }
+
+        const newPayment = { paymentName, paymentBankNumber };
+
+        try {
+            const response = await fetch("/api/payments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newPayment)
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => null);
+                const message = error?.message || "Failed to create payment.";
+                throw new Error(message);
+            }
+
+            const created = await response.json();
+            alert(`Payment created successfully with ID: ${created.paymentId}`);
+            window.location.href = "payments.html";
+        } catch (error) {
+            console.error("Create failed:", error);
+            alert("Error creating payment: " + error.message);
+        }
+    });
+</script>
+
+</body>
+</html>
