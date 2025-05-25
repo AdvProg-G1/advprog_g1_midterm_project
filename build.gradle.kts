@@ -50,7 +50,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.mockito:mockito-core")
-	  implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.webjars:sockjs-client:1.5.1")
     implementation("org.webjars:stomp-websocket:2.3.4")
     testImplementation("org.springframework.security:spring-security-test")
