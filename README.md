@@ -118,13 +118,30 @@ Feature : **Reviews Module & Authentication – PerbaikiinAja**
 | 4 | ![Reviews Container Diagram](src/main/resources/static/assets/images/reviews_containerdiagram.drawio.png) | **Container Diagram** | **System-level view focused on Reviews**<br>• Web Browser (SPA + static Technician/User pages) consumes the Reviews API over REST/JSON.<br>• Reviews API (Spring Boot) deployed on AWS EC2; persists data in PostgreSQL.<br>• Depends on Auth Service for authentication/authorisation.<br>• CI/CD pipeline (GitHub Actions + SonarQube) builds, tests, and deploys the container. |
 ---
 
+### Feature Confirm Service
+
+![Component DiagramD](src/main/resources/static/assets/images/ComponentDiagramConfirmService.png)
+
+![Code Diagram](src/main/resources/static/assets/images/CodeDiagramConfirmService.png)
 
 ### Feature Coupons
-
+By: Azim Barhoumi
 ![Component Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/ComponentDiagramCoupon.png)
 
 ![Code Diagram for Coupon Feature](src/main/resources/static/assets/images/Coupon/CodeDiagramCoupon.png)
 
+### Feature: Payment Management
+By: Ameera Khaira Tawfiqa
+| # | Preview | C4 Level |
+|---|---------|----------|
+| 1 | ![Payment Component Diagram](src/main/resources/static/assets/images/PaymentContainerDiagram.drawio.png) | **Component Diagram** |
+| 2 | ![Payment Code Diagram](src/main/resources/static/assets/images/Payment_Module_Code_Diagram.png) | **Code Diagram** |
+
+### Place Order
+
+![Component Diagram for Place Order Feature](src/main/resources/static/assets/images/Component_Diagram_ServiceOrder.drawio.png)
+
+![Code Diagram for Place Order Feature](src/main/resources/static/assets/images/ServiceOrder_CodeDiagram.png)
 ## 🛠️ Tech Stack Overview
 
 | Layer       | Technology Used          |
