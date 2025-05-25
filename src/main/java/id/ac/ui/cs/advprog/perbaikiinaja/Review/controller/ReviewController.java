@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -25,6 +26,7 @@ public class ReviewController {
 
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<ReviewResponse> create(@RequestBody ReviewRequest req) {
         log.info("🔥 POST /api/reviews received: {}", req);
         ReviewResponse resp = reviewService.createReview(req);
@@ -33,12 +35,14 @@ public class ReviewController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
     public ResponseEntity<ReviewResponse> getOne(@PathVariable String id) {
         log.info("→ GET /api/reviews/{} called", id);
         return ResponseEntity.ok(reviewService.getReviewById(id));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<ReviewResponse> update(
             @PathVariable String id,
             @RequestBody ReviewRequest req

@@ -8,6 +8,7 @@ import id.ac.ui.cs.advprog.perbaikiinaja.Payment.service.PaymentService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -23,6 +24,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<PaymentResponse> create(@RequestBody PaymentRequest request) {
         PaymentResponse response = paymentService.createPayment(request);
 
@@ -33,16 +35,19 @@ public class PaymentController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
     public ResponseEntity<List<PaymentResponse>> getAll() {
         return ResponseEntity.ok(paymentService.findAllPayment());
     }
 
     @GetMapping("/{paymentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
     public ResponseEntity<PaymentResponse> getById(@PathVariable ("paymentId") String paymentId) {
         return ResponseEntity.ok(paymentService.findById(paymentId));
     }
 
     @PutMapping("/{paymentId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> update(
             @PathVariable String paymentId,
             @RequestBody PaymentRequest paymentRequest
@@ -64,11 +69,13 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{paymentId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String paymentId) {
         paymentService.deletePayment(paymentId);
         return ResponseEntity.noContent().build();
     }
 
+    // For structured error handling and output on frontend
     @RestControllerAdvice
     public static class GlobalExceptionHandler {
 

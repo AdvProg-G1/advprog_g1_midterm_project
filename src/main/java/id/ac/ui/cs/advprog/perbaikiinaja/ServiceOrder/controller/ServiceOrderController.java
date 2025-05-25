@@ -11,6 +11,7 @@ import id.ac.ui.cs.advprog.perbaikiinaja.ServiceOrder.service.ServiceOrderServic
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -30,6 +31,7 @@ public class ServiceOrderController {
     private final AuthStrategy       auth;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<ServiceOrder> createOrder(
             @Valid @RequestBody CreateServiceOrderRequest req
     ) {
@@ -66,11 +68,13 @@ public class ServiceOrderController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
     public ResponseEntity<List<ServiceOrder>> getAllOrders() {
         return ResponseEntity.ok(service.getAllOrders());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
     public ResponseEntity<ServiceOrder> getOrderById(@PathVariable UUID id) {
         ServiceOrder o = service.getOrderById(id);
         return (o == null)
@@ -79,6 +83,7 @@ public class ServiceOrderController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
     public ResponseEntity<ServiceOrder> updateOrder(
             @PathVariable UUID id,
             @Valid @RequestBody CreateServiceOrderRequest req
@@ -102,6 +107,7 @@ public class ServiceOrderController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
         return service.delete(id)
                 ? ResponseEntity.noContent().build()
