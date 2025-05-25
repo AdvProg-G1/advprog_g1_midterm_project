@@ -74,7 +74,7 @@
     const id = e.target.getAttribute("data-id");
 
     if (e.target.classList.contains("edit")) {
-      window.location.href = `edit_payment.html?id=${id}`;
+      window.location.href = `edit_payment.html?paymentId=${id}`;
     }
 
     if (e.target.classList.contains("delete")) {
@@ -84,8 +84,12 @@
       fetch(`/api/payments/${id}`, {
         method: "DELETE"
       })
-              .then(res => {
-                if (!res.ok) throw new Error("Delete failed.");
+              .then(async res => {
+                if (!res.ok) {
+                  const error = await res.text();
+                  throw new Error(error || "Delete failed.");
+                }
+                alert("Payment deleted successfully.");
                 return fetch('/api/payments');
               })
               .then(res => res.json())
@@ -98,7 +102,7 @@
               })
               .catch(err => {
                 console.error("Delete failed:", err);
-                alert("Delete failed.");
+                alert("Delete failed: " + err.message);
               });
     }
   });

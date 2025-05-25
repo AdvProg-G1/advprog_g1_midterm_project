@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, String> {
+    boolean existsByPaymentNameIgnoreCase(String paymentName);
+    boolean existsByPaymentNameIgnoreCaseAndPaymentIdNot(String newName, String paymentId);
 }

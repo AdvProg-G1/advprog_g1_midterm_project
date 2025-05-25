@@ -85,39 +85,6 @@ public class PaymentServiceImplTest {
 
     // happy
     @Test
-    void updatePaymentName() {
-        Payment existing = payments.get(0); // GoPay
-
-        when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(existing));
-        when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
-
-        PaymentResponse response = paymentService.updatePaymentName("id-01", "ShopeePay");
-
-        assertEquals("ShopeePay", response.getPaymentName());
-        assertEquals("id-01", response.getPaymentId());
-        assert existing != null;
-        verify(paymentRepository).save(existing);
-    }
-
-    // happy
-    @Test
-    void updatePaymentBankNumber() {
-        Payment existing = payments.get(1); // OVO
-
-        when(paymentRepository.findById("id-02")).thenReturn(Optional.ofNullable(existing));
-        when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
-
-        PaymentResponse response = paymentService.updatePaymentBankNumber("id-02", "7777777777");
-
-        assertEquals("7777777777", response.getPaymentBankNumber());
-        assertEquals("id-02", response.getPaymentId());
-        assert existing != null;
-        verify(paymentRepository).save(existing);
-    }
-
-
-    // happy
-    @Test
     void findById() {
         Payment payment = payments.get(0);
         when(paymentRepository.findById("id-01")).thenReturn(Optional.ofNullable(payment));

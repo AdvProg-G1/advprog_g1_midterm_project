@@ -50,16 +50,12 @@
         const paymentName = nameInput.value.trim();
         const paymentBankNumber = bankInput.value.trim();
 
-        // Validation
         if (!paymentName || !paymentBankNumber) {
             alert("All fields must be filled out.");
             return;
         }
 
-        const newPayment = {
-            paymentName,
-            paymentBankNumber
-        };
+        const newPayment = { paymentName, paymentBankNumber };
 
         try {
             const response = await fetch("/api/payments", {
@@ -69,13 +65,14 @@
             });
 
             if (!response.ok) {
-                const errorMsg = await response.text();
-                throw new Error(errorMsg || "Failed to create payment");
+                const error = await response.json().catch(() => null);
+                const message = error?.message || "Failed to create payment.";
+                throw new Error(message);
             }
 
             const created = await response.json();
             alert(`Payment created successfully with ID: ${created.paymentId}`);
-            window.location.href = "payments.html"; // Redirect to list page
+            window.location.href = "payments.html";
         } catch (error) {
             console.error("Create failed:", error);
             alert("Error creating payment: " + error.message);

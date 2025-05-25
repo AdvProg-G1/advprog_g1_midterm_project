@@ -9,10 +9,6 @@ public interface PaymentService {
 
     PaymentResponse createPayment(PaymentRequest request);
 
-    PaymentResponse updatePaymentName(String paymentId, String newName);
-
-    PaymentResponse updatePaymentBankNumber(String paymentId, String newBankNumber);
-
     PaymentResponse findById(String paymentId);
 
     List<PaymentResponse> findAllPayment();

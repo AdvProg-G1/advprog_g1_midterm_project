@@ -41,6 +41,7 @@
 </section>
 
 <script>
+
   const urlParams = new URLSearchParams(window.location.search);
   const paymentId = urlParams.get("paymentId");
 
@@ -54,18 +55,18 @@
 
   // Fetch data and populate form
   fetch(`/api/payments/${paymentId}`)
-    .then(response => {
-      if (!response.ok) throw new Error("Payment not found");
-      return response.json();
-    })
-    .then(data => {
-      nameInput.value = data.paymentName;
-      bankInput.value = data.paymentBankNumber;
-    })
-    .catch(err => {
-      console.error("Error loading payment:", err);
-      alert("Failed to load payment data.");
-    });
+          .then(response => {
+            if (!response.ok) throw new Error("Payment not found");
+            return response.json();
+          })
+          .then(data => {
+            nameInput.value = data.paymentName;
+            bankInput.value = data.paymentBankNumber;
+          })
+          .catch(err => {
+            console.error("Error loading payment:", err);
+            alert("Failed to load payment data.");
+          });
 
   document.getElementById("edit-form").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -90,25 +91,25 @@
       },
       body: JSON.stringify(updatedPayment)
     })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(err => {
-            throw new Error(err.message || "Failed to update.");
-          });
-        }
-        return response.json();
-      })
-      .then(() => {
-        alert("Payment updated successfully.");
-        window.location.href = "payments.html";
-      })
-      .catch(err => {
-        console.error("Update failed:", err);
-        alert("Failed to update payment: " + err.message);
-      });
+            .then(async response => {
+              if (!response.ok) {
+                const error = await response.json();
+                throw new Error(`Error updating payment: ${error.error || "Update failed."}`);
+              }
+              return response.json();
+            })
+            .then(() => {
+              alert("Payment updated successfully.");
+              window.location.href = "payments.html";
+            })
+            .catch(err => {
+              console.error("Update failed:", err);
+              alert(err.message);
+            });
   });
 
 </script>
+
 
 </body>
 </html>
