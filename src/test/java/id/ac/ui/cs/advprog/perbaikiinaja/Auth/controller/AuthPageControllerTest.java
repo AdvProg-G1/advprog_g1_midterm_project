@@ -2,12 +2,13 @@
 package id.ac.ui.cs.advprog.perbaikiinaja.Auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.perbaikiinaja.Auth.dto.UserResponse;
+import id.ac.ui.cs.advprog.perbaikiinaja.Auth.AuthStrategy;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.filter.JwtAuthenticationFilter;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.repository.UserRepository;
-import id.ac.ui.cs.advprog.perbaikiinaja.Auth.AuthStrategy;
+import id.ac.ui.cs.advprog.perbaikiinaja.Config.SecurityConfig;
 import id.ac.ui.cs.advprog.perbaikiinaja.TestSecurityConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,31 +28,41 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
+/**
+ * MVC-slice tests for {@link AuthPageController}.
+ * <p>
+ *  ▸ real controller<br>
+ *  ▸ mock AuthStrategy & UserRepository<br>
+ *  ▸ built-in security filters and the real SecurityConfig are excluded
+ *    so the slice can start without its transitive dependencies.
+ */
 @WebMvcTest(
         controllers = AuthPageController.class,
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
-                classes = JwtAuthenticationFilter.class
+                classes = {SecurityConfig.class, JwtAuthenticationFilter.class}
         )
 )
-@AutoConfigureMockMvc(addFilters = false)
-@Import(TestSecurityConfig.class)
+@AutoConfigureMockMvc(addFilters = false)   // disable the servlet-filter chain entirely
+@Import(TestSecurityConfig.class)           // replace it with a minimal “permitAll” chain
 class AuthPageControllerTest {
 
     @Autowired
-    private MockMvc mvc;
-
-    @MockBean
-    private AuthStrategy authStrategy;
-
-    @MockBean
-    private UserRepository userRepository;
+    MockMvc mvc;
 
     @Autowired
-    private ObjectMapper mapper;
+    ObjectMapper mapper;
+
+    @MockBean
+    AuthStrategy authStrategy;
+
+    @MockBean
+    UserRepository userRepository;
+
+    // ──────────────────────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("GET /api/auth/current → 401 when not logged in")
     void current_whenNotAuthenticated_returns401() throws Exception {
         SecurityContextHolder.clearContext();
 
@@ -60,8 +71,8 @@ class AuthPageControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/auth/current → 200 + UserResponse when logged in")
     void current_whenAuthenticated_returnsUserResponseWithRole() throws Exception {
-        // Arrange principal
         User u = new User();
         u.setId("u1");
         u.setUsername("jdoe");
@@ -75,9 +86,7 @@ class AuthPageControllerTest {
                 new UsernamePasswordAuthenticationToken(u, null, u.getAuthorities())
         );
 
-        // Act & Assert
-        mvc.perform(get("/api/auth/current")
-                        .accept(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/api/auth/current").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value("u1"))
@@ -90,6 +99,7 @@ class AuthPageControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/users/{id} → 200 + UserResponse when found")
     void getUserById_whenFound_returnsUserResponseWithRole() throws Exception {
         User u2 = new User();
         u2.setId("u2");
@@ -102,8 +112,7 @@ class AuthPageControllerTest {
 
         when(userRepository.findById("u2")).thenReturn(Optional.of(u2));
 
-        mvc.perform(get("/api/users/{id}", "u2")
-                        .accept(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/api/users/{id}", "u2").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value("u2"))
@@ -116,6 +125,7 @@ class AuthPageControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/users/{id} → 404 when not found")
     void getUserById_whenNotFound_returns404() throws Exception {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
