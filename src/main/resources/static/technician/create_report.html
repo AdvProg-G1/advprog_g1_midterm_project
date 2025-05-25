@@ -99,7 +99,7 @@
                 .slice(0, 10);
         document.getElementById('completion-time').value   = order.estimatedCompletionTime;
         document.getElementById('price').value             = order.estimatedPrice;
-        document.getElementById('status').value            = order.status.toUpperCase();
+        document.getElementById('status').value            = order.status;
       })
       .catch(err => {
         console.error(err);

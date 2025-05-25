@@ -89,10 +89,10 @@
         const st = (localStatus || '')
         let html = '';
 
-        if (st === 'WAITING_CONFIRMATION') {
+        if (st === "WAITING CONFIRMATION") {
           html = `<button type="button" class="btn accept-btn">ACCEPT</button>`;
         }
-        else if (st === 'IN_PROGRESS') {
+        else if (st === 'IN PROGRESS') {
           html = `<button type="button" class="btn report-btn">WRITE REPORT</button>`;
         }
         else if (st === 'COMPLETED') {
@@ -117,8 +117,8 @@
 
                 document.getElementById('item-condition').innerHTML = order.condition
                         ? `<option>${cap(order.condition)}</option>` : `<option></option>`;
-                document.getElementById('repair-type').innerHTML    = order.paymentMethod
-                        ? `<option>${cap(order.paymentMethod.replace(/_/g,' '))}</option>` : `<option></option>`;
+                document.getElementById('repair-type').innerHTML    = order.problemDescription
+                        ? `<option>${cap(order.problemDescription.replace(/_/g,' '))}</option>` : `<option></option>`;
 
                 localStatus = order.status;
                 renderActions();

@@ -40,14 +40,14 @@ public class RepairOrderController {
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN')")
     public ResponseEntity<List<ServiceOrder>> incomingOrderList() {
-        List<ServiceOrder> waiting = repairOrderService.findByStatus(List.of("WAITING_CONFIRMATION"));
+        List<ServiceOrder> waiting = repairOrderService.findByStatus(List.of("WAITING CONFIRMATION"));
         return ResponseEntity.ok(waiting);
     }
 
     @GetMapping("/history")
     @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN')")
     public ResponseEntity<List<ServiceOrder>> orderHistory() {
-        List<ServiceOrder> allOrders = repairOrderService.findByStatus(List.of("IN_PROGRESS", "COMPLETED"));
+        List<ServiceOrder> allOrders = repairOrderService.findByStatus(List.of("IN PROGRESS", "COMPLETED"));
         return ResponseEntity.ok(allOrders);
     }
 
