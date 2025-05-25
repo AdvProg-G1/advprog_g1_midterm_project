@@ -24,21 +24,22 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final OverallRatingService overallRatingService;
 
-
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<ReviewResponse> create(@RequestBody ReviewRequest req) {
-        log.info("🔥 POST /api/reviews received: {}", req);
+        log.debug("🔥 POST /api/reviews » payload={}", req);
         ReviewResponse resp = reviewService.createReview(req);
-        log.info("← POST created: {}", resp);
+        log.info("✅ Review created id={} for technician={}", resp.getId(), resp.getTechnicianId());
         return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TECHNICIAN', 'CUSTOMER')")
     public ResponseEntity<ReviewResponse> getOne(@PathVariable String id) {
-        log.info("→ GET /api/reviews/{} called", id);
-        return ResponseEntity.ok(reviewService.getReviewById(id));
+        log.debug("→ GET /api/reviews/{}", id);
+        ReviewResponse resp = reviewService.getReviewById(id);
+        log.info("✅ Fetched review id={}", id);
+        return ResponseEntity.ok(resp);
     }
 
     @PutMapping("/{id}")
@@ -47,9 +48,9 @@ public class ReviewController {
             @PathVariable String id,
             @RequestBody ReviewRequest req
     ) {
-        log.info("🔥 PUT /api/reviews/{} received: {}", id, req);
+        log.debug("🔥 PUT /api/reviews/{} » payload={}", id, req);
         ReviewResponse resp = reviewService.updateReview(id, req);
-        log.info("← PUT updated: {}", resp);
+        log.info("✅ Review updated id={}", id);
         return ResponseEntity.ok(resp);
     }
 
@@ -58,9 +59,9 @@ public class ReviewController {
             @PathVariable String id,
             @RequestParam String userId
     ) {
-        log.info("🔥 DELETE /api/reviews/{}?userId={}", id, userId);
+        log.debug("🔥 DELETE /api/reviews/{}?userId={}", id, userId);
         reviewService.deleteReview(id, userId);
-        log.info("← DELETE succeeded");
+        log.info("✅ Review deleted id={} by user={}", id, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -68,7 +69,10 @@ public class ReviewController {
     public ResponseEntity<List<ReviewResponse>> byTechnician(
             @PathVariable String technicianId
     ) {
-        return ResponseEntity.ok(reviewService.getReviewsForTechnician(technicianId));
+        log.debug("→ GET /api/reviews/technician/{}", technicianId);
+        List<ReviewResponse> list = reviewService.getReviewsForTechnician(technicianId);
+        log.info("✅ Returned {} reviews for technician={}", list.size(), technicianId);
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/best")
@@ -76,10 +80,12 @@ public class ReviewController {
             @RequestParam(defaultValue = "5") int limit,
             @RequestParam(defaultValue = "desc") String order
     ) {
+        log.debug("→ GET /api/reviews/best?limit={}&order={}", limit, order);
         List<BestTechnicianResponse> list = overallRatingService.getTopTechnicians(limit);
         if ("asc".equalsIgnoreCase(order)) {
             Collections.reverse(list);
         }
+        log.info("✅ Leaderboard generated size={} order={}", list.size(), order);
         return ResponseEntity.ok(list);
     }
 }
