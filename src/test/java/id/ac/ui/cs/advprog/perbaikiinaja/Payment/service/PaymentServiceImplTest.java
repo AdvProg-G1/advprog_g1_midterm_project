@@ -62,7 +62,7 @@ public class PaymentServiceImplTest {
         savedPayment.setPaymentName("DANA");
         savedPayment.setPaymentBankNumber("9876543210");
 
-        when(paymentRepository.findAll()).thenReturn(payments);
+        when(paymentRepository.existsByPaymentNameIgnoreCase("DANA")).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenReturn(savedPayment);
 
         PaymentResponse response = paymentService.createPayment(request);
@@ -77,11 +77,12 @@ public class PaymentServiceImplTest {
     void createPaymentInvalid() {
         PaymentRequest request = new PaymentRequest("OVO", "070707070");
 
-        when(paymentRepository.findAll()).thenReturn(payments);
+        when(paymentRepository.existsByPaymentNameIgnoreCase("OVO")).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> paymentService.createPayment(request));
         verify(paymentRepository, never()).save(any());
     }
+
 
     // happy
     @Test

@@ -60,7 +60,7 @@ PerbaikiinAja is a repair service application that enables users to order repair
 
 **Additional Features:**
 - **Brian:** Notification for Completed Tasks & Remove Notifications
-- **Ameera:** UI Design & Favorite Technician
+- **Ameera:** UI Design & Admin Profile
 - **Nayaka:** Best Technician based on Rating Reviews
 
 ---
