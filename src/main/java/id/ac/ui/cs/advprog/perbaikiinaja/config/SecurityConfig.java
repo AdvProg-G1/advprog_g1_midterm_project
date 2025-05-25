@@ -20,12 +20,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // ─── Disable CSRF on our API & auth endpoints ────────────────────
+                // disable CSRF on our API & actuator endpoints
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
+                                "/actuator/**",
                                 "/auth/register",
                                 "/auth/login",
-                                "/auth/logout",         // allow logout without CSRF
+                                "/auth/logout",
                                 "/api/reviews/**",
                                 "/api/auth/**",
                                 "/api/users/**",
@@ -37,16 +38,18 @@ public class SecurityConfig {
                         )
                 )
 
-                // ─── Keep JSESSIONID after login ───────────────────────────────
+                // session management
                 .sessionManagement(sm -> sm
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
 
-                // ─── Authorization rules ───────────────────────────────────────
+                // authorization rules
                 .authorizeHttpRequests(auth -> auth
                         // public assets & auth pages
-                        .requestMatchers("/", "/auth/**", "/assets/**", "/favicon.ico")
-                        .permitAll()
+                        .requestMatchers("/", "/auth/**", "/assets/**", "/favicon.ico").permitAll()
+
+                        // actuator endpoints
+                        .requestMatchers("/actuator/**").permitAll()
 
                         // role-scoped areas
                         .requestMatchers("/user/**")       .hasAuthority("USER")
@@ -57,24 +60,19 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // ─── Disable default login form & HTTP Basic ───────────────────
+                // disable default login form & HTTP Basic
                 .formLogin(f -> f.disable())
                 .httpBasic(b -> b.disable())
 
-                // ─── JWT filter for our API calls ─────────────────────────────
+                // add our JWT filter before the standard UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // ─── Logout configuration ────────────────────────────────────
+                // logout configuration
                 .logout(logout -> logout
-                        // trigger logout on GET or POST /auth/logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout", "GET"))
-                        // after logout, send user here
                         .logoutSuccessUrl("/auth/login.html")
-                        // kill the HTTP session
                         .invalidateHttpSession(true)
-                        // remove the JSESSIONID cookie
                         .deleteCookies("JSESSIONID")
-                        // allow everyone to hit this endpoint
                         .permitAll()
                 );
 
