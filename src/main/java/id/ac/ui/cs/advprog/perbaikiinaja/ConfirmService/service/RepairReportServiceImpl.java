@@ -69,7 +69,30 @@ public class RepairReportServiceImpl implements RepairReportService {
     
     @Override
     public List<Map<String, Object>> getAllReports() {
-        return new ArrayList<>();
+        List<RepairReport> reports = reportRepo.findAll();
+
+        List<Map<String, Object>> enrichedReports = new ArrayList<>();
+
+        for (RepairReport report : reports) {
+            Map<String, Object> data = new HashMap<>();
+
+            String techName = userRepo.findById(report.getTechnicianId())
+                    .map(User::getFullName)
+                    .orElse("Unknown Technician");
+
+            String itemName = orderRepo.findById(UUID.fromString(report.getOrderId()))
+                    .map(ServiceOrder::getItemName)
+                    .orElse("Unknown Item");
+
+            data.put("technicianName", techName);
+            data.put("itemName", itemName);
+            data.put("createdAt", report.getCreatedAt());
+            data.put("details", report.getDetails());
+
+            enrichedReports.add(data);
+        }
+
+        return enrichedReports;
     }
 
 }
