@@ -71,6 +71,15 @@ tasks.test {
     finalizedBy(tasks.jacocoTestReport)
 }
 
+jacoco {
+    toolVersion = "0.8.8"
+}
+
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(false)
+    }
 }
