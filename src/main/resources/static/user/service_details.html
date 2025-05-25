@@ -128,6 +128,11 @@
         if (el) el.disabled = !editable;
       });
 
+      // Disable editability
+      const isWaiting = order.status === 'WAITING CONFIRMATION';
+      document.getElementById('completion-time').disabled = isWaiting;
+      document.getElementById('price').disabled = isWaiting;
+
       // Show or hide submit button
       document.querySelector('.submit-btn').style.display = editable ? 'inline-block' : 'none';
 
@@ -232,14 +237,6 @@
     const paymentMethodEl = document.getElementById('paymentMethod');
     const technicianIdEl = document.getElementById('technicianId');
 
-    // If status is "WAITING CONFIRMATION", clear time and price
-    let completionTime = document.getElementById('completion-time').value;
-    let price = parseInt(document.getElementById('price').value) || 0;
-    if (statusValue === 'WAITING CONFIRMATION') {
-      completionTime = '';
-      price = 0;
-    }
-
     const payload = {
       itemName: document.getElementById('item-name').value,
       condition: document.getElementById('item-condition').value,
@@ -248,8 +245,8 @@
       couponApplied: document.getElementById('coupon-applied').value === 'true',
       paymentMethod: paymentMethodEl?.value || '',
       technicianId: technicianIdEl?.value || '',
-      estimatedCompletionTime: completionTime,
-      estimatedPrice: price,
+      estimatedCompletionTime: document.getElementById('completion-time').value,
+      estimatedPrice: parseInt(document.getElementById('price').value) || 0,
       status: document.getElementById('status').value,
     };
 
