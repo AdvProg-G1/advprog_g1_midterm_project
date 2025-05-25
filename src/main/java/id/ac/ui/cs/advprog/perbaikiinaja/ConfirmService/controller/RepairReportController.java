@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("api/report")
 public class RepairReportController {
@@ -24,12 +26,18 @@ public class RepairReportController {
             @PathVariable String orderId,
             @RequestBody String details
     ) {
+        log.debug("POST api/report/{} details=\"{}\"", orderId, details);
         RepairReport created = service.createRepairReport(orderId, details);
+
+        log.info("Created report id={} for order={} by tech={}  details=\"{}\"",
+                created.getId(), created.getOrderId(),
+                created.getTechnicianId(), created.getDetails());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
     
     @GetMapping("/all")
     public ResponseEntity<List<Map<String, Object>>> getAllReports() {
+
         return ResponseEntity.ok(service.getAllReports());
     }
 }
