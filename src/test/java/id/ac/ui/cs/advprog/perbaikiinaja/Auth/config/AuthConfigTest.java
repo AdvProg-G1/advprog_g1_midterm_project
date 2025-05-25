@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.perbaikiinaja.config;
+package id.ac.ui.cs.advprog.perbaikiinaja.Config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
