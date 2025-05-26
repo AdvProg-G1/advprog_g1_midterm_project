@@ -140,4 +140,89 @@ class UserAuthStrategyTest {
                 () -> userAuthStrategy.register(req));
         assertEquals("Email already registered", ex.getMessage());
     }
+
+@Test
+    void testGetAllTechniciansReturnsCorrectList() {
+        User technician = new User();
+        technician.setId("tech-1");
+        technician.setUsername("technician1");
+        technician.setFullName("Tech One");
+        technician.setEmail("tech1@example.com");
+        technician.setRoleEnum(Role.TECHNICIAN);
+
+        when(userRepository.findByRole("TECHNICIAN")).thenReturn(java.util.List.of(technician));
+
+        var result = userAuthStrategy.getAllTechnicians();
+
+        assertEquals(1, result.size());
+        var res = result.get(0);
+        assertEquals("tech-1", res.getId());
+        assertEquals("technician1", res.getUsername());
+        assertEquals("Tech One", res.getFullName());
+        assertEquals("tech1@example.com", res.getEmail());
+        assertEquals("TECHNICIAN", res.getRole());
+    }
+
+    @Test
+    void testLoginWithPlainTextPasswordUpgradesToBCrypt() {
+        User user = new User();
+        user.setUsername("john");
+        user.setPassword("plain123");
+        user.setRoleEnum(Role.USER);
+
+        when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
+
+        BCryptPasswordEncoder encoderSpy = spy(passwordEncoder);
+        doReturn("$2a$10$mockedencodedhash").when(encoderSpy).encode("plain123");
+
+        UserAuthStrategy strategy = new UserAuthStrategy(userRepository, encoderSpy);
+
+        User result = strategy.login("john", "plain123");
+
+        assertEquals(user, result);
+        assertEquals("$2a$10$mockedencodedhash", user.getPassword());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void testLoginFailsForInvalidPlainTextPassword() {
+        User user = new User();
+        user.setUsername("john");
+        user.setPassword("plain123");
+
+        when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userAuthStrategy.login("john", "wrongpass"));
+
+        assertEquals("Invalid credentials", ex.getMessage());
+    }
+
+    @Test
+    void testLooksBCrypt_ReturnsTrueForValidBCryptHash() {
+        String bcryptHash = "$2a$10$abcdefghijklmnopqrstuv"; // typical prefix
+        assertTrue(UserAuthStrategy.looksBCrypt(bcryptHash));
+    }
+
+    @Test
+    void testLooksBCrypt_ReturnsFalseForPlainTextPassword() {
+        String plainPassword = "mysecret123";
+        assertFalse(UserAuthStrategy.looksBCrypt(plainPassword));
+    }
+
+    @Test
+    void testLooksBCrypt_ReturnsFalseForNull() {
+        assertFalse(UserAuthStrategy.looksBCrypt(null));
+    }
+
+    @Test
+    void testLooksBCrypt_ReturnsFalseForEmptyString() {
+        assertFalse(UserAuthStrategy.looksBCrypt(""));
+    }
+
+    @Test
+    void testLooksBCrypt_ReturnsFalseForNonBCryptHashPrefix() {
+        String hash = "$1$abcdef";
+        assertFalse(UserAuthStrategy.looksBCrypt(hash));
+    }
 }

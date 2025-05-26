@@ -129,4 +129,113 @@ public class ReviewServiceTest {
         List<ReviewResponse> responses = reviewService.getReviewsForTechnician("tech-1");
         assertEquals(2, responses.size());
     }
+
+@Test
+void testCreateReview_ThrowsExceptionWhenReviewAlreadyExists() {
+    ReviewRequest req = new ReviewRequest();
+    req.setUserId("u1");
+    req.setTechnicianId("t1");
+    req.setRating(5);
+    req.setComment("Great job");
+    when(reviewRepository.findByUserIdAndTechnicianId("u1", "t1")).thenReturn(new Review());
+
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> reviewService.createReview(req));
+    assertEquals("Review already exists", ex.getMessage());
+}
+
+@Test
+void testGetReviewById_ThrowsExceptionWhenNotFound() {
+    when(reviewRepository.findById("rev123")).thenReturn(Optional.empty());
+
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> reviewService.getReviewById("rev123"));
+    assertTrue(ex.getMessage().contains("Review not found: rev123"));
+}
+
+@Test
+void testGetReviewById_ReturnsMappedResponse() {
+    Review r = new Review();
+    r.setId("rev1");
+    r.setUserId("u1");
+    r.setTechnicianId("t1");
+    r.setRating(4);
+    r.setComment("Solid job");
+
+    when(reviewRepository.findById("rev1")).thenReturn(Optional.of(r));
+    // Mock a user object with setFullName
+    id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User user = new id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User();
+    user.setFullName("John Doe");
+    when(userRepository.findById("u1")).thenReturn(Optional.of(user));
+
+    var response = reviewService.getReviewById("rev1");
+
+    assertEquals("rev1", response.getId());
+    assertEquals("John Doe", response.getReviewerName());
+}
+
+@Test
+void testUpdateReview_ThrowsWhenNotOwned() {
+    Review r = new Review();
+    r.setId("r1");
+    r.setUserId("u1");
+
+    ReviewRequest req = new ReviewRequest();
+    req.setUserId("u2");
+    req.setTechnicianId("t1");
+    req.setRating(5);
+    req.setComment("Updated comment");
+
+    when(reviewRepository.findById("r1")).thenReturn(Optional.of(r));
+
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> reviewService.updateReview("r1", req));
+    assertEquals("Unauthorized to update review", ex.getMessage());
+}
+
+@Test
+void testUpdateReview_SuccessfullyUpdatesReview() {
+    Review r = new Review();
+    r.setId("r1");
+    r.setUserId("u1");
+
+    ReviewRequest req = new ReviewRequest();
+    req.setUserId("u1");
+    req.setTechnicianId("t1");
+    req.setRating(5);
+    req.setComment("Updated comment");
+
+    when(reviewRepository.findById("r1")).thenReturn(Optional.of(r));
+    when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArgument(0));
+
+    var response = reviewService.updateReview("r1", req);
+    assertEquals("Updated comment", response.getComment());
+    assertEquals(5, response.getRating());
+}
+
+@Test
+void testMapToResponse_ReturnsUserFullNameWhenFound() {
+    Review r = new Review();
+    r.setId("r1");
+    r.setUserId("u1");
+
+    id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User user = new id.ac.ui.cs.advprog.perbaikiinaja.Auth.model.User();
+    user.setFullName("Alice Reviewer");
+
+    when(reviewRepository.findById("r1")).thenReturn(Optional.of(r));
+    when(userRepository.findById("u1")).thenReturn(Optional.of(user));
+
+    var response = reviewService.getReviewById("r1");
+    assertEquals("Alice Reviewer", response.getReviewerName());
+}
+
+@Test
+void testMapToResponse_UsesUserIdIfFullNameNotFound() {
+    Review r = new Review();
+    r.setId("r2");
+    r.setUserId("u999");
+
+    when(reviewRepository.findById("r2")).thenReturn(Optional.of(r));
+    when(userRepository.findById("u999")).thenReturn(Optional.empty());
+
+    var response = reviewService.getReviewById("r2");
+    assertEquals("u999", response.getReviewerName());
+}
 }

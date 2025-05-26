@@ -236,7 +236,76 @@ class RepairReportServiceTest {
         verify(orderRepo).findById(order1.getId());
         verify(orderRepo).findById(order2.getId());
     }
+@Test
+void testThrowsNotFoundIfTechnicianMissing() {
+    String orderId = UUID.randomUUID().toString();
+    String technicianId = UUID.randomUUID().toString();
 
-    
-    
+    ServiceOrder order = new ServiceOrder();
+    order.setTechnicianId(technicianId);
+    order.setStatus("IN PROGRESS");
+
+    when(orderRepo.findById(UUID.fromString(orderId))).thenReturn(Optional.of(order));
+    when(userRepo.findById(technicianId)).thenReturn(Optional.empty());
+
+    ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
+        service.createRepairReport(orderId, "details");
+    });
+
+    assertEquals("Technician not found", ex.getReason());
+    assertEquals(404, ex.getStatusCode().value());
+}
+
+@Test
+void testNullTotalSalaryAndTotalWorkDefaultsToZero() {
+    String orderId = UUID.randomUUID().toString();
+    String technicianId = UUID.randomUUID().toString();
+
+    ServiceOrder order = new ServiceOrder();
+    order.setTechnicianId(technicianId);
+    order.setStatus("IN PROGRESS");
+    order.setEstimatedPrice(100000);
+
+    User tech = new User();
+    tech.setTotalSalary(null);
+    tech.setTotalWork(null);
+
+    when(orderRepo.findById(UUID.fromString(orderId))).thenReturn(Optional.of(order));
+    when(userRepo.findById(technicianId)).thenReturn(Optional.of(tech));
+    when(reportRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+    when(orderRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+    when(userRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+    RepairReport result = service.createRepairReport(orderId, "details");
+
+    assertEquals(100000, tech.getTotalSalary());
+    assertEquals(1, tech.getTotalWork());
+    verify(userRepo).save(tech);
+}
+
+@Test
+void testExistingTotalSalaryAndWorkAreIncremented() {
+    String orderId = UUID.randomUUID().toString();
+    String technicianId = UUID.randomUUID().toString();
+
+    ServiceOrder order = new ServiceOrder();
+    order.setTechnicianId(technicianId);
+    order.setStatus("IN PROGRESS");
+    order.setEstimatedPrice(150000);
+
+    User tech = new User();
+    tech.setTotalSalary(500000);
+    tech.setTotalWork(3);
+
+    when(orderRepo.findById(UUID.fromString(orderId))).thenReturn(Optional.of(order));
+    when(userRepo.findById(technicianId)).thenReturn(Optional.of(tech));
+    when(reportRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+    when(orderRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+    when(userRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+    RepairReport result = service.createRepairReport(orderId, "details");
+
+    assertEquals(650000, tech.getTotalSalary());
+    assertEquals(4, tech.getTotalWork());
+}
 }

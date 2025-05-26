@@ -22,7 +22,7 @@ public class UserAuthStrategy implements AuthStrategy {
     private final BCryptPasswordEncoder enc;
 
     // ─── Helper ──────────────────────────────────────────────────────────
-    private static boolean looksBCrypt(String s) {
+    public static boolean looksBCrypt(String s) {
         return s != null && s.startsWith("$2");
     }
 

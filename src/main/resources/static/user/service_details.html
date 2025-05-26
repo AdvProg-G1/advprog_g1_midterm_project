@@ -111,7 +111,7 @@
       document.getElementById('service-date').value = order.serviceDate || '';
       document.getElementById('status').value = order.status?.replace(/_/g, ' ').toUpperCase() || '';
       document.getElementById('completion-time').value = order.estimatedCompletionTime || '';
-      document.getElementById('price').value = order.totalPrice ?? '';
+      document.getElementById('price').value = order.estimatedPrice ?? '';
       document.getElementById('use-coupon').value = order.couponApplied === true ? 'Yes' : 'No';
       document.getElementById('coupon-applied').value = order.couponApplied === true ? 'true' : 'false';
 
@@ -129,7 +129,7 @@
       });
 
       // Disable editability
-      const isWaiting = order.status === 'WAITING CONFIRMATION';
+      const isWaiting = order.status === 'WAITING CONFIRMATION' || order.status === 'TECHNICIAN REJECTED'  || order.status === 'TECHNICIAN ACCEPTED' || order.status === 'IN PROGRESS' || order.status === 'COMPLETED'  || order.status === 'CANCELED';
       document.getElementById('completion-time').disabled = isWaiting;
       document.getElementById('price').disabled = isWaiting;
 
@@ -137,7 +137,7 @@
       document.querySelector('.submit-btn').style.display = editable ? 'inline-block' : 'none';
 
       const actionsDiv = document.querySelector('.form-actions');
-      if (order.status === 'TECHNICIAN_ACCEPTED') {
+      if (order.status === 'TECHNICIAN ACCEPTED') {
         actionsDiv.innerHTML = `
           <button type="button" id="btn-user-accept" class="btn accept-btn">ACCEPT</button>
           <button type="button" id="btn-user-reject" class="btn reject-btn">REJECT</button>
