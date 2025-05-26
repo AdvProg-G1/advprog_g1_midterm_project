@@ -20,7 +20,7 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final PaymentService paymgentService;
+    private final PaymentService paymentService;
 
     @PostMapping
     public ResponseEntity<PaymentResponse> create(@RequestBody PaymentRequest request) {
