@@ -59,7 +59,7 @@ public class ServiceOrderServiceImpl implements ServiceOrderService {
     public ServiceOrder createOrder(ServiceOrder order) {
         // Initialize status to WAITING_CONFIRMATION if null
         if (order.getStatus() == null) {
-            order.setStatus("WAITING_CONFIRMATION");
+            order.setStatus("WAITING CONFIRMATION");
         }
         return repository.save(order);
     }
