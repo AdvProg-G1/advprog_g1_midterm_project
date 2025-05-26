@@ -118,7 +118,7 @@
       await loadDropdownData(order);
 
       // Control editability based on status
-      const editable = order.status === 'WAITING_CONFIRMATION';
+      const editable = order.status === 'WAITING CONFIRMATION';
       const fieldsToToggle = [
         'item-name', 'item-condition', 'problem-description', 'service-date',
         'use-coupon', 'paymentMethod', 'completion-time', 'price'
@@ -129,7 +129,7 @@
       });
 
       // Disable editability
-      const isWaiting = order.status === 'WAITING_CONFIRMATION';
+      const isWaiting = order.status === 'WAITING CONFIRMATION';
       document.getElementById('completion-time').disabled = isWaiting;
       document.getElementById('price').disabled = isWaiting;
 

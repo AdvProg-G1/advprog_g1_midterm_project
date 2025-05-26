@@ -34,7 +34,7 @@ class ServiceOrderServiceImplTest {
                 .serviceDate(LocalDate.now().plusDays(1))
                 .paymentMethod("CREDIT_CARD")
                 .couponApplied(false)
-                .status("WAITING_CONFIRMATION")
+                .status("WAITING CONFIRMATION")
                 .estimatedCompletionTime(null)
                 .estimatedPrice(null)
                 .build();
@@ -53,7 +53,7 @@ class ServiceOrderServiceImplTest {
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
         ServiceOrder created = service.createOrder(noStatus);
 
-        assertThat(created.getStatus()).isEqualTo("WAITING_CONFIRMATION");
+        assertThat(created.getStatus()).isEqualTo("WAITING CONFIRMATION");
         verify(repo).save(created);
     }
 
