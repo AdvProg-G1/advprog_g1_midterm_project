@@ -1,5 +1,5 @@
 // src/test/java/id/ac/ui/cs/advprog/perbaikiinaja/Auth/controller/AuthPageControllerTest.java
-package id.ac.ui.cs.advprog.perbaikiinaja.Auth.controller;
+        package id.ac.ui.cs.advprog.perbaikiinaja.Auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.perbaikiinaja.Auth.AuthStrategy;

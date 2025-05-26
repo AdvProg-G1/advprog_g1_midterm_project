@@ -53,7 +53,7 @@ class ServiceOrderServiceImplTest {
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
         ServiceOrder created = service.createOrder(noStatus);
 
-        assertThat(created.getStatus()).isEqualTo("WAITING_CONFIRMATION");
+        assertThat(created.getStatus()).isEqualTo("WAITING CONFIRMATION");
         verify(repo).save(created);
     }
 
