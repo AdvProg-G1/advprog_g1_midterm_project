@@ -29,4 +29,8 @@ public class PercentageDiscountCoupon extends Coupon {
         // Apply the percentage discount to the original price
         return originalPrice * (1 - getDiscountValue() / 100.0);
     }
+	@Override
+	public String getType() {
+		return "percentage";
+	}
 }

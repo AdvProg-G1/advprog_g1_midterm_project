@@ -54,7 +54,7 @@ public class ServiceOrderController {
                 .serviceDate(req.getServiceDate())
                 .paymentMethod(req.getPaymentMethod())
                 .couponApplied(req.isCouponApplied())
-                .status("WAITING CONFIRMATION")
+                .status("WAITING_CONFIRMATION")
                 .build();
 
         ServiceOrder created = service.createOrder(order);

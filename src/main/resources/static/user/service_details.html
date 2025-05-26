@@ -46,24 +46,22 @@
 
     <div class="form-column">
       <div class="form-group">
-        <label for="use-coupon">Use a Coupon?</label>
-        <input type="text" id="use-coupon" name="couponCode" placeholder="e.g. COUPON2025" />
+        <label for="use-coupon">Coupon Applied?</label>
+        <input type="text" id="use-coupon" name="couponApplied" readonly />
+        <input type="hidden" id="coupon-applied" name="couponApplied" />
       </div>
 
       <div class="form-group">
-        <label for="payment-method">Choose a Payment Method</label>
-        <select id="payment-method" name="paymentMethod">
-          <option value="">Select payment method</option>
-          <option value="Credit Card">Credit Card</option>
-          <option value="Cash">Cash</option>
-          <option value="Transfer">Transfer</option>
+        <label for="paymentMethod">Payment Method</label>
+        <select id="paymentMethod" name="paymentMethod" required>
+          <option value="">Loading payment methods...</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="technician">Choose a Technician</label>
-        <select id="technician" name="technicianId">
-          <option value="">Select a Technician</option>
+        <label for="technicianId">Select Technician</label>
+        <select id="technicianId" name="technicianId" required>
+          <option value="">Loading technicians...</option>
         </select>
       </div>
 
@@ -100,50 +98,40 @@
     return new URLSearchParams(window.location.search).get(param);
   }
 
-  async function loadTechnicians() {
-    try {
-      const res = await fetch('/api/technicians');
-      const technicians = await res.json();
-      const techSelect = document.getElementById('technician');
-      technicians.forEach(t => {
-        const option = document.createElement('option');
-        option.value = t.id;
-        option.textContent = t.fullName;
-        techSelect.appendChild(option);
-      });
-    } catch (err) {
-      console.error('Failed to load technicians', err);
-    }
-  }
-
   async function loadOrder(orderId) {
     try {
       const res = await fetch(`/api/orders/${orderId}`);
       if (!res.ok) throw new Error('Failed to fetch order details');
       const order = await res.json();
 
-      // Populate fields
+      // Populate text fields
       document.getElementById('item-name').value = order.itemName || '';
       document.getElementById('item-condition').value = order.condition || '';
       document.getElementById('problem-description').value = order.problemDescription || '';
       document.getElementById('service-date').value = order.serviceDate || '';
-      document.getElementById('use-coupon').value = order.couponApplied ? 'Applied' : '';
-      document.getElementById('payment-method').value = order.paymentMethod || '';
-      document.getElementById('technician').value = order.technicianId || '';
-      document.getElementById('status').value = order.status.replace(/_/g,' ').toUpperCase() || '';
+      document.getElementById('status').value = order.status?.replace(/_/g, ' ').toUpperCase() || '';
       document.getElementById('completion-time').value = order.estimatedCompletionTime || '';
-      document.getElementById('price').value = order.estimatedPrice || '';
+      document.getElementById('price').value = order.totalPrice ?? '';
+      document.getElementById('use-coupon').value = order.couponApplied === true ? 'Yes' : 'No';
+      document.getElementById('coupon-applied').value = order.couponApplied === true ? 'true' : 'false';
+
+      await loadDropdownData(order);
 
       // Control editability based on status
-      const editable = order.status === 'WAITING CONFIRMATION';
+      const editable = order.status === 'WAITING_CONFIRMATION';
       const fieldsToToggle = [
         'item-name', 'item-condition', 'problem-description', 'service-date',
-        'use-coupon', 'payment-method', 'technician', 'completion-time', 'price'
+        'use-coupon', 'paymentMethod', 'completion-time', 'price'
       ];
-
       fieldsToToggle.forEach(id => {
-        document.getElementById(id).disabled = !editable;
+        const el = document.getElementById(id);
+        if (el) el.disabled = !editable;
       });
+
+      // Disable editability
+      const isWaiting = order.status === 'WAITING_CONFIRMATION';
+      document.getElementById('completion-time').disabled = isWaiting;
+      document.getElementById('price').disabled = isWaiting;
 
       // Show or hide submit button
       document.querySelector('.submit-btn').style.display = editable ? 'inline-block' : 'none';
@@ -151,55 +139,93 @@
       const actionsDiv = document.querySelector('.form-actions');
       if (order.status === 'TECHNICIAN_ACCEPTED') {
         actionsDiv.innerHTML = `
-          <button type="button" id="btn-user-accept" class="btn accept-btn">
-            ACCEPT
-          </button>
-          <button type="button" id="btn-user-reject" class="btn reject-btn">
-            REJECT
-          </button>
+          <button type="button" id="btn-user-accept" class="btn accept-btn">ACCEPT</button>
+          <button type="button" id="btn-user-reject" class="btn reject-btn">REJECT</button>
         `;
 
         const csrfToken = (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1];
 
-        document
-                .getElementById('btn-user-accept')
-                .addEventListener('click', () => {
-                  fetch(`/api/repair/user/accept/${encodeURIComponent(orderId)}`, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'X-CSRF-TOKEN': csrfToken }
-                  })
+        document.getElementById('btn-user-accept').addEventListener('click', () => {
+          fetch(`/api/repair/user/accept/${encodeURIComponent(orderId)}`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+          })
                   .then(r => {
-                    console.log('ACCEPT response', r.status, r.statusText, r);
                     if (!r.ok) throw new Error(`Accept failed: ${r.status}`);
                     window.location.href = '/user/order_history.html';
                   })
                   .catch(err => alert(err.message));
-                });
+        });
 
-        document
-                .getElementById('btn-user-reject')
-                .addEventListener('click', () => {
-                  fetch(`/api/repair/user/reject/${encodeURIComponent(orderId)}`, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'X-CSRF-TOKEN': csrfToken }
-                  })
+        document.getElementById('btn-user-reject').addEventListener('click', () => {
+          fetch(`/api/repair/user/reject/${encodeURIComponent(orderId)}`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+          })
                   .then(r => {
                     if (!r.ok) throw new Error('Reject failed');
                     alert("You’ll need to create a new order if you reject this");
                     window.location.href = '/user/book_service.html';
                   })
                   .catch(err => alert(err.message));
-                });
-              }
+        });
+      }
 
     } catch (error) {
       alert(error.message);
     }
   }
 
-  document.getElementById('serviceOrderForm').addEventListener('submit', async function(e) {
+  async function loadDropdownData(order) {
+    try {
+      // Load paymenet methods
+      const paymentRes = await fetch('/api/payments');
+      if (!paymentRes.ok) throw new Error('Failed to load payment methods');
+      const payments = await paymentRes.json();
+
+      const paymentSelect = document.getElementById('paymentMethod');
+      paymentSelect.innerHTML = '<option value="">Choose a Payment Method</option>';
+
+      payments.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.paymentId;
+        option.textContent = `${p.paymentName} - ${p.paymentBankNumber}`;
+        paymentSelect.appendChild(option);
+      });
+      // Set selected value manually
+      if (order && order.paymentMethod) {
+        paymentSelect.value = order.paymentMethod;
+      }
+
+      // Load Technician
+      const techSelect = document.getElementById('technicianId');
+      techSelect.innerHTML = '';
+
+      if (order && order.technicianId) {
+        const res = await fetch(`/api/users/${order.technicianId}`);
+        if (!res.ok) throw new Error('Failed to load technician');
+        const tech = await res.json();
+
+        const option = document.createElement('option');
+        option.value = order.technicianId;
+        option.textContent = tech.fullName;
+        techSelect.appendChild(option);
+
+        // Set selected value
+        techSelect.value = order.technicianId;
+      }
+
+      // Lock technician field
+      techSelect.disabled = true;
+
+    } catch (error) {
+      console.error('Failed to load dropdown data:', error);
+    }
+  }
+
+  document.getElementById('serviceOrderForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const orderId = getQueryParam('orderId');
@@ -208,17 +234,20 @@
       return;
     }
 
+    const paymentMethodEl = document.getElementById('paymentMethod');
+    const technicianIdEl = document.getElementById('technicianId');
+
     const payload = {
       itemName: document.getElementById('item-name').value,
       condition: document.getElementById('item-condition').value,
       problemDescription: document.getElementById('problem-description').value,
       serviceDate: document.getElementById('service-date').value,
-      couponApplied: document.getElementById('use-coupon').value !== '',
-      paymentMethod: document.getElementById('payment-method').value,
-      technicianId: document.getElementById('technician').value,
+      couponApplied: document.getElementById('coupon-applied').value === 'true',
+      paymentMethod: paymentMethodEl?.value || '',
+      technicianId: technicianIdEl?.value || '',
       estimatedCompletionTime: document.getElementById('completion-time').value,
-      totalPrice: document.getElementById('price').value,
-      status: document.getElementById('status').value
+      estimatedPrice: parseInt(document.getElementById('price').value) || 0,
+      status: document.getElementById('status').value,
     };
 
     try {
@@ -240,7 +269,6 @@
 
   // Initialize page
   window.onload = async () => {
-    await loadTechnicians();
     const orderId = getQueryParam('orderId');
     if (orderId) {
       await loadOrder(orderId);
@@ -248,6 +276,9 @@
       alert('No orderId specified');
     }
   };
+
+  console.log("Sending payload:", JSON.stringify(payload, null, 2));
+
 </script>
 
 </body>
