@@ -8,11 +8,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(properties = {
-	    "spring.main.allow-bean-definition-overriding=true"
+        "spring.main.allow-bean-definition-overriding=true"
 })
 @TestPropertySource(properties = {
-	    "jwt.secret=TEST_SECRET_12345678901234567890123456789012",
-	    "jwt.expiration-ms=3600000"
+        "jwt.secret=TEST_SECRET_12345678901234567890123456789012",
+        "jwt.expiration-ms=3600000"
 })
 class PerbaikiinAjaApplicationTests {
 
@@ -24,5 +24,7 @@ class PerbaikiinAjaApplicationTests {
 
     @Test
     void contextLoads() {
+        // Intentionally left empty: this test ensures the
+        // Spring Boot application context loads successfully.
     }
 }
