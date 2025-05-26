@@ -157,4 +157,16 @@ public class PaymentModelTest {
         assertEquals("BCA", payment.getPaymentName());
         assertEquals("1122334455", payment.getPaymentBankNumber());
     }
+
+    @Test
+    void testConstructorShouldInitializeFieldsCorrectly() {
+        String name = "Bank Transfer";
+        String bankNumber = "1234567890";
+
+        Payment payment = new Payment(name, bankNumber);
+
+        assertNotNull(payment.getPaymentId(), "paymentId should not be null");
+        assertEquals(name, payment.getPaymentName(), "paymentName should match input");
+        assertEquals(bankNumber, payment.getPaymentBankNumber(), "paymentBankNumber should match input");
+    }
 }

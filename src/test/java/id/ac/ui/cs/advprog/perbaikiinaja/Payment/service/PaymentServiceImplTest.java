@@ -136,4 +136,58 @@ public class PaymentServiceImplTest {
         paymentService.deletePayment("id-02");
         assertNull(paymentService.findById("id-02"));
     }
+
+    // missing branches tests
+    @Test
+    void testUpdatePayment_PaymentNotFound() {
+        PaymentRequest request = new PaymentRequest("NewName", "1234567890");
+
+        when(paymentRepository.findById("nonexistent-id")).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> paymentService.updatePayment("nonexistent-id", request));
+    }
+
+    @Test
+    void testUpdatePayment_DuplicateNameThrowsException() {
+        Payment existing = payments.get(0); // GoPay
+        PaymentRequest request = new PaymentRequest("OVO", "999999999");
+
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.of(existing));
+        when(paymentRepository.existsByPaymentNameIgnoreCaseAndPaymentIdNot("OVO", "id-01"))
+                .thenReturn(true);
+
+        assertThrows(IllegalStateException.class,
+                () -> paymentService.updatePayment("id-01", request));
+    }
+
+    @Test
+    void testUpdatePayment_OnlyBankNumberChanged() {
+        Payment existing = payments.get(0); // GoPay
+        PaymentRequest request = new PaymentRequest("GoPay", "999999999");
+
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.of(existing));
+        when(paymentRepository.save(any(Payment.class))).thenReturn(existing);
+
+        PaymentResponse response = paymentService.updatePayment("id-01", request);
+
+        assertEquals("GoPay", response.getPaymentName());
+        assertEquals("999999999", response.getPaymentBankNumber());
+        verify(paymentRepository).save(existing);
+    }
+
+    @Test
+    void testUpdatePayment_NoChanges() {
+        Payment existing = payments.get(0); // GoPay
+        PaymentRequest request = new PaymentRequest("GoPay", "124567890"); // same values
+
+        when(paymentRepository.findById("id-01")).thenReturn(Optional.of(existing));
+
+        PaymentResponse response = paymentService.updatePayment("id-01", request);
+
+        assertEquals("GoPay", response.getPaymentName());
+        assertEquals("124567890", response.getPaymentBankNumber());
+        verify(paymentRepository, never()).save(any());
+    }
+
 }
