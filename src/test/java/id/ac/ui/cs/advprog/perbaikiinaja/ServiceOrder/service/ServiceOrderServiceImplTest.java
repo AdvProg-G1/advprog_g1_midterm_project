@@ -34,7 +34,7 @@ class ServiceOrderServiceImplTest {
                 .serviceDate(LocalDate.now().plusDays(1))
                 .paymentMethod("CREDIT_CARD")
                 .couponApplied(false)
-                .status("WAITING_CONFIRMATION")
+                .status("WAITING CONFIRMATION")
                 .estimatedCompletionTime(null)
                 .estimatedPrice(null)
                 .build();

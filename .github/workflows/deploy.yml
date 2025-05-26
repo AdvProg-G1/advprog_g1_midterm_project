@@ -3,11 +3,15 @@ name: Deploy Spring Boot App to EC2
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    # Make your EC2 host (public IP or DNS) available to curl
+    env:
+      PUBLIC_IP: ${{ secrets.EC2_HOST }}
 
     steps:
       - name: Checkout source code
@@ -20,7 +24,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle
-        run: ./gradlew build -x test
+        run: ./gradlew clean build -x test
 
       - name: Copy JAR file to EC2
         uses: appleboy/scp-action@v0.1.3
@@ -28,8 +32,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/PerbaikiinAja-0.0.1-SNAPSHOT.jar"
-          target: "/home/ubuntu/"
+          source: build/libs/PerbaikiinAja-0.0.1-SNAPSHOT.jar
+          target: /home/ubuntu/
 
       - name: SSH into EC2 and run app
         uses: appleboy/ssh-action@v0.1.6
@@ -38,12 +42,22 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "🔻 Killing existing app screen session if exists..."
-            screen -S springboot -X quit || echo "No existing screen session"
+            # kill any old session
+            screen -S springboot -X quit || true
 
-            echo "🚀 Starting new screen session for Spring Boot app..."
+            # start in detached screen
             screen -dmS springboot java -jar /home/ubuntu/PerbaikiinAja-0.0.1-SNAPSHOT.jar
 
-            sleep 3
-            echo "✅ Checking if Spring Boot app is running inside screen..."
-            screen -ls | grep springboot && echo "App is running in screen!" || echo "⚠️ Failed to start app"
+      - name: Wait for Spring Boot on EC2 public IP
+        run: |
+          echo "⏳ Waiting for Spring Boot to respond at http://$PUBLIC_IP:8080/ …"
+          for i in {1..12}; do
+            if curl --fail --silent http://$PUBLIC_IP:8080/; then
+              echo "✅ App is up and running!"
+              exit 0
+            fi
+            echo "  still waiting… ($i/12)"
+            sleep 5
+          done
+          echo "❌ App never responded on port 8080" >&2
+          exit 1
