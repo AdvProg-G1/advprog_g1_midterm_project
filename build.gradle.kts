@@ -6,20 +6,29 @@ plugins {
     id("org.sonarqube") version "4.3.1.3277"
 }
 
-sonarqube {
-    properties {
-        property("sonar.projectKey", "AdvProg-G1_advprog_g1_midterm_project")
-        property("sonar.organization", "advprog-g1")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
-}
-
 group = "id.ac.ui.cs.advprog"
 version = "0.0.1-SNAPSHOT"
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "AdvProg-G1_advprog_g1_midterm_project")
+        property("sonar.organization", "advprog-g1")
+        property("sonar.host.url", "https://sonarcloud.io")
+
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            "build/reports/jacoco/test/jacocoTestReport.xml"
+        )
     }
 }
 
@@ -45,6 +54,7 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
@@ -69,10 +79,13 @@ tasks.test {
     filter {
         excludeTestsMatching("*FunctionalTest")
     }
-
     finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }

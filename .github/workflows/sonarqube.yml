@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build and analyze
+    name: Build, Test, Coverage & Sonar
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,15 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build and analyze
+      - name: Run Tests & Generate Coverage
+        run: |
+          ./gradlew clean test jacocoTestReport
+
+      - name: SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonarqube --info
+        run: |
+          ./gradlew sonarqube \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
+            --info
