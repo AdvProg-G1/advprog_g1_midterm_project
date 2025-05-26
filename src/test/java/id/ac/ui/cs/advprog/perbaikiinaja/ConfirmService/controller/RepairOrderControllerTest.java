@@ -113,7 +113,7 @@ class RepairOrderControllerTest {
     void incomingOrderList() throws Exception {
         ServiceOrder o1 = new ServiceOrder(); o1.setId(UUID.randomUUID());
         ServiceOrder o2 = new ServiceOrder(); o2.setId(UUID.randomUUID());
-        when(repairOrderService.findByStatus(List.of("WAITING_CONFIRMATION")))
+        when(repairOrderService.findByStatus(List.of("WAITING CONFIRMATION")))
                 .thenReturn(List.of(o1, o2));
 
         mockMvc.perform(get("/api/repair/list")
@@ -122,13 +122,13 @@ class RepairOrderControllerTest {
                 .andExpect(jsonPath("$[0].id").value(o1.getId().toString()))
                 .andExpect(jsonPath("$[1].id").value(o2.getId().toString()));
 
-        verify(repairOrderService).findByStatus(List.of("WAITING_CONFIRMATION"));
+        verify(repairOrderService).findByStatus(List.of("WAITING CONFIRMATION"));
     }
 
     @Test
     void orderHistory() throws Exception {
         ServiceOrder h = new ServiceOrder(); h.setId(UUID.randomUUID());
-        when(repairOrderService.findByStatus(List.of("IN_PROGRESS", "COMPLETED")))
+        when(repairOrderService.findByStatus(List.of("IN PROGRESS", "COMPLETED")))
                 .thenReturn(Collections.singletonList(h));
 
         mockMvc.perform(get("/api/repair/history")
@@ -136,7 +136,7 @@ class RepairOrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(h.getId().toString()));
 
-        verify(repairOrderService).findByStatus(List.of("IN_PROGRESS", "COMPLETED"));
+        verify(repairOrderService).findByStatus(List.of("IN PROGRESS", "COMPLETED"));
     }
 
     @Test

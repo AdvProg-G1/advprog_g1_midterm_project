@@ -31,6 +31,9 @@ public class RepairReportServiceImpl implements RepairReportService {
         this.userRepo = userRepo;
     }
 
+    private static final String IN_PROGRESS            = "IN PROGRESS";
+    private static final String COMPLETED              = "COMPLETED";
+
     @Override
     public RepairReport getReportsByOrderId(String orderId) {
         return reportRepo.getReportsByOrderId(orderId);
@@ -41,7 +44,7 @@ public class RepairReportServiceImpl implements RepairReportService {
         ServiceOrder order = orderRepo.findById(UUID.fromString(orderId)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         String technicianId = order.getTechnicianId();
 
-        if (!"IN_PROGRESS".equals(order.getStatus()))
+        if (!IN_PROGRESS.equals(order.getStatus()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot report on order not in IN_PROGRESS state.");
 
         RepairReport rpt = RepairReport.builder()
@@ -51,7 +54,7 @@ public class RepairReportServiceImpl implements RepairReportService {
                 .createdAt(new Date())
                 .build();
 
-        order.setStatus("COMPLETED");
+        order.setStatus(COMPLETED);
         orderRepo.save(order);
 
         User tech = userRepo.findById(order.getTechnicianId())

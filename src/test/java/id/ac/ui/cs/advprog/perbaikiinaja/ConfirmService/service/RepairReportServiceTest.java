@@ -100,7 +100,7 @@ class RepairReportServiceTest {
     void testCreateRepairReportSuccess() {
         ServiceOrder ord = new ServiceOrder();
         ord.setId(UUID.fromString(ORDER_ID));
-        ord.setStatus("IN_PROGRESS");
+        ord.setStatus("IN PROGRESS");
         ord.setTechnicianId(TECH_ID);
         ord.setEstimatedPrice(200);
 
